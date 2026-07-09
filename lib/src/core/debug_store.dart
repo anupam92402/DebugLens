@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
-import 'models/api_call_stat.dart';
-import 'models/bloc_event.dart';
-import 'models/network_entry.dart';
-import 'models/notification_entry.dart';
-import 'models/deeplink_entry.dart';
-import 'models/nav_event.dart';
-import 'models/device_app_info.dart';
+import '../features/network/domain/api_call_stat.dart';
+import '../features/bloc/domain/bloc_event.dart';
+import '../features/network/domain/network_entry.dart';
+import '../features/notifications/domain/notification_entry.dart';
+import '../features/notifications/domain/deeplink_entry.dart';
+import '../features/navigation/domain/nav_event.dart';
+import '../features/device/domain/device_app_info.dart';
 import 'mock/mock_seed.dart';
 
 /// Holds all captured debug data in memory.

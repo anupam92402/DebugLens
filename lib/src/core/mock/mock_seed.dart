@@ -1,7 +1,7 @@
-import '../models/network_entry.dart';
-import '../models/notification_entry.dart';
-import '../models/deeplink_entry.dart';
-import '../models/device_app_info.dart';
+import '../../features/network/domain/network_entry.dart';
+import '../../features/notifications/domain/notification_entry.dart';
+import '../../features/notifications/domain/deeplink_entry.dart';
+import '../../features/device/domain/device_app_info.dart';
 
 /// Static sample data so every screen is populated during UI review.
 /// Replaced by real capture sources when each feature is implemented.

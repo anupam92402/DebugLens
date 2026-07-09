@@ -3,33 +3,38 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'src/core/debug_database_source.dart';
-import 'src/core/debug_firebase_source.dart';
-import 'src/core/debug_lens_controller.dart';
-import 'src/core/debug_lens_logger.dart';
-import 'src/core/debug_locale_source.dart';
+import 'src/features/storage/data/debug_database_source.dart';
+import 'src/features/firebase/data/debug_firebase_source.dart';
+import 'src/shell/debug_lens_controller.dart';
+import 'src/features/logs/data/debug_lens_logger.dart';
+import 'src/features/locale/data/debug_locale_source.dart';
 import 'src/core/debug_role.dart';
-import 'src/core/debug_shared_prefs_source.dart';
+import 'src/features/storage/data/debug_shared_prefs_source.dart';
 import 'src/core/debug_store.dart';
-import 'src/integration/debug_lens_navigator_observer.dart';
-import 'src/ui/debug_bubble.dart';
-import 'src/ui/debug_panel.dart';
+import 'src/features/navigation/data/debug_lens_navigator_observer.dart';
+import 'src/shell/debug_bubble.dart';
+import 'src/shell/debug_panel.dart';
 
-export 'src/core/debug_database_source.dart'
-    show DebugLensDatabase, DebugLensTableData;
-export 'src/core/debug_firebase_source.dart'
-    show DebugLensFirebaseService, DebugLensInfoGroup;
-export 'src/core/debug_lens_logger.dart'
-    show DebugLensLogger, DebugLogLevel, DebugLogRecord, DebugLogSource;
-export 'src/core/debug_locale_source.dart'
-    show DebugLensLocaleData, DebugLensLocaleSource;
-export 'src/core/debug_shared_prefs_source.dart'
-    show DebugLensSharedPrefsSource, DebugLensPrefEntry;
-export 'src/integration/debug_lens_bloc_observer.dart'
+export 'src/features/storage/data/debug_database_source.dart'
+    show DebugLensDatabase;
+export 'src/features/storage/domain/table_data.dart' show DebugLensTableData;
+export 'src/features/firebase/data/debug_firebase_source.dart'
+    show DebugLensFirebaseService;
+export 'src/features/firebase/domain/info_group.dart' show DebugLensInfoGroup;
+export 'src/features/logs/data/debug_lens_logger.dart' show DebugLensLogger;
+export 'src/features/logs/domain/log_record.dart'
+    show DebugLogLevel, DebugLogRecord, DebugLogSource;
+export 'src/features/locale/data/debug_locale_source.dart'
+    show DebugLensLocaleSource;
+export 'src/features/locale/domain/locale_data.dart' show DebugLensLocaleData;
+export 'src/features/storage/data/debug_shared_prefs_source.dart'
+    show DebugLensSharedPrefsSource;
+export 'src/features/storage/domain/pref_entry.dart' show DebugLensPrefEntry;
+export 'src/features/bloc/data/debug_lens_bloc_observer.dart'
     show DebugLensBlocObserver;
-export 'src/integration/debug_lens_dio_interceptor.dart'
+export 'src/features/network/data/debug_lens_dio_interceptor.dart'
     show DebugLensDioInterceptor, DebugLensDioInterceptorSettings;
-export 'src/integration/debug_lens_navigator_observer.dart'
+export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
     show DebugLensNavigatorObserver;
 
 /// Public entry point for the DebugLens in-app debugging overlay.

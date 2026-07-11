@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import '../../../../core/debug_store.dart';
 import '../../domain/bloc_event.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../widgets/bloc_event_tile.dart';
 import '../widgets/bloc_kind_filter_row.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Live feed of Bloc/Cubit lifecycle events recorded by
 /// `DebugLensBlocObserver`. Same shape as the Navigation events tab:
@@ -104,7 +104,7 @@ class _BlocScreenState extends State<BlocScreen> {
                 : ListView.separated(
                     itemCount: events.length,
                     separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: DebugPalette.border),
+                        const Divider(height: 1, color: DebugColors.border),
                     itemBuilder: (_, i) => BlocEventTile(event: events[i]),
                   ),
           ),

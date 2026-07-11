@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Error view with a retry action — load failures are common for live Firebase
 /// wrappers (no network, not initialised, …), so make recovery one tap.
@@ -17,14 +17,14 @@ class ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 46, color: DebugPalette.error),
+          const Icon(Icons.error_outline, size: 46, color: DebugColors.error),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
               DebugStrings.firebaseLoadFailed(error),
               textAlign: TextAlign.center,
-              style: monoStyle(size: 12, color: DebugPalette.textMuted),
+              style: monoStyle(size: 12, color: DebugColors.textMuted),
             ),
           ),
           const SizedBox(height: 16),

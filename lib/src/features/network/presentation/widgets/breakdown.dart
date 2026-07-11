@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../domain/api_call_stat.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Small colored count chips for the success / error / pending buckets — only
 /// the non-zero ones are shown.
@@ -17,17 +17,17 @@ class Breakdown extends StatelessWidget {
       if (stat.success > 0)
         StatusChip(
           DebugStrings.networkOk(stat.success),
-          color: DebugPalette.success,
+          color: DebugColors.success,
         ),
       if (stat.error > 0)
         StatusChip(
           DebugStrings.networkErr(stat.error),
-          color: DebugPalette.error,
+          color: DebugColors.error,
         ),
       if (stat.pending > 0)
         StatusChip(
           DebugStrings.networkPend(stat.pending),
-          color: DebugPalette.pending,
+          color: DebugColors.pending,
         ),
     ];
     if (chips.isEmpty) return const SizedBox.shrink();

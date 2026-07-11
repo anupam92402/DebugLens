@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../domain/nav_event.dart';
+import '../../../../shell/debug_routes.dart';
 import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_theme.dart';
@@ -11,7 +12,7 @@ import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/sequence_badge.dart';
 import 'arguments_block.dart';
-import 'copyable_kv_row.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One expandable row in the Navigation Events tab.
 ///
@@ -61,11 +62,18 @@ class NavEventTile extends StatelessWidget {
               style: monoStyle(size: 13),
             ),
           ),
+          if (event.routeName.startsWith(DebugRoutes.prefix)) ...[
+            const SizedBox(width: 8),
+            StatusChip(
+              DebugStrings.navigationInternalLabel,
+              color: DebugColors.base,
+            ),
+          ],
         ],
       ),
       subtitle: Text(
         formatClock(event.time),
-        style: monoStyle(size: 11, color: DebugPalette.textMuted),
+        style: monoStyle(size: 11, color: DebugColors.textMuted),
       ),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       children: [
@@ -74,12 +82,12 @@ class NavEventTile extends StatelessWidget {
             label: DebugStrings.navigationLabelNavigator,
             value: event.navigator,
           ),
-        CopyableKvRow(
+        KvRow(
           label: DebugStrings.navigationFrom,
           value: event.previousRoute ?? DebugConstants.emptyValue,
           onCopy: _copy,
         ),
-        CopyableKvRow(
+        KvRow(
           label: DebugStrings.navigationTo,
           value: event.routeName,
           onCopy: _copy,
@@ -90,7 +98,7 @@ class NavEventTile extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               DebugStrings.navigationNoArguments,
-              style: monoStyle(size: 12, color: DebugPalette.textMuted),
+              style: monoStyle(size: 12, color: DebugColors.textMuted),
             ),
           )
         else

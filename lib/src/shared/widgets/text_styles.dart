@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
+import '../theme/debug_colors.dart';
 
 String formatAgo(DateTime t) {
   final d = DateTime.now().difference(t);
@@ -12,8 +12,8 @@ String formatAgo(DateTime t) {
 
 TextStyle monoStyle({double size = 12, Color? color, FontWeight? weight}) =>
     TextStyle(
-      fontFamily: DebugPalette.mono,
+      fontFamily: DebugColors.mono,
       fontSize: size,
-      color: color ?? DebugPalette.textPrimary,
+      color: color ?? DebugColors.textPrimary,
       fontWeight: weight,
     );

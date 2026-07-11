@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
 import 'json_engine.dart';
 import 'text_styles.dart';
+import '../theme/debug_colors.dart';
 
 /// Raw pretty-printed JSON rendered line-by-line so the line holding the active
 /// match can be wrapped with the search's `activeKey` for scroll-to.
@@ -73,7 +73,7 @@ class HighlightedRawText extends StatelessWidget {
           style: base.copyWith(
             backgroundColor: active
                 ? accent
-                : DebugPalette.warning.withValues(alpha: 0.30),
+                : DebugColors.warning.withValues(alpha: 0.30),
             color: active ? Colors.black : base.color,
             fontWeight: FontWeight.w700,
           ),

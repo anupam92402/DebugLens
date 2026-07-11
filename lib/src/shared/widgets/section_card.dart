@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../debug_strings.dart';
-import '../theme/debug_theme.dart';
 import 'glass.dart';
 import 'text_styles.dart';
+import '../theme/debug_colors.dart';
 
 /// Titled, bordered container used to group content on detail screens.
 ///
@@ -43,7 +43,7 @@ class SectionCard extends StatelessWidget {
                         style: monoStyle(
                           size: 11,
                           weight: FontWeight.w700,
-                          color: DebugPalette.textMuted,
+                          color: DebugColors.textMuted,
                         ),
                       ),
                     ),

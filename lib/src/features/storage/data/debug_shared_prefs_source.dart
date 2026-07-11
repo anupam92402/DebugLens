@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../domain/pref_entry.dart';
 
 /// Pull-based provider of the app's SharedPreferences snapshot.
@@ -23,4 +25,29 @@ class DebugLensSharedPrefs {
   /// The current source, or `null` when the host hasn't registered one (the
   /// Storage screen then shows its empty state).
   static DebugLensSharedPrefsSource? source;
+
+  // DebugLens's own persisted flags (nav eye toggle, …) also go through this
+  // class so feature screens never import shared_preferences directly.
+
+  /// Reads a bool persisted under [key]; `null` when unset or storage is
+  /// unavailable (caller keeps its in-memory default).
+  static Future<bool?> getBool(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Persists [value] under [key]. Failures are swallowed — the in-memory
+  /// value still applies for the session.
+  static Future<void> setBool(String key, bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(key, value);
+    } catch (_) {
+      // Persistence failed — nothing to do.
+    }
+  }
 }

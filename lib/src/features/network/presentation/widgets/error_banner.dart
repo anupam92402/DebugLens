@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Red-tinted banner used to surface the error message on the Response tab
 /// when the request failed.
@@ -16,13 +16,13 @@ class ErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: DebugPalette.error.withValues(alpha: 0.12),
+        color: DebugColors.error.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: DebugPalette.error.withValues(alpha: 0.5)),
+        border: Border.all(color: DebugColors.error.withValues(alpha: 0.5)),
       ),
       child: Text(
         message,
-        style: monoStyle(size: 12, color: DebugPalette.error),
+        style: monoStyle(size: 12, color: DebugColors.error),
       ),
     );
   }

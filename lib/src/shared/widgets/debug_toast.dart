@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
 import 'debug_widgets.dart';
+import '../theme/debug_colors.dart';
 
 /// Lightweight, dependency-free toast for DebugLens screens.
 ///
@@ -104,9 +104,9 @@ class _ToastBubbleState extends State<_ToastBubble>
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: DebugPalette.surface,
+                    color: DebugColors.surface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: DebugPalette.border),
+                    border: Border.all(color: DebugColors.border),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x55000000),

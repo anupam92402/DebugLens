@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// SectionCard for either the inline headers summary (Overview tab) or the
 /// structured per-row Request/Response headers cards below it.
@@ -51,14 +51,14 @@ class NetworkHeadersCard extends StatelessWidget {
         _asBlock(),
         style: monoStyle(
           size: 12,
-          color: headers.isEmpty ? DebugPalette.textMuted : null,
+          color: headers.isEmpty ? DebugColors.textMuted : null,
         ),
       );
     }
     if (headers.isEmpty) {
       return Text(
         DebugStrings.networkNone,
-        style: monoStyle(size: 12, color: DebugPalette.textMuted),
+        style: monoStyle(size: 12, color: DebugColors.textMuted),
       );
     }
     return Column(

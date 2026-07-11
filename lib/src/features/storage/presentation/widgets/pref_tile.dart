@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../domain/pref_entry.dart';
 import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'pref_detail_dialog.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One SharedPreferences row — key (with a `*` for encrypted entries), value,
 /// a copy+share action, and tap-to-open detail dialog.
@@ -47,13 +47,15 @@ class PrefTile extends StatelessWidget {
         entry.value,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: monoStyle(size: 12, color: DebugPalette.textMuted),
+        style: monoStyle(size: 12, color: DebugColors.textMuted),
       ),
       trailing: IconButton(
         tooltip: DebugStrings.commonCopy,
-        icon: const Icon(Icons.copy, size: 18, color: DebugPalette.textMuted),
+        icon: const Icon(Icons.copy, size: 18, color: DebugColors.textMuted),
         onPressed: () => onCopyShare(
-            PrefDetailDialog.pair(entry), DebugStrings.storagePreference),
+          PrefDetailDialog.pair(entry),
+          DebugStrings.storagePreference,
+        ),
       ),
       onTap: () => _openDetail(context),
     );

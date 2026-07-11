@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/json_view.dart';
 import 'error_banner.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Request- or response-body tab content. Both tabs share the same shape:
 /// an optional search bar, an optional error banner, then a [JsonViewer]
@@ -161,21 +161,21 @@ class _NetworkBodyTabState extends State<NetworkBodyTab> {
                   : '${activeIndex + 1}/$count',
               style: monoStyle(
                 size: 12,
-                color: count == 0 ? DebugPalette.textMuted : DebugPalette.info,
+                color: count == 0 ? DebugColors.textMuted : DebugColors.info,
               ),
             ),
             IconButton(
               tooltip: DebugStrings.networkPrevMatch,
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.keyboard_arrow_up, size: 20),
-              color: DebugPalette.textMuted,
+              color: DebugColors.textMuted,
               onPressed: count == 0 ? null : () => _step(-1),
             ),
             IconButton(
               tooltip: DebugStrings.networkNextMatch,
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-              color: DebugPalette.textMuted,
+              color: DebugColors.textMuted,
               onPressed: count == 0 ? null : () => _step(1),
             ),
           ],

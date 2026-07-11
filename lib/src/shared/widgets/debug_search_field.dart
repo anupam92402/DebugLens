@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../debug_strings.dart';
-import '../theme/debug_theme.dart';
 import 'text_styles.dart';
+import '../theme/debug_colors.dart';
 
 /// Search input with a search prefix icon and a clear button that appears once
 /// there's text. Reports every change through [onChanged].
@@ -54,11 +54,11 @@ class _DebugSearchFieldState extends State<DebugSearchField> {
       decoration: InputDecoration(
         isDense: true,
         hintText: widget.hint,
-        hintStyle: monoStyle(size: 13, color: DebugPalette.textMuted),
+        hintStyle: monoStyle(size: 13, color: DebugColors.textMuted),
         prefixIcon: const Icon(
           Icons.search,
           size: 18,
-          color: DebugPalette.textMuted,
+          color: DebugColors.textMuted,
         ),
         suffixIcon: hasText
             ? IconButton(
@@ -66,21 +66,21 @@ class _DebugSearchFieldState extends State<DebugSearchField> {
                 icon: const Icon(
                   Icons.close,
                   size: 18,
-                  color: DebugPalette.textMuted,
+                  color: DebugColors.textMuted,
                 ),
                 onPressed: _clear,
               )
             : null,
         filled: true,
-        fillColor: DebugPalette.glassFill,
+        fillColor: DebugColors.glassFill,
         contentPadding: const EdgeInsets.symmetric(vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: DebugPalette.border),
+          borderSide: const BorderSide(color: DebugColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: DebugPalette.border),
+          borderSide: const BorderSide(color: DebugColors.border),
         ),
       ),
     );

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import 'copy_icon.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One key/value row in the Locale screen. Layout uses Expanded(flex:2) for
 /// the key and Expanded(flex:3) for the value so the column-header in the
@@ -36,11 +35,12 @@ class LocaleRow extends StatelessWidget {
             flex: 2,
             child: SelectableText(
               entry.key,
-              style: monoStyle(size: 12, color: DebugPalette.textMuted),
+              style: monoStyle(size: 12, color: DebugColors.textMuted),
             ),
           ),
           CopyIcon(
             padding: const EdgeInsets.only(left: 4, right: 8, top: 1),
+            size: 13,
             onTap: () => _copy(context, entry.key, DebugStrings.localeKey),
           ),
           Expanded(
@@ -49,6 +49,7 @@ class LocaleRow extends StatelessWidget {
           ),
           CopyIcon(
             padding: const EdgeInsets.only(left: 4, top: 1),
+            size: 13,
             onTap: () => _copy(context, entry.value, DebugStrings.localeValue),
           ),
         ],

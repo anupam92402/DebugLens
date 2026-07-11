@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'locale_row.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One collapsible category block on the Locale screen: a tappable header
 /// (chevron + category name + entry count) that expands to reveal the
@@ -56,7 +56,7 @@ class LocaleCategorySection extends StatelessWidget {
                 // Entry count, e.g. "6".
                 Text(
                   '${entries.length}',
-                  style: monoStyle(size: 12, color: DebugPalette.textMuted),
+                  style: monoStyle(size: 12, color: DebugColors.textMuted),
                 ),
               ],
             ),
@@ -64,7 +64,7 @@ class LocaleCategorySection extends StatelessWidget {
         ),
         if (expanded)
           for (final entry in entries) LocaleRow(entry: entry),
-        const Divider(height: 1, color: DebugPalette.border),
+        const Divider(height: 1, color: DebugColors.border),
       ],
     );
   }

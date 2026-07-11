@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
 import 'debug_widgets.dart';
+import '../theme/debug_colors.dart';
 
 /// Fixed-width pill showing a small index — used for the event sequence
 /// number on the Events tab and the level number in the Stack tab. Shared
@@ -20,11 +20,11 @@ class SequenceBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: DebugPalette.border),
+        border: Border.all(color: DebugColors.border),
       ),
       child: Text(
         label,
-        style: monoStyle(size: 12, color: DebugPalette.textMuted),
+        style: monoStyle(size: 12, color: DebugColors.textMuted),
       ),
     );
   }

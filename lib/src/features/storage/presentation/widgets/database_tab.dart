@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../data/debug_database_source.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Lists every registered database (vertical) with a search field on top.
 /// Tapping a database opens its tables screen. Databases come from the
@@ -47,7 +47,7 @@ class _DatabaseTabState extends State<DatabaseTab> {
               : ListView.separated(
                   itemCount: databases.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(height: 1, color: DebugPalette.border),
+                      const Divider(height: 1, color: DebugColors.border),
                   itemBuilder: (_, i) {
                     final db = databases[i];
                     return ListTile(

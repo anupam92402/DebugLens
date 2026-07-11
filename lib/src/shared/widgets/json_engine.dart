@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
+import '../theme/debug_colors.dart';
 
 /// Pretty-prints any JSON-encodable value to an indented string. Falls back to
 /// `toString()` for anything that can't be encoded.
@@ -117,7 +117,7 @@ TextSpan highlightSpan(
   final hl = base.copyWith(
     backgroundColor: active
         ? accent
-        : DebugPalette.warning.withValues(alpha: 0.30),
+        : DebugColors.warning.withValues(alpha: 0.30),
     color: active ? Colors.black : base.color,
     fontWeight: FontWeight.w700,
   );

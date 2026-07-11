@@ -87,42 +87,34 @@ class DebugLogFileService {
     return out.toString();
   }
 
-  /// First-three-letters month abbreviations, indexed by `month - 1`.
-  static const List<String> _monthNames = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
   static String _pad2(int value) => value.toString().padLeft(2, '0');
 
+  /// Default base used when a caller doesn't pass a [fileNameFor] `name`.
+  static const String _defaultName = 'logs';
+
   /// Filename for [at] (defaults to now, local time), formatted as
-  /// `DD_Mon_HH_MM_SS_logs.txt`, e.g. `09_Jul_14_30_05_logs.txt`.
-  static String fileNameFor([DateTime? at]) {
+  /// `<name>_YYYY-MM-DD_HH-mm-ss.txt` — sorts chronologically in a file list.
+  /// [name] defaults to `logs` (e.g. `logs_2026-07-11_14-30-05.txt`); callers
+  /// sharing a single feature pass their own, e.g. `navigation_logs`.
+  static String fileNameFor({DateTime? at, String? name}) {
     final t = at ?? DateTime.now();
-    return '${_pad2(t.day)}_${_monthNames[t.month - 1]}_'
-        '${_pad2(t.hour)}_${_pad2(t.minute)}_${_pad2(t.second)}_logs.txt';
+    return '${name ?? _defaultName}_${t.year}-${_pad2(t.month)}-${_pad2(t.day)}_'
+        '${_pad2(t.hour)}-${_pad2(t.minute)}-${_pad2(t.second)}.txt';
   }
 
   /// Writes [buildDump] to a NEW file under the temp directory and returns it.
   /// Every call creates a fresh file; a same-second name collision gets a
-  /// numeric suffix.
-  Future<File> writeLogFile([Map<String, String>? sections]) async {
+  /// numeric suffix. [name] overrides the filename base (see [fileNameFor]).
+  Future<File> writeLogFile({
+    Map<String, String>? sections,
+    String? name,
+  }) async {
     final temp = await getTemporaryDirectory();
     final dir = Directory('${temp.path}/debug_lens_logs');
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
-    var path = '${dir.path}/${fileNameFor()}';
+    var path = '${dir.path}/${fileNameFor(name: name)}';
     if (await File(path).exists()) {
       path = await _uniquePath(path);
     }
@@ -145,14 +137,15 @@ class DebugLogFileService {
   ///
   /// Works on Android and iOS. On iPad the share sheet is a popover, so pass
   /// [sharePositionOrigin] (the share control's global rect) to anchor it;
-  /// omit on phones.
+  /// omit on phones. [name] overrides the filename base (see [fileNameFor]).
   Future<ShareResult> shareLogFile({
     Map<String, String>? sections,
+    String? name,
     String? subject,
     String? text,
     Rect? sharePositionOrigin,
   }) async {
-    final file = await writeLogFile(sections);
+    final file = await writeLogFile(sections: sections, name: name);
     return SharePlus.instance.share(
       ShareParams(
         files: <XFile>[

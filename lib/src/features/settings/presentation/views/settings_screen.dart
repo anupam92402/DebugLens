@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/debug_store.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// UI-only settings. Toggles are local state for now; they will be wired to
 /// capture behavior when each feature is implemented.
@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               subtitle: Text(
                 DebugStrings.settingsRedactSubtitle,
-                style: monoStyle(size: 11, color: DebugPalette.textMuted),
+                style: monoStyle(size: 11, color: DebugColors.textMuted),
               ),
               value: _redactHeaders,
               onChanged: (v) => setState(() => _redactHeaders = v),
@@ -94,11 +94,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ListTile(
               leading: const Icon(
                 Icons.delete_outline,
-                color: DebugPalette.error,
+                color: DebugColors.error,
               ),
               title: Text(
                 DebugStrings.settingsClearAll,
-                style: monoStyle(size: 13, color: DebugPalette.error),
+                style: monoStyle(size: 13, color: DebugColors.error),
               ),
               onTap: () {
                 context.read<DebugStore>().clearAll();
@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: DebugStrings.settingsAbout,
             child: Text(
               DebugStrings.settingsAboutValue,
-              style: monoStyle(size: 12, color: DebugPalette.textMuted),
+              style: monoStyle(size: 12, color: DebugColors.textMuted),
             ),
           ),
         ],

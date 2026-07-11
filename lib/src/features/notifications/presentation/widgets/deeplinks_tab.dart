@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../domain/deeplink_entry.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'deeplink_tile.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Captured deep-link feed. Each row breaks the URI into its components
 /// (scheme / host / path) and renders query parameters as JSON.
@@ -24,7 +24,7 @@ class DeeplinksTab extends StatelessWidget {
     return ListView.separated(
       itemCount: items.length,
       separatorBuilder: (_, __) =>
-          const Divider(height: 1, color: DebugPalette.border),
+          const Divider(height: 1, color: DebugColors.border),
       itemBuilder: (_, i) => DeeplinkTile(entry: items[i]),
     );
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Card holding the log's stack trace in a code-style container.
 class StackCard extends StatelessWidget {
@@ -18,12 +18,12 @@ class StackCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: DebugPalette.surfaceAlt,
+          color: DebugColors.surfaceAlt,
           borderRadius: BorderRadius.circular(8),
         ),
         child: SelectableText(
           stackTrace,
-          style: monoStyle(size: 12, color: DebugPalette.textMuted),
+          style: monoStyle(size: 12, color: DebugColors.textMuted),
         ),
       ),
     );

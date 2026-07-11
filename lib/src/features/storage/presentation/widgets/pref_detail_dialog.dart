@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../domain/pref_entry.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Detail dialog using the Network screen's glass [SectionCard] containers:
 /// one for the key, one for the value, each with its own COPY (copy + share),
@@ -24,7 +24,7 @@ class PrefDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: DebugPalette.surface,
+      backgroundColor: DebugColors.surface,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
@@ -45,7 +45,7 @@ class PrefDetailDialog extends StatelessWidget {
                   if (entry.encrypted)
                     StatusChip(
                       DebugStrings.storageEncrypted,
-                      color: DebugPalette.info,
+                      color: DebugColors.info,
                     ),
                 ],
               ),

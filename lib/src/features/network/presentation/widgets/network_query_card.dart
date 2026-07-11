@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// SectionCard for the request's query parameters. Always rendered (even
 /// when empty, where it shows "none") so the Overview tab's section layout
@@ -35,7 +35,7 @@ class NetworkQueryCard extends StatelessWidget {
       child: queryParameters.isEmpty
           ? Text(
               DebugStrings.networkNone,
-              style: monoStyle(size: 12, color: DebugPalette.textMuted),
+              style: monoStyle(size: 12, color: DebugColors.textMuted),
             )
           : Column(
               children: [

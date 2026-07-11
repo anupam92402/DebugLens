@@ -116,6 +116,12 @@ class DebugStrings {
   static const String navigationArgumentsHeader = 'ARGUMENTS';
   static const String navigationCopyArguments = 'Copy arguments';
   static const String navigationArgumentsCopied = 'Arguments copied';
+  static const String navigationSearchHint = 'Search route';
+  static const String navigationHideInternal = 'Hide DebugLens routes';
+  static const String navigationShowInternal = 'Show DebugLens routes';
+  static const String navigationShareTooltip = 'Share navigation logs';
+  static const String navigationShareSubject = 'DebugLens navigation logs';
+  static const String navigationInternalLabel = 'debug_lens';
 
   // --- Locale ---------------------------------------------------------------
   static const String localeTitle = 'Locale';

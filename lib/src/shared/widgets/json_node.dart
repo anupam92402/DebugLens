@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
 import 'json_engine.dart';
 import 'text_styles.dart';
+import '../theme/debug_colors.dart';
 
 /// A single node in the JSON object tree — an expandable header for maps/lists,
 /// an inline row for primitives. Recurses to render its children.
@@ -72,7 +72,7 @@ class _JsonNodeState extends State<JsonNode> {
     final keyIndex = _matchIndex(isKey: true);
     final keyActive = search != null && keyIndex == search.activeIndex;
 
-    final labelStyle = monoStyle(size: 12, color: DebugPalette.textMuted);
+    final labelStyle = monoStyle(size: 12, color: DebugColors.textMuted);
     final header = Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -80,7 +80,7 @@ class _JsonNodeState extends State<JsonNode> {
           Icon(
             expanded ? Icons.expand_more : Icons.chevron_right,
             size: 16,
-            color: DebugPalette.textMuted,
+            color: DebugColors.textMuted,
           ),
           if (widget.label.isNotEmpty)
             (keyIndex >= 0)
@@ -98,7 +98,7 @@ class _JsonNodeState extends State<JsonNode> {
             summary,
             style: monoStyle(
               size: 12,
-              color: DebugPalette.info,
+              color: DebugColors.info,
               weight: FontWeight.w600,
             ),
           ),
@@ -147,7 +147,7 @@ class _JsonNodeState extends State<JsonNode> {
     final keyActive = search != null && keyIndex == search.activeIndex;
     final valueActive = search != null && valueIndex == search.activeIndex;
 
-    final labelStyle = monoStyle(size: 12, color: DebugPalette.textMuted);
+    final labelStyle = monoStyle(size: 12, color: DebugColors.textMuted);
     final valueStyle = monoStyle(size: 12, color: color);
 
     final row = Padding(
@@ -195,17 +195,17 @@ class _JsonNodeState extends State<JsonNode> {
   /// easy to scan at a glance.
   (String, Color) _leafStyle(Object? v) {
     if (v == null) {
-      return ('null', DebugPalette.textMuted);
+      return ('null', DebugColors.textMuted);
     }
     if (v is String) {
-      return ('"$v"', DebugPalette.success);
+      return ('"$v"', DebugColors.success);
     }
     if (v is num) {
-      return (v.toString(), DebugPalette.warning);
+      return (v.toString(), DebugColors.warning);
     }
     if (v is bool) {
-      return (v.toString(), DebugPalette.info);
+      return (v.toString(), DebugColors.info);
     }
-    return (v.toString(), DebugPalette.textPrimary);
+    return (v.toString(), DebugColors.textPrimary);
   }
 }

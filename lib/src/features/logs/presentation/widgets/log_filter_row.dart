@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../domain/log_record.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import 'console_chip.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Horizontal chip strip for the Logs screen.
 ///
@@ -65,7 +65,7 @@ class LogFilterRow extends StatelessWidget {
           // source filter (console).
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: VerticalDivider(width: 1, color: DebugPalette.border),
+            child: VerticalDivider(width: 1, color: DebugColors.border),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 8),

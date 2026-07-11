@@ -41,6 +41,11 @@ dependencies:
   debug_lens:
     path: ../
 
+  # State management (MVVM: blocs/cubits act as the view-models).
+  # (8.x to stay compatible with debug_lens's bloc ^8.1.4 constraint)
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

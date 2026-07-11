@@ -21,4 +21,12 @@ class DebugConstants {
 
   /// Suffix marking a SharedPreferences entry stored via encrypted prefs.
   static const String encryptedMarker = '*';
+
+  // SharedPreferences keys DebugLens persists its own state under.
+
+  /// Access role for the panel (see `DebugRoleController`).
+  static const String rolePrefsKey = 'debug_lens_role';
+
+  /// Navigation screen's eye toggle (hide `debug_lens/` routes).
+  static const String navHideInternalPrefsKey = 'debug_lens_nav_hide_internal';
 }

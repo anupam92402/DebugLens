@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../shared/debug_constants.dart';
+
 /// Access role for the DebugLens panel.
 ///
 /// - [tester] (default): can only open the Network screen.
@@ -11,8 +13,6 @@ enum DebugRole { tester, developer }
 /// choice survives across app launches and is only reset when the user clears
 /// app data or reinstalls. Default is [DebugRole.tester].
 class DebugRoleController extends ChangeNotifier {
-  static const String _prefsKey = 'debug_lens_role';
-
   DebugRole _role = DebugRole.tester;
 
   DebugRole get role => _role;
@@ -25,7 +25,8 @@ class DebugRoleController extends ChangeNotifier {
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (prefs.getString(_prefsKey) == DebugRole.developer.name) {
+      if (prefs.getString(DebugConstants.rolePrefsKey) ==
+          DebugRole.developer.name) {
         _role = DebugRole.developer;
         notifyListeners();
       }
@@ -40,7 +41,7 @@ class DebugRoleController extends ChangeNotifier {
     notifyListeners();
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_prefsKey, _role.name);
+      await prefs.setString(DebugConstants.rolePrefsKey, _role.name);
     } catch (_) {
       // Persistence failed — the in-memory role still applies this session.
     }

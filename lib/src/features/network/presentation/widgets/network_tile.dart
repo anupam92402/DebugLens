@@ -10,6 +10,7 @@ import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'path_and_time.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Single row in the Network list screen.
 ///
@@ -98,7 +99,7 @@ class NetworkTile extends StatelessWidget {
   /// aligns the label for a left-to-right swipe; otherwise it right-aligns.
   Widget _swipeBackground({required bool alignStart}) {
     return Container(
-      color: DebugPalette.success,
+      color: DebugColors.success,
       alignment: alignStart ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(

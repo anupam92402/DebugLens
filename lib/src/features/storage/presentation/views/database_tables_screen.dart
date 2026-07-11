@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../data/debug_database_source.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'table_data_screen.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Lists every table in a [DebugLensDatabase] in a vertical list, with a search
 /// field that filters by table name. Tapping a table opens [TableDataScreen].
@@ -68,10 +68,8 @@ class _DatabaseTablesScreenState extends State<DatabaseTablesScreen> {
                       )
                     : ListView.separated(
                         itemCount: tables.length,
-                        separatorBuilder: (_, __) => const Divider(
-                          height: 1,
-                          color: DebugPalette.border,
-                        ),
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, color: DebugColors.border),
                         itemBuilder: (_, i) => ListTile(
                           leading: const Icon(Icons.table_rows, size: 20),
                           title: Text(tables[i], style: monoStyle(size: 13)),

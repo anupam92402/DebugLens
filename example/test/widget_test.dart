@@ -1,36 +1,40 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Smoke test for the example app shell.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:debug_lens_example/main.dart';
+import 'package:debug_lens_example/src/app.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Shell renders tabs, FAB and AppBar actions', (tester) async {
     // DebugLens.wrap() installs a global debugPrint override (console capture).
     // The test framework asserts foundation debug vars are unchanged by the end
     // of the test body, so remember the framework's debugPrint and restore it.
     final originalDebugPrint = debugPrint;
 
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const ExampleApp());
+    // Let the dummy repositories finish their simulated fetch delays.
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Bottom nav options (2 tabs + docked FAB = 3 options).
+    expect(find.text('Insights'), findsWidgets);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // AppBar actions.
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Home tab dummy data is visible.
+    expect(find.text('Recent activity'), findsOneWidget);
+
+    // Nested navigation + data passing: tapping an activity pushes its detail
+    // screen on the tab's nested navigator (bottom bar/FAB stay visible) and
+    // the passed id resolves to the full activity from HomeBloc.
+    await tester.tap(find.text('Review sprint board'));
+    await tester.pumpAndSettle();
+    expect(find.text('Activity'), findsOneWidget);
+    expect(find.text('Mark as done'), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
 
     debugPrint = originalDebugPrint;
   });

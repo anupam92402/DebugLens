@@ -5,10 +5,10 @@ import '../../../../core/debug_store.dart';
 import '../../domain/api_call_stat.dart';
 import '../../domain/network_entry.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/api_history_tile.dart';
 import '../widgets/network_status_filter_row.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Network → History: every endpoint called this session with how many times
 /// it was hit. Data lives in [DebugStore] for the session only (gone on app
@@ -98,7 +98,7 @@ class _NetworkHistoryScreenState extends State<NetworkHistoryScreen> {
                 : ListView.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: DebugPalette.border),
+                        const Divider(height: 1, color: DebugColors.border),
                     itemBuilder: (_, i) =>
                         ApiHistoryTile(stat: items[i], filter: _filter),
                   ),

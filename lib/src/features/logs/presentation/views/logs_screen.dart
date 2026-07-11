@@ -6,11 +6,11 @@ import '../../domain/log_record.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../data/log_serializer.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/log_filter_row.dart';
 import '../widgets/log_tile.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Live log feed for `DebugLensLogger` records.
 ///
@@ -140,10 +140,8 @@ class _LogsScreenState extends State<LogsScreen> {
                       )
                     : ListView.separated(
                         itemCount: items.length,
-                        separatorBuilder: (_, __) => const Divider(
-                          height: 1,
-                          color: DebugPalette.border,
-                        ),
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, color: DebugColors.border),
                         itemBuilder: (_, i) => LogTile(
                           record: items[i],
                           onTap: () => Navigator.of(context).pushNamed(

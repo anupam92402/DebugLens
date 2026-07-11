@@ -6,6 +6,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'breakdown.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Single row on the Network → History screen: the endpoint (method + path),
 /// its outcome breakdown, and the call count for the active filter.
@@ -23,7 +24,7 @@ class ApiHistoryTile extends StatelessWidget {
     final methodTone = toneForMethod(stat.method);
     final count = stat.countFor(filter);
     final countTone = filter == null
-        ? DebugPalette.textPrimary
+        ? DebugColors.textPrimary
         : toneForStatus(filter!);
 
     return Padding(
@@ -69,7 +70,7 @@ class ApiHistoryTile extends StatelessWidget {
                 count == 1
                     ? DebugStrings.networkCall
                     : DebugStrings.networkCalls,
-                style: monoStyle(size: 10, color: DebugPalette.textMuted),
+                style: monoStyle(size: 10, color: DebugColors.textMuted),
               ),
             ],
           ),

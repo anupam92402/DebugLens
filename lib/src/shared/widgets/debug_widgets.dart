@@ -2,6 +2,7 @@
 // Screens keep importing `widgets/debug_widgets.dart` and get everything
 // (the widgets, monoStyle/formatAgo, and the re-exported formatClock).
 export '../util/clock_format.dart' show formatClock;
+export 'copy_icon.dart';
 export 'debug_search_field.dart';
 export 'empty_state.dart';
 export 'kv_row.dart';

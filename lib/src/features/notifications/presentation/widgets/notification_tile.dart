@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../domain/notification_entry.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/json_view.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 class NotificationTile extends StatelessWidget {
   final NotificationEntry entry;
@@ -20,7 +20,7 @@ class NotificationTile extends StatelessWidget {
       ),
       subtitle: Text(
         '${entry.source} · ${entry.kindLabel} · ${formatClock(entry.time)}',
-        style: monoStyle(size: 11, color: DebugPalette.textMuted),
+        style: monoStyle(size: 11, color: DebugColors.textMuted),
       ),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       children: [

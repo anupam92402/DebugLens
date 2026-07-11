@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'src/features/storage/data/debug_database_source.dart';
 import 'src/features/firebase/data/debug_firebase_source.dart';
 import 'src/shell/debug_lens_controller.dart';
+import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
 import 'src/features/locale/data/debug_locale_source.dart';
 import 'src/core/debug_role.dart';
@@ -45,7 +46,7 @@ class DebugLens {
   /// Route name given to DebugLens's own panel route on the host navigator, so
   /// it shows a readable label (instead of `PageRouteBuilder`) on the
   /// Navigation screen.
-  static const String panelRouteName = 'debug_lens/panel';
+  static const String panelRouteName = DebugRoutes.panelRouteName;
 
   /// Add to your `MaterialApp.navigatorObservers` to capture navigation events.
   static final NavigatorObserver navigatorObserver =

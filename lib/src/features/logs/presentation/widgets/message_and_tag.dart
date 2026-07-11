@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/log_record.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Two-line block — message on top, "[label] · time" below. Pulled out so
 /// the tinting logic for console rows is colocated with the rendering.
@@ -28,13 +28,13 @@ class MessageAndTag extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: monoStyle(
             size: 13,
-            color: isConsole ? DebugPalette.console : null,
+            color: isConsole ? DebugColors.console : null,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           '[$label] · ${formatClock(record.time)}',
-          style: monoStyle(size: 11, color: DebugPalette.textMuted),
+          style: monoStyle(size: 11, color: DebugColors.textMuted),
         ),
       ],
     );

@@ -14,7 +14,11 @@ class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   static const _items = <DashItem>[
-    DashItem(Icons.language, DebugStrings.dashboardNetwork, DebugRoutes.network),
+    DashItem(
+      Icons.language,
+      DebugStrings.dashboardNetwork,
+      DebugRoutes.network,
+    ),
     DashItem(Icons.notes, DebugStrings.dashboardLogs, DebugRoutes.logs),
     DashItem(
       Icons.notifications_outlined,

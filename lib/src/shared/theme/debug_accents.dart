@@ -1,52 +1,41 @@
 import 'package:flutter/material.dart';
 
 import '../../shell/debug_routes.dart';
+import 'debug_colors.dart';
 
-/// Per-tool accent colors so each feature area has its own visual identity.
-/// The router themes each screen with its route's accent; the dashboard tints
-/// each tile with the same color.
+/// Maps a route to its per-tool accent color — the router themes each screen
+/// with its route's accent and the dashboard tints each tile the same. Colors
+/// live in [DebugColors].
 class DebugAccents {
   DebugAccents._();
-
-  static const base = Color(0xFF7C8CF8); // dashboard / fallback (indigo)
-  static const network = Color(0xFF4F8CFF); // blue
-  static const logs = Color(0xFF3FD17A); // green
-  static const notifications = Color(0xFFFFC857); // amber
-  static const navigation = Color(0xFFA78BFA); // violet
-  static const bloc = Color(0xFFE11D48); // rose
-  static const storage = Color(0xFF2DD4BF); // teal
-  static const device = Color(0xFF22D3EE); // cyan
-  static const firebase = Color(0xFFFB923C); // orange
-  static const locale = Color(0xFFEC4899); // pink
-  static const settings = Color(0xFF94A3B8); // slate
 
   static Color forRoute(String? route) {
     switch (route) {
       case DebugRoutes.network:
       case DebugRoutes.networkDetail:
       case DebugRoutes.networkHistory:
-        return network;
+        return DebugColors.network;
       case DebugRoutes.logs:
       case DebugRoutes.logDetail:
-        return logs;
+        return DebugColors.logs;
       case DebugRoutes.notifications:
-        return notifications;
+        return DebugColors.notifications;
       case DebugRoutes.navigation:
-        return navigation;
+        return DebugColors.navigation;
       case DebugRoutes.bloc:
-        return bloc;
+        return DebugColors.bloc;
       case DebugRoutes.storage:
-        return storage;
+        return DebugColors.storage;
       case DebugRoutes.device:
-        return device;
+        return DebugColors.device;
       case DebugRoutes.firebase:
-        return firebase;
+        return DebugColors.firebase;
       case DebugRoutes.locale:
-        return locale;
+        return DebugColors.locale;
       case DebugRoutes.settings:
-        return settings;
+        return DebugColors.settings;
       default:
-        return base;
+        return DebugColors.base;
     }
   }
 }

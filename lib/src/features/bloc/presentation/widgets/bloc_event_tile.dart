@@ -8,6 +8,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/sequence_badge.dart';
 import 'error_block.dart';
 import 'stack_block.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One expandable row in the Bloc events feed.
 ///
@@ -62,7 +63,7 @@ class BlocEventTile extends StatelessWidget {
         padding: const EdgeInsets.only(top: 2),
         child: Text(
           '${_summary()} · ${formatClock(event.time)}',
-          style: monoStyle(size: 11, color: DebugPalette.textMuted),
+          style: monoStyle(size: 11, color: DebugColors.textMuted),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

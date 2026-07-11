@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../data/debug_firebase_source.dart';
 import '../../domain/info_group.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'error_state.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Shows one Firebase service's data as a list of glass [SectionCard] groups,
 /// each a set of `key -> value` rows. Loaded async; the AppBar refresh action
@@ -65,7 +65,7 @@ class _FirebaseServiceScreenState extends State<FirebaseServiceScreen> {
                           DebugStrings.firebaseNone,
                           style: monoStyle(
                             size: 12,
-                            color: DebugPalette.textMuted,
+                            color: DebugColors.textMuted,
                           ),
                         )
                       : Column(

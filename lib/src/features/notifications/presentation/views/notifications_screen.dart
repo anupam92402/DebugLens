@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/debug_store.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../widgets/deeplinks_tab.dart';
 import '../widgets/notifications_tab.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Two-tab view of push/local notifications + captured deep-links.
 /// Thin assembler — both tab bodies live in `widgets/notifications/`.
@@ -25,7 +25,7 @@ class NotificationsScreen extends StatelessWidget {
           bottom: TabBar(
             labelColor: accent,
             indicatorColor: accent,
-            unselectedLabelColor: DebugPalette.textMuted,
+            unselectedLabelColor: DebugColors.textMuted,
             tabs: const [
               Tab(text: DebugStrings.notificationsTabNotifications),
               Tab(text: DebugStrings.notificationsTabDeeplinks),

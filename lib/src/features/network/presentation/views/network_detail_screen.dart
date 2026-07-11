@@ -10,6 +10,7 @@ import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/network_body_tab.dart';
 import '../widgets/network_overview_tab.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Tabbed view of a single network entry. Owns the AppBar (method chip,
 /// path, copy+share actions) and the three tabs (Overview / Request /
@@ -96,7 +97,7 @@ class NetworkDetailScreen extends StatelessWidget {
           bottom: TabBar(
             labelColor: accent,
             indicatorColor: accent,
-            unselectedLabelColor: DebugPalette.textMuted,
+            unselectedLabelColor: DebugColors.textMuted,
             tabs: const [
               Tab(text: DebugStrings.networkTabOverview),
               Tab(text: DebugStrings.networkTabRequest),

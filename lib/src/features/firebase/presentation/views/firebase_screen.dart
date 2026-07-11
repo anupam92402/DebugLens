@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../data/debug_firebase_source.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Firebase aggregator. Shows a vertical list of the registered Firebase
 /// services (Remote Config, Crashlytics, Performance, Analytics, …); tapping
@@ -31,7 +31,7 @@ class FirebaseScreen extends StatelessWidget {
           return ListView.separated(
             itemCount: services.length,
             separatorBuilder: (_, __) =>
-                const Divider(height: 1, color: DebugPalette.border),
+                const Divider(height: 1, color: DebugColors.border),
             itemBuilder: (_, i) {
               final service = services[i];
               return ListTile(

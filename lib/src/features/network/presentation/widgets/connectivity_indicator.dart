@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// AppBar icon showing the device's current connectivity transport —
 /// wifi / mobile / ethernet / offline. Subscribes to
@@ -64,49 +64,49 @@ class _ConnectivityIndicatorState extends State<ConnectivityIndicator> {
       case ConnectivityResult.wifi:
         return const _IndicatorVisual(
           Icons.wifi,
-          DebugPalette.success,
+          DebugColors.success,
           DebugStrings.networkConnWifi,
         );
       case ConnectivityResult.mobile:
         return const _IndicatorVisual(
           Icons.signal_cellular_alt,
-          DebugPalette.info,
+          DebugColors.info,
           DebugStrings.networkConnMobile,
         );
       case ConnectivityResult.ethernet:
         return const _IndicatorVisual(
           Icons.lan,
-          DebugPalette.info,
+          DebugColors.info,
           DebugStrings.networkConnEthernet,
         );
       case ConnectivityResult.vpn:
         return const _IndicatorVisual(
           Icons.vpn_lock,
-          DebugPalette.warning,
+          DebugColors.warning,
           DebugStrings.networkConnVpn,
         );
       case ConnectivityResult.bluetooth:
         return const _IndicatorVisual(
           Icons.bluetooth,
-          DebugPalette.info,
+          DebugColors.info,
           DebugStrings.networkConnBluetooth,
         );
       case ConnectivityResult.other:
         return const _IndicatorVisual(
           Icons.device_hub,
-          DebugPalette.textMuted,
+          DebugColors.textMuted,
           DebugStrings.networkConnOther,
         );
       case ConnectivityResult.none:
         return const _IndicatorVisual(
           Icons.signal_wifi_off,
-          DebugPalette.error,
+          DebugColors.error,
           DebugStrings.networkConnOffline,
         );
       case null:
         return const _IndicatorVisual(
           Icons.help_outline,
-          DebugPalette.textMuted,
+          DebugColors.textMuted,
           DebugStrings.networkConnChecking,
         );
     }

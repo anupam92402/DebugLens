@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../domain/pref_entry.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'pref_tile.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// SharedPreferences feed. Filters by key, marks encrypted entries with a `*`,
 /// lets each row copy+share its key and value, and opens a detail dialog (built
@@ -54,7 +54,7 @@ class PrefsTab extends StatelessWidget {
               : ListView.separated(
                   itemCount: filtered.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(height: 1, color: DebugPalette.border),
+                      const Divider(height: 1, color: DebugColors.border),
                   itemBuilder: (_, i) =>
                       PrefTile(entry: filtered[i], onCopyShare: onCopyShare),
                 ),

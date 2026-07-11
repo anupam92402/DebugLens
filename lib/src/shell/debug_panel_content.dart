@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'debug_router.dart';
 import 'debug_routes.dart';
-import '../shared/theme/debug_accents.dart';
 import '../shared/theme/debug_theme.dart';
 import '../shared/widgets/glass.dart';
+import '../shared/theme/debug_colors.dart';
 
 /// Full-screen panel content. Hosts a self-contained nested [Navigator] driven
 /// by named routes + [DebugRouter.onGenerateRoute]. [onNestedChanged] fires
@@ -23,7 +23,7 @@ class DebugPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: DebugTheme.build(DebugAccents.base),
+      data: DebugTheme.build(DebugColors.base),
       child: Stack(
         children: [
           const Positioned.fill(child: GlassBackground()),

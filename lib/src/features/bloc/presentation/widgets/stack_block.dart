@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Muted "STACK" header + a code-style container with the stack trace.
 /// Always paired with [ErrorBlock] in practice.
@@ -22,7 +22,7 @@ class StackBlock extends StatelessWidget {
           style: monoStyle(
             size: 11,
             weight: FontWeight.w700,
-            color: DebugPalette.textMuted,
+            color: DebugColors.textMuted,
           ),
         ),
         const SizedBox(height: 4),
@@ -30,12 +30,12 @@ class StackBlock extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: DebugPalette.surfaceAlt,
+            color: DebugColors.surfaceAlt,
             borderRadius: BorderRadius.circular(8),
           ),
           child: SelectableText(
             stackTrace,
-            style: monoStyle(size: 12, color: DebugPalette.textMuted),
+            style: monoStyle(size: 12, color: DebugColors.textMuted),
           ),
         ),
       ],

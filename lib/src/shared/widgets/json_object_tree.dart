@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
 import 'json_engine.dart';
 import 'json_node.dart';
+import '../theme/debug_colors.dart';
 
 /// Recursive tree view for any JSON-encodable value. Maps and lists are
 /// rendered as expandable headers; primitives as inline rows. Delegates each
@@ -24,9 +24,9 @@ class JsonObjectTree extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: DebugPalette.surfaceAlt,
+        color: DebugColors.surfaceAlt,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: DebugPalette.border),
+        border: Border.all(color: DebugColors.border),
       ),
       child: JsonNode(
         value: data,

@@ -5,6 +5,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'message_and_tag.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// One row in the Logs list. Console-sourced rows are visually distinct —
 /// purple "C" badge, purple-tinted message — so they pop in a mixed feed
@@ -18,7 +19,7 @@ class LogTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isConsole = record.source == DebugLogSource.console;
-    final tone = isConsole ? DebugPalette.console : toneForLevel(record.level);
+    final tone = isConsole ? DebugColors.console : toneForLevel(record.level);
     final label =
         record.name ??
         (isConsole ? DebugStrings.logsConsole : DebugStrings.logsLog);
@@ -42,7 +43,7 @@ class LogTile extends StatelessWidget {
                 label: label,
               ),
             ),
-            const Icon(Icons.chevron_right, color: DebugPalette.textMuted),
+            const Icon(Icons.chevron_right, color: DebugColors.textMuted),
           ],
         ),
       ),

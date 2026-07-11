@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../data/debug_database_source.dart';
 import '../../domain/table_data.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Route arguments for [TableDataScreen] — the database to read from and the
 /// table within it.
@@ -66,10 +66,10 @@ class _TableDataScreenState extends State<TableDataScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Text(
                   DebugStrings.storageRowCount(data.rowCount),
-                  style: monoStyle(size: 12, color: DebugPalette.textMuted),
+                  style: monoStyle(size: 12, color: DebugColors.textMuted),
                 ),
               ),
-              const Divider(height: 1, color: DebugPalette.border),
+              const Divider(height: 1, color: DebugColors.border),
               Expanded(
                 child: data.rows.isEmpty
                     ? const EmptyState(

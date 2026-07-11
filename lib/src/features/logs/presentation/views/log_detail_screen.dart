@@ -11,6 +11,7 @@ import 'error_card.dart';
 import 'message_card.dart';
 import 'stack_card.dart';
 import 'summary_card.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Drill-down view for a single [DebugLogRecord]. Three section cards:
 /// Summary (metadata), Message (the actual log text), Error (when an
@@ -36,7 +37,7 @@ class LogDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isConsole = record.source == DebugLogSource.console;
-    final tone = isConsole ? DebugPalette.console : toneForLevel(record.level);
+    final tone = isConsole ? DebugColors.console : toneForLevel(record.level);
     final badge = isConsole ? DebugStrings.logsConsoleBadge : record.levelLabel;
 
     return Scaffold(

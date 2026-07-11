@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Password gate shown before switching to developer mode. Pops `true` on the
 /// correct password, `false`/`null` otherwise.
@@ -37,7 +37,7 @@ class _DeveloperPasswordDialogState extends State<DeveloperPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: DebugPalette.surface,
+      backgroundColor: DebugColors.surface,
       title: Text(
         DebugStrings.dashboardDeveloperAccess,
         style: monoStyle(size: 15),

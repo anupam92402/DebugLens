@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/json_view.dart';
-import 'copy_icon.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// "ARGUMENTS" header + copy button + JSON-pretty body. Extracted because
 /// the same shape is reused for any future tile that wants a labeled
@@ -33,7 +32,7 @@ class ArgumentsBlock extends StatelessWidget {
               style: monoStyle(
                 size: 11,
                 weight: FontWeight.w700,
-                color: DebugPalette.textMuted,
+                color: DebugColors.textMuted,
               ),
             ),
             const Spacer(),

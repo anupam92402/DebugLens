@@ -5,12 +5,12 @@ import '../../../../core/debug_store.dart';
 import '../../domain/network_entry.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shell/debug_routes.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/connectivity_indicator.dart';
 import '../widgets/network_status_filter_row.dart';
 import '../widgets/network_tile.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Top-level list of captured HTTP transactions. Owns the search query +
 /// status filter + sort order state; delegates rendering to extracted
@@ -112,7 +112,7 @@ class _NetworkListScreenState extends State<NetworkListScreen> {
                 : ListView.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: DebugPalette.border),
+                        const Divider(height: 1, color: DebugColors.border),
                     itemBuilder: (_, i) => NetworkTile(
                       entry: items[i],
                       onTap: () => Navigator.of(context).pushNamed(

@@ -7,10 +7,10 @@ import '../../data/debug_shared_prefs_source.dart';
 import '../../domain/pref_entry.dart';
 import '../../../../core/debug_store.dart';
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../widgets/database_tab.dart';
 import '../widgets/prefs_tab.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Two-tab view of persistent state (SharedPreferences + tables).
 ///
@@ -89,7 +89,7 @@ class _StorageScreenState extends State<StorageScreen>
           controller: _tab,
           labelColor: accent,
           indicatorColor: accent,
-          unselectedLabelColor: DebugPalette.textMuted,
+          unselectedLabelColor: DebugColors.textMuted,
           tabs: const [
             Tab(text: DebugStrings.storageTabPrefs),
             Tab(text: DebugStrings.storageTabDatabase),

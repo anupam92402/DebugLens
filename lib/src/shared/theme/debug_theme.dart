@@ -4,35 +4,7 @@ import '../../features/logs/domain/log_record.dart';
 import '../../features/bloc/domain/bloc_event.dart';
 import '../../features/navigation/domain/nav_event.dart';
 import '../../features/network/domain/network_entry.dart';
-import 'debug_accents.dart';
-
-/// Fixed dark "developer console" palette used across DebugLens.
-class DebugPalette {
-  DebugPalette._();
-
-  static const bg = Color(0xFF0B1020);
-  static const surface = Color(0xFF161B22); // opaque (dialogs)
-
-  // Translucent glass tokens, layered over the gradient backdrop.
-  static const glassFill = Color(0x14FFFFFF);
-  static const surfaceAlt = glassFill;
-  static const border = Color(0x2BFFFFFF);
-
-  static const textPrimary = Color(0xFFE6EDF3);
-  static const textMuted = Color(0xFF9AA7B5);
-
-  static const success = Color(0xFF3FD17A);
-  static const error = Color(0xFFFF6B6B);
-  static const warning = Color(0xFFFFC857);
-  static const info = Color(0xFF5B9DFF);
-  static const pending = Color(0xFF9AA7B5);
-
-  /// Distinct hue for console-sourced logs (debugPrint / print captures) so
-  /// they stand apart from custom logger records in the UI.
-  static const console = Color(0xFFC77DFF); // light purple
-
-  static const mono = 'monospace';
-}
+import 'debug_colors.dart';
 
 class DebugTheme {
   DebugTheme._();
@@ -49,27 +21,27 @@ class DebugTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
-      dividerColor: DebugPalette.border,
-      iconTheme: const IconThemeData(color: DebugPalette.textPrimary),
+      dividerColor: DebugColors.border,
+      iconTheme: const IconThemeData(color: DebugColors.textPrimary),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: DebugPalette.textPrimary,
+        foregroundColor: DebugColors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: DebugPalette.textPrimary,
+          color: DebugColors.textPrimary,
           fontSize: 17,
           fontWeight: FontWeight.w600,
         ),
       ),
       textTheme: ThemeData.dark().textTheme.apply(
-        bodyColor: DebugPalette.textPrimary,
-        displayColor: DebugPalette.textPrimary,
+        bodyColor: DebugColors.textPrimary,
+        displayColor: DebugColors.textPrimary,
       ),
       dividerTheme: const DividerThemeData(
-        color: DebugPalette.border,
+        color: DebugColors.border,
         thickness: 1,
       ),
       chipTheme: ChipThemeData(
@@ -79,11 +51,11 @@ class DebugTheme {
         showCheckmark: false,
         shape: const StadiumBorder(),
         labelStyle: const TextStyle(
-          color: DebugPalette.textPrimary,
+          color: DebugColors.textPrimary,
           fontSize: 12,
         ),
         secondaryLabelStyle: const TextStyle(
-          color: DebugPalette.textPrimary,
+          color: DebugColors.textPrimary,
           fontSize: 12,
         ),
       ),
@@ -94,11 +66,11 @@ class DebugTheme {
 Color toneForStatus(NetworkStatusKind kind) {
   switch (kind) {
     case NetworkStatusKind.success:
-      return DebugPalette.success;
+      return DebugColors.success;
     case NetworkStatusKind.error:
-      return DebugPalette.error;
+      return DebugColors.error;
     case NetworkStatusKind.pending:
-      return DebugPalette.pending;
+      return DebugColors.pending;
   }
 }
 
@@ -107,28 +79,28 @@ Color toneForStatus(NetworkStatusKind kind) {
 Color toneForMethod(HttpMethod m) {
   switch (m) {
     case HttpMethod.get:
-      return DebugPalette.success;
+      return DebugColors.success;
     case HttpMethod.post:
-      return DebugPalette.info;
+      return DebugColors.info;
     case HttpMethod.put:
     case HttpMethod.patch:
-      return DebugPalette.warning;
+      return DebugColors.warning;
     case HttpMethod.delete:
-      return DebugPalette.error;
+      return DebugColors.error;
     case HttpMethod.head:
     case HttpMethod.options:
-      return DebugPalette.textMuted;
+      return DebugColors.textMuted;
   }
 }
 
 Color toneForLevel(DebugLogLevel level) {
   switch (level) {
     case DebugLogLevel.debug:
-      return DebugPalette.info;
+      return DebugColors.info;
     case DebugLogLevel.info:
-      return DebugPalette.success;
+      return DebugColors.success;
     case DebugLogLevel.error:
-      return DebugPalette.error;
+      return DebugColors.error;
   }
 }
 
@@ -136,13 +108,13 @@ Color toneForLevel(DebugLogLevel level) {
 Color toneForNavAction(NavAction a) {
   switch (a) {
     case NavAction.push:
-      return DebugPalette.success;
+      return DebugColors.success;
     case NavAction.pop:
-      return DebugPalette.info;
+      return DebugColors.info;
     case NavAction.replace:
-      return DebugPalette.warning;
+      return DebugColors.warning;
     case NavAction.remove:
-      return DebugPalette.error;
+      return DebugColors.error;
   }
 }
 
@@ -152,17 +124,17 @@ Color toneForNavAction(NavAction a) {
 Color toneForBlocKind(BlocActionKind k) {
   switch (k) {
     case BlocActionKind.create:
-      return DebugPalette.info;
+      return DebugColors.info;
     case BlocActionKind.close:
-      return DebugPalette.textMuted;
+      return DebugColors.textMuted;
     case BlocActionKind.event:
-      return DebugPalette.warning;
+      return DebugColors.warning;
     case BlocActionKind.change:
-      return DebugPalette.success;
+      return DebugColors.success;
     case BlocActionKind.transition:
-      return DebugAccents.navigation;
+      return DebugColors.navigation;
     case BlocActionKind.error:
-      return DebugPalette.error;
+      return DebugColors.error;
   }
 }
 
@@ -172,14 +144,14 @@ Color toneForBlocKind(BlocActionKind k) {
 Color toneForNavKind(NavRouteKind k) {
   switch (k) {
     case NavRouteKind.page:
-      return DebugPalette.textMuted;
+      return DebugColors.textMuted;
     case NavRouteKind.dialog:
-      return DebugPalette.warning;
+      return DebugColors.warning;
     case NavRouteKind.sheet:
-      return DebugPalette.info;
+      return DebugColors.info;
     case NavRouteKind.popup:
-      return DebugPalette.pending;
+      return DebugColors.pending;
     case NavRouteKind.other:
-      return DebugPalette.textMuted;
+      return DebugColors.textMuted;
   }
 }

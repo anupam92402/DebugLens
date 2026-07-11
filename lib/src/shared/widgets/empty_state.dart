@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/debug_theme.dart';
+import '../theme/debug_colors.dart';
 
 /// Centered icon + message shown when a screen or list has nothing to display.
 class EmptyState extends StatelessWidget {
@@ -15,9 +15,9 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 46, color: DebugPalette.textMuted),
+          Icon(icon, size: 46, color: DebugColors.textMuted),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: DebugPalette.textMuted)),
+          Text(message, style: const TextStyle(color: DebugColors.textMuted)),
         ],
       ),
     );

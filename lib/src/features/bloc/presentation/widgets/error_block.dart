@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/debug_strings.dart';
-import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/theme/debug_colors.dart';
 
 /// Red "ERROR" section header + the error text below it. Used when the
 /// underlying bloc threw an uncaught exception.
@@ -22,13 +22,13 @@ class ErrorBlock extends StatelessWidget {
           style: monoStyle(
             size: 11,
             weight: FontWeight.w700,
-            color: DebugPalette.error,
+            color: DebugColors.error,
           ),
         ),
         const SizedBox(height: 4),
         SelectableText(
           error,
-          style: monoStyle(size: 12, color: DebugPalette.error),
+          style: monoStyle(size: 12, color: DebugColors.error),
         ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/debug_store.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../domain/nav_event.dart';
+import '../../domain/numbered_nav_event.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'nav_event_tile.dart';
@@ -35,7 +36,10 @@ class _NavEventsTabState extends State<NavEventsTab> {
     super.dispose();
   }
 
-  List<NavEvent> _visible(List<NavEvent> all) {
+  /// Filters the events, then numbers them by position (oldest = 1) so badges
+  /// stay contiguous whatever is hidden and stable across a sort flip. Returns
+  /// (event, displayNumber) pairs in the chosen sort order.
+  List<NumberedNavEvent> _visible(List<NavEvent> all) {
     final q = _query.value.trim().toLowerCase();
     Iterable<NavEvent> out = all;
     if (widget.hideDebugLens) {
@@ -51,8 +55,12 @@ class _NavEventsTabState extends State<NavEventsTab> {
             (e.previousRoute ?? '').toLowerCase().contains(q),
       );
     }
-    final list = out.toList();
-    return _newestFirst.value ? list.reversed.toList() : list;
+    final filtered = out.toList();
+    final numbered = [
+      for (var i = 0; i < filtered.length; i++)
+        NumberedNavEvent(filtered[i], i + 1),
+    ];
+    return _newestFirst.value ? numbered.reversed.toList() : numbered;
   }
 
   @override
@@ -114,7 +122,10 @@ class _NavEventsTabState extends State<NavEventsTab> {
                 itemCount: events.length,
                 separatorBuilder: (_, _) =>
                     const Divider(height: 1, color: DebugColors.border),
-                itemBuilder: (_, i) => NavEventTile(event: events[i]),
+                itemBuilder: (_, i) => NavEventTile(
+                event: events[i].event,
+                number: events[i].number,
+              ),
               );
             },
           ),

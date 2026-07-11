@@ -18,7 +18,11 @@ import '../../../../shared/theme/debug_colors.dart';
 class NavEventTile extends StatelessWidget {
   final NavEvent event;
 
-  const NavEventTile({super.key, required this.event});
+  /// 1-based position in the visible list (not the event's global sequence),
+  /// so badges stay contiguous when rows are filtered out.
+  final int number;
+
+  const NavEventTile({super.key, required this.event, required this.number});
 
   void _copy(BuildContext context, String text, String message) {
     Clipboard.setData(ClipboardData(text: text));
@@ -39,7 +43,7 @@ class NavEventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final actionTone = toneForNavAction(event.action);
     return ExpansionTile(
-      leading: SequenceBadge('#${event.sequence}'),
+      leading: SequenceBadge('#$number'),
       title: Row(
         children: [
           StatusChip(event.actionLabel, color: actionTone),

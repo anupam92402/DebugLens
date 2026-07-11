@@ -46,6 +46,13 @@ dependencies:
   flutter_bloc: ^8.1.6
   equatable: ^2.0.7
 
+  # HTTP client for the API playground; instrumented with
+  # DebugLensDioInterceptor so calls appear in the Network inspector.
+  dio: ^5.4.0
+
+  # Service locator for dependency injection (service / repository / blocs).
+  get_it: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

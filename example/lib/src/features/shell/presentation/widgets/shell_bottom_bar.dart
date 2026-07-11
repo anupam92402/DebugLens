@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubit/shell_cubit.dart';
 
-/// Notched bottom bar: Home | docked FAB | Insights (3 options total).
+/// Notched bottom bar: Home | docked FAB | APIs (3 options total).
 /// Selection goes through [onSelect] so the shell can pop the active tab's
 /// nested stack on a re-tap.
 class ShellBottomBar extends StatelessWidget {
@@ -29,9 +29,9 @@ class ShellBottomBar extends StatelessWidget {
           ),
           const SizedBox(width: 88), // room for the docked FAB
           _NavItem(
-            label: 'Insights',
-            icon: Icons.insights_outlined,
-            activeIcon: Icons.insights_rounded,
+            label: 'APIs',
+            icon: Icons.api_outlined,
+            activeIcon: Icons.api_rounded,
             selected: index == 1,
             onTap: () => onSelect(1),
           ),

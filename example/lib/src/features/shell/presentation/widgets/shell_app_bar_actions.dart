@@ -5,9 +5,9 @@ import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/views/notifications_screen.dart';
 import '../../../settings/presentation/views/settings_screen.dart';
 
-/// The two AppBar actions shared by every tab: notifications (with unread
-/// badge) and settings. Both push full-screen routes on the ROOT navigator so
-/// they cover the bottom bar — unlike tab-internal routes, which stay nested.
+/// The AppBar actions shared by every tab: notifications (with unread badge)
+/// and settings. Both push full-screen routes on the ROOT navigator so they
+/// cover the bottom bar — unlike tab-internal routes, which stay nested.
 class ShellAppBarActions extends StatelessWidget {
   const ShellAppBarActions({super.key});
 

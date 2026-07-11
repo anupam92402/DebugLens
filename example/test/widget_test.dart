@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:debug_lens_example/src/app.dart';
+import 'package:debug_lens_example/src/core/di/service_locator.dart';
 
 void main() {
   testWidgets('Shell renders tabs, FAB and AppBar actions', (tester) async {
@@ -12,12 +13,16 @@ void main() {
     // of the test body, so remember the framework's debugPrint and restore it.
     final originalDebugPrint = debugPrint;
 
+    // The API playground tab (built eagerly by the IndexedStack) resolves its
+    // bloc from get_it, so the locator must be set up first.
+    setupLocator();
+
     await tester.pumpWidget(const ExampleApp());
     // Let the dummy repositories finish their simulated fetch delays.
     await tester.pump(const Duration(milliseconds: 500));
 
     // Bottom nav options (2 tabs + docked FAB = 3 options).
-    expect(find.text('Insights'), findsWidgets);
+    expect(find.text('APIs'), findsWidgets);
     expect(find.byType(FloatingActionButton), findsOneWidget);
 
     // AppBar actions.

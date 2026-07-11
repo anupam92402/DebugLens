@@ -23,10 +23,10 @@ class ShellScreen extends StatefulWidget {
 
 class _ShellScreenState extends State<ShellScreen> {
   final _homeNavigatorKey = GlobalKey<NavigatorState>();
-  final _insightsNavigatorKey = GlobalKey<NavigatorState>();
+  final _playgroundNavigatorKey = GlobalKey<NavigatorState>();
 
   NavigatorState? _tabNavigator(int index) =>
-      (index == 0 ? _homeNavigatorKey : _insightsNavigatorKey).currentState;
+      (index == 0 ? _homeNavigatorKey : _playgroundNavigatorKey).currentState;
 
   void _onTabSelected(int index) {
     final cubit = context.read<ShellCubit>();
@@ -65,9 +65,9 @@ class _ShellScreenState extends State<ShellScreen> {
               onGenerateRoute: TabRoutes.onGenerateRoute,
             ),
             TabNavigator(
-              navigatorKey: _insightsNavigatorKey,
-              label: 'insights-tab',
-              initialRoute: TabRoutes.insightsRoot,
+              navigatorKey: _playgroundNavigatorKey,
+              label: 'playground-tab',
+              initialRoute: TabRoutes.playgroundRoot,
               onGenerateRoute: TabRoutes.onGenerateRoute,
             ),
           ],

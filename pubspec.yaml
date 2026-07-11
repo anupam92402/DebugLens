@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   provider: ^6.1.2
   share_plus: ^12.0.1
+  path_provider: ^2.1.5
   bloc: ^8.1.4
   dio: ^5.4.0
   connectivity_plus: ^4.0.2

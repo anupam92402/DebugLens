@@ -1,37 +1,24 @@
-// All NavigatorObserver methods are overridden intentionally for completeness;
-// the gesture callbacks simply delegate to super.
-// ignore_for_file: unnecessary_overrides
 import 'package:flutter/material.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
 import '../../../core/debug_store.dart';
 import '../domain/nav_event.dart';
 
-// DebugLens's own panel route is pushed on the host navigator with the name
-// `DebugLens.panelRouteName`, so it appears on the Navigation screen with a
-// readable label rather than as an anonymous `PageRouteBuilder`.
-
-/// A [NavigatorObserver] that records every route transition into the shared
-/// [DebugStore] (Events tab) and keeps a live snapshot of the current route
-/// stack (Stack tab). Add it to `MaterialApp.navigatorObservers`:
-///
-/// ```dart
-/// MaterialApp(navigatorObservers: [DebugLens.navigatorObserver]);
-/// ```
+/// Records route transitions into DebugStore and keeps a live stack snapshot.
+/// Add to MaterialApp.navigatorObservers.
 class DebugLensNavigatorObserver extends NavigatorObserver {
   DebugLensNavigatorObserver({DebugStore? store, this.label = 'root'})
     : _store = store ?? DebugStore.instance;
 
   final DebugStore _store;
 
-  /// Identifies the navigator this observer is attached to (groups its events
-  /// and gives it its own Stack entry; pass a unique label per nested navigator).
+  /// Identifies the navigator; unique per nested navigator.
   final String label;
 
-  /// Live route stack (bottom → top), tracked by Route identity.
+  /// Live route stack (bottom to top).
   final List<Route<dynamic>> _stack = <Route<dynamic>>[];
 
-  /// Call when the observed navigator is disposed to drop its stack snapshot.
+  /// Drops this navigator's stack snapshot when it's disposed.
   void detach() => _store.removeNavStack(label);
 
   String _nameOf(Route<dynamic>? route) {
@@ -56,15 +43,14 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
       navigator: label,
       kind: _kindOf(route),
     );
-    // Also surface in the Logs screen so developers see navigation alongside
-    // their own logs. Logged at debug level — easy to filter out when noisy.
+    /// Also surface in the Logs feed (debug level).
     DebugLensLogger().d(
       _formatNavMessage(action, routeName, previousName),
       name: 'nav.$label',
     );
   }
 
-  /// Compact one-liner for the Logs feed — e.g. `push: /splash → /home`.
+  /// Compact one-liner for the Logs feed.
   String _formatNavMessage(
     NavAction action,
     String routeName,
@@ -88,8 +74,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
     }
   }
 
-  /// Maps the runtime Route type to a NavRouteKind. Order matters because
-  /// DialogRoute and ModalBottomSheetRoute both extend PopupRoute.
+  /// Maps route type to a kind. Order matters: Dialog/Sheet extend PopupRoute.
   NavRouteKind _kindOf(Route<dynamic>? route) {
     if (route == null) return NavRouteKind.other;
     if (route is PageRoute) return NavRouteKind.page;
@@ -142,8 +127,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
     _syncStack();
   }
 
-  // Gesture callbacks fire mid-interaction, so they're not recorded as
-  // discrete events — overridden here only for completeness.
+  /// Gesture callbacks aren't recorded; overridden for completeness.
   @override
   void didStartUserGesture(
     Route<dynamic> route,

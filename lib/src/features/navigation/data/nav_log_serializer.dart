@@ -3,9 +3,7 @@ import '../../../shared/util/clock_format.dart';
 import '../../../shell/debug_routes.dart';
 import '../domain/nav_event.dart';
 
-/// Formats captured navigation data into the plain-text `navigation` section
-/// fed to the log-file share. Pure — no Flutter/UI — so the screen stays free
-/// of formatting logic and this stays easy to unit-test.
+/// Formats captured navigation data into the plain-text share section.
 class NavLogSerializer {
   NavLogSerializer._();
 

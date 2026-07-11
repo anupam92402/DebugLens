@@ -14,11 +14,7 @@ import '../../../../shared/widgets/sequence_badge.dart';
 import 'arguments_block.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// One expandable row in the Navigation Events tab.
-///
-/// Collapsed: sequence badge, action chip, kind chip (when non-page),
-/// route name + time. Expanded: KV rows for navigator label / from / to,
-/// plus a JSON viewer for the route arguments if any.
+/// Expandable row for one navigation event; expands to show details and args.
 class NavEventTile extends StatelessWidget {
   final NavEvent event;
 
@@ -29,9 +25,7 @@ class NavEventTile extends StatelessWidget {
     DebugToast.show(context, message);
   }
 
-  /// Renders arbitrary `arguments` to a pretty-printed JSON string so the
-  /// copy button always produces something pasteable. Non-JSON values fall
-  /// back to `toString()` — same shape as how the store snapshots them.
+  /// Pretty-prints arguments as JSON, falling back to toString().
   String _argsToString(Object? args) {
     if (args == null) return '';
     try {

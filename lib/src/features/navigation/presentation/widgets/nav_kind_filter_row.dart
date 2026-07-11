@@ -3,13 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/nav_event.dart';
 import '../../../../shared/debug_strings.dart';
 
-/// Chip row for filtering the Navigation Events tab by [NavRouteKind].
-/// `_kinds.isEmpty` means "All" — the screen tracks the selected set.
-///
-/// `NavRouteKind.other` is intentionally excluded from the chip strip: it's
-/// the observer's fallback for unclassified routes (rare, noisy as a
-/// filter). Tiles still render the `other` kind label so unusual events
-/// remain visible while scrolling.
+/// Chip row to filter Events by route kind; empty selection means All.
 class NavKindFilterRow extends StatelessWidget {
   final Set<NavRouteKind> selected;
   final ValueChanged<Set<NavRouteKind>> onChanged;
@@ -35,6 +29,7 @@ class NavKindFilterRow extends StatelessWidget {
               onSelected: (_) => onChanged({}),
             ),
           ),
+          /// 'other' (unclassified) is omitted from filters.
           for (final kind in NavRouteKind.values)
             if (kind != NavRouteKind.other)
               Padding(
@@ -50,9 +45,7 @@ class NavKindFilterRow extends StatelessWidget {
     );
   }
 
-  /// Pure helper — returns a new set with [kind] toggled. Lets [onChanged]
-  /// receive an immutable snapshot rather than relying on the parent
-  /// observing in-place mutation.
+  /// Returns a copy of the selection with [kind] toggled.
   Set<NavRouteKind> _toggled(NavRouteKind kind) {
     final next = Set<NavRouteKind>.from(selected);
     if (next.contains(kind)) {

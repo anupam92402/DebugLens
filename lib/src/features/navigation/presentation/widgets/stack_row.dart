@@ -4,8 +4,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/sequence_badge.dart';
 
-/// One route in a navigator's live stack — level-numbered badge, route name,
-/// and a "current" chip for the top of stack.
+/// One row in a navigator's live stack: level badge, name, current chip.
 class StackRow extends StatelessWidget {
   final int level;
   final String routeName;

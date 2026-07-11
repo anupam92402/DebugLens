@@ -5,10 +5,7 @@ import '../../../core/debug_store.dart';
 import '../../../shared/debug_strings.dart';
 import 'nav_log_serializer.dart';
 
-/// Orchestrates the "share navigation as a log file" flow: builds the
-/// `navigation` section from the store and hands it to [DebugLogFileService].
-/// Kept out of the widget (SRP) — the screen only supplies UI context (the
-/// popover [origin]).
+/// Builds the navigation section and shares it as a log file.
 class NavLogShare {
   NavLogShare._();
 

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/debug_widgets.dart';
 
-/// Section header shown above a navigator's stack when more than one
-/// navigator is tracked (nested-navigator case).
+/// Header above a navigator's stack when multiple navigators are tracked.
 class StackSectionHeader extends StatelessWidget {
   final String label;
   final Color color;

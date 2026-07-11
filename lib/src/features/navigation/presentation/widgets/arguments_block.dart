@@ -5,9 +5,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/json_view.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// "ARGUMENTS" header + copy button + JSON-pretty body. Extracted because
-/// the same shape is reused for any future tile that wants a labeled
-/// JSON block with copy.
+/// Arguments header, copy button, and pretty-printed JSON body.
 class ArgumentsBlock extends StatelessWidget {
   final Object? arguments;
   final String Function(Object?) asText;

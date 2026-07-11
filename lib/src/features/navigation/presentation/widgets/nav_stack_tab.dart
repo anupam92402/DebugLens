@@ -8,12 +8,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import 'stack_row.dart';
 import 'stack_section_header.dart';
 
-/// Stack tab body — renders the live route stack(s) maintained by the
-/// navigator observer(s). When more than one navigator is tracked
-/// (nested-navigator case), each gets its own labeled section.
-///
-/// [hideDebugLens] (shared with the Events tab via the screen) drops
-/// DebugLens's own routes from every stack.
+/// Stack tab body: the live route stack per tracked navigator.
 class NavStackTab extends StatelessWidget {
   final bool hideDebugLens;
 
@@ -49,9 +44,9 @@ class NavStackTab extends StatelessWidget {
     );
   }
 
-  /// Builds the rows for one navigator's stack — top first, level-numbered.
+  /// Rows for one navigator's stack, top first, level-numbered.
   List<Widget> _stackRows(Color accent, List<String> stack) {
-    // top-of-stack first matches how a user thinks of "current screen"
+    /// top first = current screen
     final display = stack.reversed.toList();
     return [
       for (var i = 0; i < display.length; i++)

@@ -10,11 +10,7 @@ import 'nav_event_tile.dart';
 import 'nav_kind_filter_row.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Events tab body — owns the search query, kind-filter selection, and sort
-/// order, watches the store, applies filters, and renders [NavEventTile] rows.
-///
-/// [hideDebugLens] is owned by the screen (shared with the Stack tab) so the
-/// eye toggle affects both tabs at once.
+/// Events tab body: search, kind filter, sort, and the event list.
 class NavEventsTab extends StatefulWidget {
   final bool hideDebugLens;
 
@@ -25,8 +21,7 @@ class NavEventsTab extends StatefulWidget {
 }
 
 class _NavEventsTabState extends State<NavEventsTab> {
-  // Filter/sort state as notifiers so only the affected leaf (sort button,
-  // filter row, list) rebuilds — no tab-wide setState.
+  /// Filter/sort state as notifiers so only the dependent leaves rebuild.
   final ValueNotifier<bool> _newestFirst = ValueNotifier<bool>(true);
   final ValueNotifier<Set<NavRouteKind>> _kinds =
       ValueNotifier<Set<NavRouteKind>>(const {});

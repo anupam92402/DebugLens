@@ -1,7 +1,7 @@
+/// The kind of route transition an observer reported.
 enum NavAction { push, pop, replace, remove }
 
-/// Classification of the Route involved — derived automatically from the
-/// runtime type (PageRoute → page, DialogRoute → dialog, etc.).
+/// Route kind, derived from the route's runtime type.
 enum NavRouteKind { page, dialog, sheet, popup, other }
 
 class NavEvent {

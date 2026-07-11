@@ -11,9 +11,7 @@ import '../widgets/nav_events_tab.dart';
 import '../widgets/nav_stack_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Two-tab view of the navigator observer's captures. Owns the AppBar and the
-/// shared `hide DebugLens routes` toggle (eye), the share action, and the
-/// Events-only clear action.
+/// Two-tab view (Events + Stack) of the navigator observer's captures.
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
 
@@ -25,8 +23,6 @@ class _NavigationScreenState extends State<NavigationScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tab = TabController(length: 2, vsync: this);
 
-  /// Eye toggle state as a notifier so only the leaf widgets that depend on
-  /// it (the eye button and the tab bodies) rebuild — no screen-wide setState.
   final ValueNotifier<bool> _hideInternal = ValueNotifier<bool>(false);
 
   @override
@@ -88,8 +84,6 @@ class _NavigationScreenState extends State<NavigationScreen>
             icon: const Icon(Icons.share),
             onPressed: () => _share(context),
           ),
-          // Clear applies to Events only — listen to the controller directly
-          // so just this button rebuilds on tab change.
           ListenableBuilder(
             listenable: _tab,
             builder: (context, _) => _tab.index != 0

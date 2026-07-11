@@ -11,7 +11,6 @@ stack. Dialogs and bottom sheets are captured too, classified by kind.
 - **Nested navigators** — tab bars / inner navigators via labelled observers.
 - **Filter & search** — by route kind, free-text on route name, sort newest/oldest.
 - **Route arguments** — inspect and copy as JSON.
-- **Hide internal routes** — one tap to exclude DebugLens's own routes (persisted).
 - **Share** — export the capture as a log file.
 
 **Usage** — attach the observer to your `MaterialApp`:

@@ -4,6 +4,7 @@ import '../../features/logs/domain/log_record.dart';
 import '../../features/bloc/domain/bloc_event.dart';
 import '../../features/navigation/domain/nav_event.dart';
 import '../../features/network/domain/network_entry.dart';
+import '../../features/storage/domain/pref_entry.dart';
 import 'debug_colors.dart';
 
 class DebugTheme {
@@ -89,6 +90,24 @@ Color toneForMethod(HttpMethod m) {
       return DebugColors.error;
     case HttpMethod.head:
     case HttpMethod.options:
+      return DebugColors.textMuted;
+  }
+}
+
+/// Tint for a SharedPreferences type chip (bool / int / double / …).
+Color toneForPrefType(DebugLensPrefType type) {
+  switch (type) {
+    case DebugLensPrefType.boolean:
+      return DebugColors.warning;
+    case DebugLensPrefType.integer:
+      return DebugColors.info;
+    case DebugLensPrefType.double:
+      return DebugColors.success;
+    case DebugLensPrefType.string:
+      return DebugColors.console;
+    case DebugLensPrefType.stringList:
+      return DebugColors.storage;
+    case DebugLensPrefType.unknown:
       return DebugColors.textMuted;
   }
 }

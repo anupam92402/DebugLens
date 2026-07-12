@@ -53,9 +53,20 @@ dependencies:
   # Service locator for dependency injection (service / repository / blocs).
   get_it: ^8.0.0
 
+  # Real app storage. The example owns these; it only hands snapshots to
+  # DebugLens via DebugLens.sharedPrefsSource / registerDatabase, so app
+  # storage stays independent of debug_lens.
+  shared_preferences: ^2.2.0
+  drift: ^2.18.0
+  drift_flutter: ^0.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Drift code generation.
+  drift_dev: ^2.18.0
+  build_runner: ^2.4.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

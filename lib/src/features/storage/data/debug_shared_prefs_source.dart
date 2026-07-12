@@ -2,19 +2,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/pref_entry.dart';
 
-/// Pull-based provider of the app's SharedPreferences snapshot.
-///
-/// DebugLens calls this each time the Storage screen builds (and on manual
-/// refresh) and renders the result; it keeps no copy. Register it from the
-/// host's SharedPreferences wrapper so DebugLens stays generic — it never
-/// imports any client package.
-///
-/// ```dart
-/// DebugLens.sharedPrefsSource = () => [
-///       for (final e in prefs.dumpAll())
-///         DebugLensPrefEntry(key: e.key, value: e.value, encrypted: e.encrypted),
-///     ];
-/// ```
+/// Pull-based provider of the app's SharedPreferences snapshot, registered by
+/// the host via `DebugLens.sharedPrefsSource`. Called on demand; no copy kept.
 typedef DebugLensSharedPrefsSource = List<DebugLensPrefEntry> Function();
 
 /// Holds the host-registered [DebugLensSharedPrefsSource]. Static + global so
@@ -26,11 +15,10 @@ class DebugLensSharedPrefs {
   /// Storage screen then shows its empty state).
   static DebugLensSharedPrefsSource? source;
 
-  // DebugLens's own persisted flags (nav eye toggle, …) also go through this
-  // class so feature screens never import shared_preferences directly.
+  // DebugLens's own persisted flags (nav eye toggle, …) go through this class
+  // so feature screens never import shared_preferences directly.
 
-  /// Reads a bool persisted under [key]; `null` when unset or storage is
-  /// unavailable (caller keeps its in-memory default).
+  /// Reads a bool under [key]; `null` when unset or storage is unavailable.
   static Future<bool?> getBool(String key) async {
     try {
       final prefs = await SharedPreferences.getInstance();

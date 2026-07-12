@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../data/debug_shared_prefs_source.dart';
 import '../../domain/pref_entry.dart';
-import '../../../../core/debug_store.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../widgets/database_tab.dart';
 import '../widgets/prefs_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Two-tab view of persistent state (SharedPreferences + tables).
+/// Two-tab view of persistent state (SharedPreferences + databases).
 ///
-/// The SharedPrefs tab reads the app's live preferences from the
-/// host-registered [DebugLensSharedPrefs.source] on each build — DebugLens
-/// stores no copy. The AppBar refresh action re-pulls whichever tab is open.
-/// Both tab bodies live in `widgets/storage/`.
+/// Pull-based: the prefs tab reads the host-registered
+/// [DebugLensSharedPrefs.source] on each build (no copy kept); the refresh
+/// action re-pulls it.
 class StorageScreen extends StatefulWidget {
   const StorageScreen({super.key});
 
@@ -26,21 +23,38 @@ class StorageScreen extends StatefulWidget {
 }
 
 class _StorageScreenState extends State<StorageScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final TabController _tab = TabController(length: 2, vsync: this);
-  String _prefsQuery = '';
+  final ValueNotifier<String> _prefsQuery = ValueNotifier<String>('');
+
+  // Bumped to re-pull the live prefs snapshot / re-read the DB registry — no
+  // screen-wide setState needed. Driven by the refresh action and app resume.
+  final ValueNotifier<int> _refreshTick = ValueNotifier<int>(0);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tab.dispose();
+    _prefsQuery.dispose();
+    _refreshTick.dispose();
     super.dispose();
   }
 
-  /// Re-pulls data for whichever tab is currently open. SharedPrefs data is
-  /// pulled fresh from the source on rebuild; the Database tab re-reads the
-  /// store. A `setState` is enough since both bodies read their data in build.
+  // Storage is pull-based, so data can go stale while the app is backgrounded
+  // (edited elsewhere). Re-pull on resume so it's fresh when you return.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshTick.value++;
+  }
+
   void _refresh() {
-    setState(() {});
+    _refreshTick.value++;
     final which = _tab.index == 0
         ? DebugStrings.storageTabPrefs
         : DebugStrings.storageTabDatabase;
@@ -57,8 +71,7 @@ class _StorageScreenState extends State<StorageScreen>
     return [...entries]..sort((a, b) => a.key.compareTo(b.key));
   }
 
-  /// Copies [text] to the clipboard and opens the system share sheet — the
-  /// same affordance as the Network screen's copy actions.
+  /// Copies [text] to the clipboard and opens the system share sheet.
   Future<void> _copyShare(String text, String label) async {
     await Clipboard.setData(ClipboardData(text: text));
     if (!mounted) return;
@@ -73,7 +86,6 @@ class _StorageScreenState extends State<StorageScreen>
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final store = context.watch<DebugStore>();
 
     return Scaffold(
       appBar: AppBar(
@@ -99,13 +111,16 @@ class _StorageScreenState extends State<StorageScreen>
       body: TabBarView(
         controller: _tab,
         children: [
-          PrefsTab(
-            entries: _prefEntries(),
-            query: _prefsQuery,
-            onSearch: (v) => setState(() => _prefsQuery = v),
-            onCopyShare: _copyShare,
+          ListenableBuilder(
+            listenable: Listenable.merge([_prefsQuery, _refreshTick]),
+            builder: (_, _) => PrefsTab(
+              entries: _prefEntries(),
+              query: _prefsQuery.value,
+              onSearch: (v) => _prefsQuery.value = v,
+              onCopyShare: _copyShare,
+            ),
           ),
-          const DatabaseTab(),
+          DatabaseTab(refresh: _refreshTick),
         ],
       ),
     );

@@ -22,6 +22,9 @@ class DebugConstants {
   /// Suffix marking a SharedPreferences entry stored via encrypted prefs.
   static const String encryptedMarker = '*';
 
+  /// Placeholder shown in place of a hidden (encrypted) value.
+  static const String maskedValue = '••••••';
+
   // SharedPreferences keys DebugLens persists its own state under.
 
   /// Access role for the panel (see `DebugRoleController`).

@@ -4,10 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'src/app.dart';
 import 'src/core/di/service_locator.dart';
+import 'src/core/storage/storage_setup.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
   Bloc.observer = DebugLensBlocObserver();
   setupLocator();
+
+  // Real app storage (SharedPreferences + Drift), bridged to DebugLens.
+  await setupStorage();
+
   runApp(const ExampleApp());
 }

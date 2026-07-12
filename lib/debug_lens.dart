@@ -30,7 +30,8 @@ export 'src/features/locale/data/debug_locale_source.dart'
 export 'src/features/locale/domain/locale_data.dart' show DebugLensLocaleData;
 export 'src/features/storage/data/debug_shared_prefs_source.dart'
     show DebugLensSharedPrefsSource;
-export 'src/features/storage/domain/pref_entry.dart' show DebugLensPrefEntry;
+export 'src/features/storage/domain/pref_entry.dart'
+    show DebugLensPrefEntry, DebugLensPrefType;
 export 'src/core/debug_log_file_service.dart' show DebugLogFileService;
 export 'src/features/bloc/data/debug_lens_bloc_observer.dart'
     show DebugLensBlocObserver;

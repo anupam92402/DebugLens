@@ -1,21 +1,40 @@
 import 'package:flutter/foundation.dart';
 
-/// One SharedPreferences entry, as handed to DebugLens for display.
-///
-/// [value] is always the readable string form (the underlying store serializes
-/// scalars to text before persisting, so there is no original int/bool/double
-/// type to recover). [encrypted] marks entries that were stored through the
-/// app's encrypted preferences (vs. plaintext keys written by plugins or the
-/// framework) — the Storage screen flags these with a `*`.
+/// The original type of a SharedPreferences value, so the Storage screen can
+/// show a type label even though [DebugLensPrefEntry.value] is a string.
+enum DebugLensPrefType {
+  boolean,
+  integer,
+  double,
+  string,
+  stringList,
+  unknown;
+
+  /// Short label shown as the type chip.
+  String get label => switch (this) {
+    DebugLensPrefType.boolean => 'bool',
+    DebugLensPrefType.integer => 'int',
+    DebugLensPrefType.double => 'double',
+    DebugLensPrefType.string => 'String',
+    DebugLensPrefType.stringList => 'List',
+    DebugLensPrefType.unknown => '?',
+  };
+}
+
+/// One SharedPreferences entry for display. [value] is the readable string
+/// form; [type] carries the original type; [encrypted] marks entries stored
+/// via encrypted prefs (flagged `*`).
 @immutable
 class DebugLensPrefEntry {
   final String key;
   final String value;
+  final DebugLensPrefType type;
   final bool encrypted;
 
   const DebugLensPrefEntry({
     required this.key,
     required this.value,
+    this.type = DebugLensPrefType.unknown,
     this.encrypted = false,
   });
 }

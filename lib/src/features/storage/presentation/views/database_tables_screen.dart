@@ -7,9 +7,8 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import 'table_data_screen.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Lists every table in a [DebugLensDatabase] in a vertical list, with a search
-/// field that filters by table name. Tapping a table opens [TableDataScreen].
-/// Tables are loaded async (once per visit).
+/// Lists a database's tables (name search); tapping one opens [TableDataScreen].
+/// The refresh action re-reads the table list.
 class DatabaseTablesScreen extends StatefulWidget {
   final DebugLensDatabase database;
 
@@ -20,12 +19,23 @@ class DatabaseTablesScreen extends StatefulWidget {
 }
 
 class _DatabaseTablesScreenState extends State<DatabaseTablesScreen> {
-  late final Future<List<String>> _future = widget.database.tableNames();
-  String _query = '';
+  late final ValueNotifier<Future<List<String>>> _tables = ValueNotifier(
+    widget.database.tableNames(),
+  );
+  final ValueNotifier<String> _query = ValueNotifier<String>('');
+
+  @override
+  void dispose() {
+    _tables.dispose();
+    _query.dispose();
+    super.dispose();
+  }
+
+  void _reload() => _tables.value = widget.database.tableNames();
 
   List<String> _filter(List<String> tables) {
-    if (_query.isEmpty) return tables;
-    final q = _query.toLowerCase();
+    final q = _query.value.toLowerCase();
+    if (q.isEmpty) return tables;
     return tables.where((t) => t.toLowerCase().contains(q)).toList();
   }
 
@@ -34,41 +44,54 @@ class _DatabaseTablesScreenState extends State<DatabaseTablesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.database.name, style: monoStyle(size: 15)),
+        actions: [
+          IconButton(
+            tooltip: DebugStrings.storageRefreshTooltip,
+            icon: const Icon(Icons.refresh),
+            onPressed: _reload,
+          ),
+        ],
       ),
-      body: FutureBuilder<List<String>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return EmptyState(
-              icon: Icons.error_outline,
-              message: DebugStrings.storageTablesLoadFailed(snapshot.error),
-            );
-          }
-          final all = snapshot.data ?? const [];
-          final tables = _filter(all);
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
-                child: DebugSearchField(
-                  hint: DebugStrings.storageSearchTables,
-                  onChanged: (v) => setState(() => _query = v),
+      body: ValueListenableBuilder<Future<List<String>>>(
+        valueListenable: _tables,
+        builder: (context, future, _) => FutureBuilder<List<String>>(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return EmptyState(
+                icon: Icons.error_outline,
+                message: DebugStrings.storageTablesLoadFailed(snapshot.error),
+              );
+            }
+            final all = snapshot.data ?? const [];
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+                  child: DebugSearchField(
+                    hint: DebugStrings.storageSearchTables,
+                    onChanged: (v) => _query.value = v,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: tables.isEmpty
-                    ? EmptyState(
-                        icon: Icons.table_chart,
-                        message: all.isEmpty
-                            ? DebugStrings.storageNoTables
-                            : DebugStrings.storageNoMatchingTables,
-                      )
-                    : ListView.separated(
+                Expanded(
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: _query,
+                    builder: (context, _, _) {
+                      final tables = _filter(all);
+                      if (tables.isEmpty) {
+                        return EmptyState(
+                          icon: Icons.table_chart,
+                          message: all.isEmpty
+                              ? DebugStrings.storageNoTables
+                              : DebugStrings.storageNoMatchingTables,
+                        );
+                      }
+                      return ListView.separated(
                         itemCount: tables.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             const Divider(height: 1, color: DebugColors.border),
                         itemBuilder: (_, i) => ListTile(
                           leading: const Icon(Icons.table_rows, size: 20),
@@ -82,11 +105,14 @@ class _DatabaseTablesScreenState extends State<DatabaseTablesScreen> {
                             ),
                           ),
                         ),
-                      ),
-              ),
-            ],
-          );
-        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

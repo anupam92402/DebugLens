@@ -3,17 +3,27 @@ import 'package:flutter/material.dart';
 import '../../domain/pref_entry.dart';
 import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'pref_detail_dialog.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// One SharedPreferences row — key (with a `*` for encrypted entries), value,
-/// a copy+share action, and tap-to-open detail dialog.
+/// One SharedPreferences row — key (with a `*` for encrypted entries), type
+/// chip, value, a copy+share action, and tap-to-open detail dialog. Encrypted
+/// values are masked unless [revealEncrypted].
 class PrefTile extends StatelessWidget {
   final DebugLensPrefEntry entry;
+  final bool revealEncrypted;
   final Future<void> Function(String text, String label) onCopyShare;
 
-  const PrefTile({super.key, required this.entry, required this.onCopyShare});
+  const PrefTile({
+    super.key,
+    required this.entry,
+    required this.onCopyShare,
+    this.revealEncrypted = false,
+  });
+
+  bool get _masked => entry.encrypted && !revealEncrypted;
 
   void _openDetail(BuildContext context) {
     showDialog<void>(
@@ -24,6 +34,7 @@ class PrefTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return ListTile(
       title: Row(
         children: [
@@ -37,14 +48,17 @@ class PrefTile extends StatelessWidget {
                 style: monoStyle(
                   size: 14,
                   weight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: scheme.primary,
                 ),
               ),
             ),
+          const SizedBox(width: 8),
+          if (entry.type != DebugLensPrefType.unknown)
+            StatusChip(entry.type.label, color: toneForPrefType(entry.type)),
         ],
       ),
       subtitle: Text(
-        entry.value,
+        _masked ? DebugConstants.maskedValue : entry.value,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: monoStyle(size: 12, color: DebugColors.textMuted),

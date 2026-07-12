@@ -1,9 +1,7 @@
 import '../domain/table_data.dart';
 
-/// Generic, read-only, async view of one inspectable database, implemented by
-/// the host (e.g. a drift/sqflite adapter). DebugLens calls these methods on
-/// demand from the Storage screen and keeps no copy of the data — it never
-/// imports any client database package.
+/// Read-only async view of one inspectable database, implemented by the host
+/// (e.g. a drift/sqflite adapter). Called on demand; no copy kept.
 abstract class DebugLensDatabase {
   /// Display name (e.g. the database file name).
   String get name;

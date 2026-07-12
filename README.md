@@ -73,3 +73,29 @@ DebugLensDioInterceptor(
   ),
 );
 ```
+
+### Bloc
+
+Records every Bloc/Cubit lifecycle event (create, event, change, transition,
+error, close) into a live feed with expandable per-event detail. Session-only
+(in memory, ring-buffered to the latest 200).
+
+- **Feed** — chronological rows with an action chip, bloc name and summary;
+  expand for current/next state, event payload, and error + stack trace.
+- **Filter & search** — by action kind, free-text on bloc name, sort
+  newest/oldest.
+- **Logs mirror** — each event also lands in the Logs inspector tagged
+  `bloc.<RuntimeType>`.
+- **Share** — export the feed as a log file.
+
+**Usage** — set the observer once at startup:
+
+```dart
+void main() {
+  Bloc.observer = DebugLensBlocObserver();
+  runApp(const MyApp());
+}
+```
+
+> Pass `DebugLensBlocObserver(showLogs: false)` to keep the observer installed
+> but stop it recording (e.g. in release builds).

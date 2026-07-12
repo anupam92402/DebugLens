@@ -99,3 +99,31 @@ void main() {
 
 > Pass `DebugLensBlocObserver(showLogs: false)` to keep the observer installed
 > but stop it recording (e.g. in release builds).
+
+### Storage
+
+Inspects the app's persistent state — SharedPreferences and databases — over
+two tabs. Pull-based: the host registers read-only sources and DebugLens reads
+them on demand, keeping no copy and never importing your storage packages.
+
+- **Prefs** — searchable by key or value, with a colour-coded type chip
+  (`bool` / `int` / `double` / `String` / `List`). Encrypted keys are flagged
+  `*` and their values hidden by default (eye toggle to reveal). Copy/share
+  per row, tap for detail.
+- **Databases** — browse each registered database → its tables → rows in a
+  `DataTable` with row search and tap-to-sort columns.
+- **Refresh** — re-pull on demand and automatically on app resume.
+
+**Usage** — register the sources once (e.g. after storage init). DebugLens
+gets a snapshot; your app keeps using its own storage packages directly:
+
+```dart
+// SharedPreferences — map your live prefs to DebugLensPrefEntry.
+DebugLens.sharedPrefsSource = () => [
+  for (final key in prefs.getKeys())
+    DebugLensPrefEntry(key: key, value: '${prefs.get(key)}'),
+];
+
+// Databases — implement DebugLensDatabase over your DB (drift/sqflite/…).
+DebugLens.registerDatabase(myDatabaseAdapter);
+```

@@ -1,11 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-/// A live, read-only snapshot of the app's active locale strings.
-///
-/// [entries] may be either nested (`{prefix: {fullKey: value}}`, the shape the
-/// app's we_lang source holds) or already flat (`{key: value}`). The Locale
-/// screen flattens nested maps at display time — DebugLens never stores a copy
-/// of this data, it only renders what the source hands back.
+/// A read-only snapshot of the app's active locale strings. [entries] may be
+/// nested (`{category: {key: value}}`) or flat (`{key: value}`); the screen
+/// flattens/groups at display time. No copy is kept.
 @immutable
 class DebugLensLocaleData {
   /// The active locale strings. Nested or flat; see [flatten].

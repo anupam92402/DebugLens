@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/locale_cubit.dart';
 import '../../../shell/presentation/widgets/shell_app_bar_actions.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/activity_tile.dart';
@@ -33,18 +34,19 @@ class _HomeBody extends StatelessWidget {
         }
         final textTheme = Theme.of(context).textTheme;
         final scheme = Theme.of(context).colorScheme;
+        final l = context.l10n;
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
             Text(
-              'Good morning, Anupam 👋',
+              l.greeting,
               style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Here is your day at a glance.',
+              l.glance,
               style: textTheme.bodyMedium?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),
@@ -54,7 +56,7 @@ class _HomeBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: SummaryCard(
-                    label: 'Pending',
+                    label: l.pending,
                     value: '${state.pendingCount}',
                     icon: Icons.pending_actions_rounded,
                     color: scheme.primary,
@@ -63,7 +65,7 @@ class _HomeBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: SummaryCard(
-                    label: 'Completed',
+                    label: l.completed,
                     value: '${state.completedCount}',
                     icon: Icons.task_alt_rounded,
                     color: const Color(0xFF059669),
@@ -73,7 +75,7 @@ class _HomeBody extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Recent activity',
+              l.recentActivity,
               style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
               ),

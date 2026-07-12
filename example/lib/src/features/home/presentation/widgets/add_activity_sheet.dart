@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/locale_cubit.dart';
 import '../../domain/activity.dart';
 import '../bloc/home_bloc.dart';
 import '../../../shell/presentation/cubit/shell_cubit.dart';
@@ -46,6 +47,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final l = context.l10n;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 24),
       child: Column(
@@ -53,7 +55,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'New activity',
+            l.newActivity,
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -64,9 +66,9 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
             autofocus: true,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _submit(),
-            decoration: const InputDecoration(
-              labelText: 'What do you want to do?',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l.activityPrompt,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
@@ -88,7 +90,7 @@ class _AddActivitySheetState extends State<AddActivitySheet> {
             child: FilledButton.icon(
               onPressed: _submit,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add activity'),
+              label: Text(l.addActivity),
             ),
           ),
         ],

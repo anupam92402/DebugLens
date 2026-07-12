@@ -2,6 +2,8 @@ import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/di/service_locator.dart';
+import 'core/l10n/locale_cubit.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/data/activity_repository.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
@@ -26,6 +28,7 @@ class ExampleApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => ShellCubit()),
         BlocProvider(create: (_) => SettingsCubit()),
+        BlocProvider.value(value: sl<LocaleCubit>()),
         BlocProvider(
           create: (_) =>
               HomeBloc(ActivityRepository())..add(const HomeStarted()),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/locale_cubit.dart';
 import '../../../../core/navigation/tab_routes.dart';
 import '../../domain/activity.dart';
 import '../bloc/home_bloc.dart';
@@ -43,7 +44,9 @@ class ActivityTile extends StatelessWidget {
         ),
         subtitle: Text('${category.label} · ${activity.timeLabel}'),
         trailing: IconButton(
-          tooltip: activity.isDone ? 'Mark as pending' : 'Mark as done',
+          tooltip: activity.isDone
+              ? context.l10n.markPending
+              : context.l10n.markDone,
           icon: Icon(
             activity.isDone
                 ? Icons.check_circle_rounded

@@ -1,17 +1,7 @@
 import '../domain/locale_data.dart';
 
-/// Pull-based provider of the app's locale strings.
-///
-/// DebugLens calls this each time the Locale screen builds and displays the
-/// result; it deliberately keeps no copy. Register it from the host once the
-/// lang data is available (e.g. after `WeLangBloc` emits `WeLangLoadedState`):
-///
-/// ```dart
-/// DebugLens.localeSource = () => DebugLensLocaleData(
-///       entries: weLangBloc.currentLangMap, // nested {prefix: {key: value}}
-///       label: AppLocale.currentLabel,
-///     );
-/// ```
+/// Pull-based provider of the app's locale strings, registered by the host via
+/// `DebugLens.localeSource`. Called on demand; no copy kept.
 typedef DebugLensLocaleSource = DebugLensLocaleData Function();
 
 /// Holds the host-registered [DebugLensLocaleSource]. Static + global so the

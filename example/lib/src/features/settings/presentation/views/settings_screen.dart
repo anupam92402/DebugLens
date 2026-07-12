@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/l10n/locale_cubit.dart';
 import '../cubit/settings_cubit.dart';
 
 /// Settings screen, opened from the AppBar gear icon.
@@ -35,6 +37,15 @@ class SettingsScreen extends StatelessWidget {
                   onChanged: cubit.toggleDarkMode,
                 ),
               ),
+              const SizedBox(height: 24),
+              Text(
+                'Language',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const _LanguageCard(),
               const SizedBox(height: 24),
               Text(
                 'Preferences',
@@ -83,6 +94,34 @@ class SettingsScreen extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// English / Hindi selector, driving [LocaleCubit] (which the Home tab reads
+/// and the DebugLens Locale inspector mirrors).
+class _LanguageCard extends StatelessWidget {
+  const _LanguageCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final current = context.watch<LocaleCubit>().state;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Wrap(
+          spacing: 8,
+          children: [
+            for (final lang in AppLanguage.values)
+              ChoiceChip(
+                label: Text(AppStrings.label(lang)),
+                selected: current == lang,
+                onSelected: (_) =>
+                    context.read<LocaleCubit>().setLanguage(lang),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -3,7 +3,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Compact AppBar action showing the currently-active locale label
-/// (e.g. "English"). Pulled out so the icon + spacing logic is colocated.
+/// (e.g. "English"), with a small language icon.
 class ActiveLocaleLabel extends StatelessWidget {
   final String label;
 

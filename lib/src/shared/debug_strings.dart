@@ -130,10 +130,15 @@ class DebugStrings {
   static const String localeSearchHint = 'Search keys or values';
   static const String localeEmpty = 'No locale entries';
   static const String localeNoMatches = 'No matches';
-  static const String localeColumnKey = 'KEY';
-  static const String localeColumnValue = 'VALUE';
   static const String localeKey = 'Key';
   static const String localeValue = 'Value';
+  static const String localeShareTooltip = 'Share locale strings';
+  static const String localeShareSubject = 'DebugLens locale strings';
+  static const String localeSortAsc = 'A → Z';
+  static const String localeSortDesc = 'Z → A';
+  static const String localePrevPage = 'Previous page';
+  static const String localeNextPage = 'Next page';
+  static String localePageLabel(int page, int total) => 'Page $page / $total';
 
   // --- Firebase -------------------------------------------------------------
   static const String firebaseTitle = 'Firebase';

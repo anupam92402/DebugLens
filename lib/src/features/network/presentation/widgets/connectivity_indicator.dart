@@ -42,6 +42,8 @@ class _ConnectivityIndicatorState extends State<ConnectivityIndicator> {
     final r = _resolve(_result);
     return Tooltip(
       message: r.label,
+      // Match an IconButton's 48px footprint so the AppBar actions are evenly
+      // spaced (this indicator isn't tappable, so it's not an IconButton).
       child: SizedBox(width: 48, child: Icon(r.icon, color: r.color, size: 20)),
     );
   }

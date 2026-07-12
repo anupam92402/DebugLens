@@ -6,30 +6,12 @@ import '../../logs/data/debug_lens_logger.dart';
 import '../../../core/debug_store.dart';
 import '../domain/bloc_event.dart';
 
-/// A [BlocObserver] that routes every Bloc/Cubit lifecycle event into:
-///
-/// 1. The Bloc screen (via [DebugStore.recordBlocEvent]) — structured rows
-///    with expandable details (current/next state, event payload, error,
-///    stack).
-/// 2. The Logs screen (via [DebugLensLogger]) — a one-line summary tagged
-///    `bloc.<RuntimeType>` so search/grep across all logs still works.
-///
-/// Install once at app startup:
-///
-/// ```dart
-/// void main() {
-///   Bloc.observer = DebugLensBlocObserver();
-///   runApp(const MyApp());
-/// }
-/// ```
-///
-/// Adapted from `AppBlocObserver` in `we_core` — same hook coverage, but
-/// logs plain messages (the colour palette is applied by DebugLensLogger
-/// rather than embedded as ANSI escape codes in the message text).
+/// [BlocObserver] that routes every Bloc/Cubit lifecycle event into the Bloc
+/// screen (via [DebugStore.recordBlocEvent]) and the Logs feed (tagged
+/// `bloc.<RuntimeType>`). Install once: `Bloc.observer = DebugLensBlocObserver()`.
 class DebugLensBlocObserver extends BlocObserver {
-  /// When `false`, the observer still runs (so the underlying super-calls
-  /// happen) but emits no log entries / store updates — useful for release
-  /// builds or for quieting a noisy bloc during a session.
+  /// When `false`, the super-calls still run but no store/log entries are
+  /// emitted — for quieting capture in release or during a noisy session.
   final bool showLogs;
 
   final DebugStore _store;
@@ -37,20 +19,12 @@ class DebugLensBlocObserver extends BlocObserver {
   DebugLensBlocObserver({this.showLogs = true, DebugStore? store})
     : _store = store ?? DebugStore.instance;
 
-  /// Tag used in the Logs screen so a user can grep by bloc class —
-  /// e.g. searching `bloc.AuthCubit` narrows to a single bloc's stream.
+  /// Logs tag for grepping by bloc class, e.g. `bloc.AuthCubit`.
   String _name(BlocBase<dynamic> bloc) => 'bloc.${bloc.runtimeType}';
 
-  /// Schedules [body] to run on the next microtask so any synchronous
-  /// constructor / build chain that triggered the callback can finish first.
-  ///
-  /// Why this exists: `BlocBase`'s constructor calls `observer.onCreate(this)`
-  /// synchronously. If `onCreate` then mutates a `ChangeNotifier` and notifies
-  /// while a `BlocProvider.create()` callback is mid-flight, Provider's
-  /// debug-introspection tries to read the not-yet-assigned value and crashes
-  /// with `type 'Null' is not a subtype of type ComponentBloc`. Deferring to a
-  /// microtask lets the synchronous chain finish (Provider assigns its value)
-  /// before we update the store / logger.
+  /// Defers [body] to the next microtask. `onCreate` fires synchronously from
+  /// `BlocBase`'s constructor; notifying the store mid-`BlocProvider.create()`
+  /// crashes Provider's introspection, so we let that chain finish first.
   void _defer(void Function() body) => scheduleMicrotask(body);
 
   @override

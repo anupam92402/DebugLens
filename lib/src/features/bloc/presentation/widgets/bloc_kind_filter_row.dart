@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../domain/bloc_event.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/util/set_toggle.dart';
 
-/// Horizontal chip row for filtering the Bloc events feed by
-/// [BlocActionKind]. Same pattern as `NavKindFilterRow` — `_kinds.isEmpty`
-/// means "All".
+/// Chip row filtering the Bloc feed by [BlocActionKind]; empty = "All".
 class BlocKindFilterRow extends StatelessWidget {
   final Set<BlocActionKind> selected;
   final ValueChanged<Set<BlocActionKind>> onChanged;
@@ -15,18 +14,6 @@ class BlocKindFilterRow extends StatelessWidget {
     required this.selected,
     required this.onChanged,
   });
-
-  /// Returns a new set with [kind] toggled. Immutable update keeps the
-  /// parent screen's `setState` predictable.
-  Set<BlocActionKind> _toggled(BlocActionKind kind) {
-    final next = Set<BlocActionKind>.from(selected);
-    if (next.contains(kind)) {
-      next.remove(kind);
-    } else {
-      next.add(kind);
-    }
-    return next;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +36,7 @@ class BlocKindFilterRow extends StatelessWidget {
               child: FilterChip(
                 label: Text(kind.name),
                 selected: selected.contains(kind),
-                onSelected: (_) => onChanged(_toggled(kind)),
+                onSelected: (_) => onChanged(selected.toggled(kind)),
               ),
             ),
         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/nav_event.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/util/set_toggle.dart';
 
 /// Chip row to filter Events by route kind; empty selection means All.
 class NavKindFilterRow extends StatelessWidget {
@@ -38,22 +39,11 @@ class NavKindFilterRow extends StatelessWidget {
                 child: FilterChip(
                   label: Text(kind.name),
                   selected: selected.contains(kind),
-                  onSelected: (_) => onChanged(_toggled(kind)),
+                  onSelected: (_) => onChanged(selected.toggled(kind)),
                 ),
               ),
         ],
       ),
     );
-  }
-
-  /// Returns a copy of the selection with [kind] toggled.
-  Set<NavRouteKind> _toggled(NavRouteKind kind) {
-    final next = Set<NavRouteKind>.from(selected);
-    if (next.contains(kind)) {
-      next.remove(kind);
-    } else {
-      next.add(kind);
-    }
-    return next;
   }
 }

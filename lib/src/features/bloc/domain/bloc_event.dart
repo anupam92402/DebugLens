@@ -1,22 +1,17 @@
-/// Lifecycle hooks captured by [DebugLensBlocObserver].
-///
-/// Mirrors the six callbacks exposed by `bloc`'s `BlocObserver` so a glance
-/// at the Bloc screen tells you exactly what happened.
+/// The six `BlocObserver` lifecycle hooks, captured by [DebugLensBlocObserver].
 enum BlocActionKind { create, event, change, transition, error, close }
 
-/// One captured BlocObserver event. Append-only — see [DebugStore.blocEvents].
+/// One captured BlocObserver event.
 class BlocEvent {
-  /// Monotonic insertion order. Stable even after the ring buffer trims the
-  /// oldest entries, so deep links from logs/screenshots still resolve.
+  /// Monotonic insertion order (stable across ring-buffer trims).
   final int sequence;
   final BlocActionKind kind;
 
-  /// `bloc.runtimeType.toString()` — e.g. `'CounterCubit'`, `'AuthBloc'`.
+  /// `bloc.runtimeType.toString()`, e.g. `'AuthBloc'`.
   final String blocName;
   final DateTime time;
 
-  /// Event object for [BlocActionKind.event] and [BlocActionKind.transition].
-  /// `toString()` snapshot to decouple from mutable app state.
+  /// Event `toString()` for [BlocActionKind.event] / [transition].
   final String? event;
 
   /// State before the change. Set for [change] / [transition].

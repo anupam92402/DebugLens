@@ -55,7 +55,7 @@ class DebugStore extends ChangeNotifier {
   /// even after trimming.
   final List<BlocEvent> blocEvents = [];
   int _blocSeq = 0;
-  static const int _maxBlocEvents = 500;
+  static const int _maxBlocEvents = 200;
 
   /// Live navigator stacks keyed by navigator label (bottom → top), kept by the
   /// observer(s) for the Stack tab. Supports nested navigators.

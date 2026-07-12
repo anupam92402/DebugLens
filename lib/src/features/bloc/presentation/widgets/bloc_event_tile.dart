@@ -10,19 +10,19 @@ import 'error_block.dart';
 import 'stack_block.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// One expandable row in the Bloc events feed.
-///
-/// Collapsed: sequence badge + action chip + bloc name + summary line.
-/// Expanded: structured KvRows for current/next state + event, plus an
-/// optional ERROR + STACK pair when the underlying record carries an
-/// exception.
+/// One expandable row in the Bloc events feed. Collapsed shows the badge,
+/// action chip, bloc name and summary; expanded shows state/event KvRows and
+/// an optional error + stack.
 class BlocEventTile extends StatelessWidget {
   final BlocEvent event;
 
-  const BlocEventTile({super.key, required this.event});
+  /// 1-based position in the visible list (not the event's global sequence),
+  /// so badges stay contiguous when rows are filtered out.
+  final int number;
 
-  /// Compact summary shown when the row is collapsed, so users can read
-  /// the timeline without expanding everything.
+  const BlocEventTile({super.key, required this.event, required this.number});
+
+  /// Compact one-line summary shown while the row is collapsed.
   String _summary() {
     switch (event.kind) {
       case BlocActionKind.create:
@@ -44,7 +44,7 @@ class BlocEventTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tone = toneForBlocKind(event.kind);
     return ExpansionTile(
-      leading: SequenceBadge('#${event.sequence}'),
+      leading: SequenceBadge('#$number'),
       title: Row(
         children: [
           StatusChip(event.kindLabel, color: tone),

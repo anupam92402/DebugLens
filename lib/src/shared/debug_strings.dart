@@ -85,6 +85,8 @@ class DebugStrings {
 
   // --- Bloc -----------------------------------------------------------------
   static const String blocTitle = 'Bloc';
+  static const String blocShareTooltip = 'Share bloc log';
+  static const String blocShareSubject = 'DebugLens bloc logs';
   static const String blocClearTooltip = 'Clear bloc events';
   static const String blocClearedToast = 'Bloc events cleared';
   static const String blocFilterHint = 'Filter by bloc name';

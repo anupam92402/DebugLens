@@ -39,6 +39,7 @@ class ApiHistoryTile extends StatelessWidget {
               child: StatusChip(stat.methodLabel, color: methodTone),
             ),
           ),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

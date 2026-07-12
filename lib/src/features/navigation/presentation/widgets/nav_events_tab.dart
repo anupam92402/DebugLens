@@ -123,9 +123,9 @@ class _NavEventsTabState extends State<NavEventsTab> {
                 separatorBuilder: (_, _) =>
                     const Divider(height: 1, color: DebugColors.border),
                 itemBuilder: (_, i) => NavEventTile(
-                event: events[i].event,
-                number: events[i].number,
-              ),
+                  event: events[i].event,
+                  number: events[i].number,
+                ),
               );
             },
           ),

@@ -1,11 +1,7 @@
 import 'network_entry.dart';
 
-/// Aggregated call stats for a single API endpoint (method + path), shown on
-/// the Network → History screen.
-///
-/// Counts are kept in memory for the lifetime of the app session and are
-/// independent of the Network log: clearing the log does not reset history,
-/// and the data is only gone when the app is killed and relaunched.
+/// Session-scoped call stats for one endpoint (method + path), shown on the
+/// Network → History screen. Independent of the log — survives clearing it.
 class ApiCallStat {
   final HttpMethod method;
   final String path;
@@ -13,8 +9,7 @@ class ApiCallStat {
   /// Total number of times this endpoint was called this session.
   int total;
 
-  /// Outcome breakdown. As pending calls complete they move from [pending]
-  /// into [success] or [error]; the three always sum to [total].
+  /// Outcome breakdown; the three always sum to [total].
   int success;
   int error;
   int pending;
@@ -34,8 +29,7 @@ class ApiCallStat {
 
   String get methodLabel => method.name.toUpperCase();
 
-  /// Count for a given status [kind], or [total] when [kind] is null
-  /// (the "frequency" / All view).
+  /// Count for [kind], or [total] when null (the "frequency" / All view).
   int countFor(NetworkStatusKind? kind) {
     switch (kind) {
       case null:

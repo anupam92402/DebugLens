@@ -1,4 +1,3 @@
-import '../../features/network/domain/network_entry.dart';
 import '../../features/notifications/domain/notification_entry.dart';
 import '../../features/notifications/domain/deeplink_entry.dart';
 import '../../features/device/domain/device_app_info.dart';
@@ -8,10 +7,6 @@ import '../../features/device/domain/device_app_info.dart';
 class MockSeed {
   static DateTime _ago(int seconds) =>
       DateTime.now().subtract(Duration(seconds: seconds));
-
-  /// Network entries start empty — populated entirely by
-  /// `DebugLensDioInterceptor` once the interceptor is attached to a Dio.
-  static List<NetworkEntry> network() => [];
 
   static List<NotificationEntry> notifications() => [
     NotificationEntry(

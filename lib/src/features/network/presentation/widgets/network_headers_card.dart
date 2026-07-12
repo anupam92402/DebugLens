@@ -4,33 +4,26 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// SectionCard for either the inline headers summary (Overview tab) or the
-/// structured per-row Request/Response headers cards below it.
-///
-/// One widget covers both shapes by switching between:
-///   - [renderAsBlock] = true  → multi-line stringified `key: value\n…`
-///     block, mainly for the Overview inline "Headers" card where the goal
-///     is to copy the whole block in one tap.
-///   - [renderAsBlock] = false → structured `KvRow` per header, with
-///     authorization tap-to-reveal. Used by the Request/Response headers
-///     cards below the inline block.
+/// Headers SectionCard. [renderAsBlock] true → one copyable `key: value`
+/// block; false → a `KvRow` per header (with authorization tap-to-reveal).
 class NetworkHeadersCard extends StatelessWidget {
   final String title;
   final Map<String, String> headers;
   final bool renderAsBlock;
-  final void Function(String text, String label) onCopy;
+
+  /// Copy handler; when null no copy button is shown (e.g. response headers,
+  /// which are display-only — not copied or shared anywhere).
+  final void Function(String text, String label)? onCopy;
 
   const NetworkHeadersCard({
     super.key,
     required this.title,
     required this.headers,
-    required this.onCopy,
+    this.onCopy,
     this.renderAsBlock = false,
   });
 
-  /// Multi-line `key: value\n…` representation. `DebugStrings.networkNone` when empty so the
-  /// inline block in Overview reads sensibly when the request has no
-  /// headers (e.g. an OPTIONS preflight).
+  /// Multi-line `key: value` block, or `DebugStrings.networkNone` when empty.
   String _asBlock() {
     if (headers.isEmpty) return DebugStrings.networkNone;
     return headers.entries.map((e) => '${e.key}: ${e.value}').join('\n');
@@ -38,9 +31,12 @@ class NetworkHeadersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final copy = onCopy;
     return SectionCard(
       title: title,
-      onCopy: headers.isEmpty ? null : () => onCopy(_asBlock(), title),
+      onCopy: (copy == null || headers.isEmpty)
+          ? null
+          : () => copy(_asBlock(), title),
       child: _content(),
     );
   }

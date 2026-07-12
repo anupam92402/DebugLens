@@ -1,29 +1,18 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
 import '../../../core/debug_store.dart';
 import '../../../shared/debug_constants.dart';
+import '../../../shared/debug_strings.dart';
 import '../domain/network_entry.dart';
 import 'curl_helper.dart';
 
-/// A Dio [Interceptor] that mirrors every HTTP transaction into DebugLens.
-///
-/// - On request: appends a [NetworkEntry] in the `pending` state.
-/// - On response: replaces the pending entry with one carrying the status,
-///   body, headers, and timing.
-/// - On error: same, but with the error string populated.
-///
-/// Each lifecycle also emits a `DebugLensLogger` entry tagged
-/// `network.<METHOD>` so the Logs screen shows it alongside other logs.
-///
-/// Install once on each Dio you want to observe:
-///
-/// ```dart
-/// final dio = Dio()..interceptors.add(DebugLensDioInterceptor());
-/// ```
-///
-/// Modelled after `TalkerDioLogger` in `we_logger` — same structural hooks,
-/// adapted to debug_lens's typed [NetworkEntry] / [DebugStore] model.
+/// Dio [Interceptor] that mirrors every HTTP transaction into DebugLens:
+/// appends a pending [NetworkEntry] on request, finalizes it on
+/// response/error, and (optionally) mirrors each into the Logs feed.
+/// Add one per Dio: `Dio()..interceptors.add(DebugLensDioInterceptor())`.
 class DebugLensDioInterceptor extends Interceptor {
   DebugLensDioInterceptor({
     this.settings = const DebugLensDioInterceptorSettings(),
@@ -35,14 +24,16 @@ class DebugLensDioInterceptor extends Interceptor {
   /// Per-interceptor options — gate logging, body capture, header redaction.
   final DebugLensDioInterceptorSettings settings;
 
-  /// Map RequestOptions identity → the entry's id, so onResponse / onError can
-  /// find and update the right pending entry. `Expando` would be cleaner but
-  /// `RequestOptions` is mutable & shared, so we just key on `hashCode`.
+  /// RequestOptions identity → pending entry id, so the response/error can
+  /// update the right entry.
   final Map<int, String> _idByRequest = {};
 
-  /// Map RequestOptions identity → request start time, so we can compute
-  /// `durationMs` when the response arrives.
+  /// RequestOptions identity → start time, for computing `durationMs`.
   final Map<int, DateTime> _startByRequest = {};
+
+  /// Backstop age after which a still-pending request is treated as abandoned
+  /// and pruned, so the tracking maps can't leak if a request never completes.
+  static const Duration _pendingTimeout = Duration(minutes: 5);
 
   int _seq = 0;
 
@@ -72,9 +63,8 @@ class DebugLensDioInterceptor extends Interceptor {
     return HttpMethod.get;
   }
 
-  /// Stringifies headers and optionally redacts sensitive ones. Dio's header
-  /// values are `List<String>` (per spec); we collapse to a comma-joined
-  /// string for display.
+  /// Collapses Dio's `List<String>` header values to comma-joined strings and
+  /// redacts sensitive ones when enabled.
   Map<String, String> _normalizeHeaders(Map<String, dynamic> headers) {
     final out = <String, String>{};
     headers.forEach((k, v) {
@@ -90,17 +80,41 @@ class DebugLensDioInterceptor extends Interceptor {
     return out;
   }
 
-  /// Best-effort byte count for the request/response payload. Returns null
-  /// when the size isn't readily knowable.
+  /// Best-effort UTF-8 byte count for the request/response payload. Encodes
+  /// JSON maps/lists so structured bodies report a real size (not 0). Returns
+  /// null when the size isn't knowable (e.g. streams, FormData).
   int? _byteSizeOf(Object? body) {
     if (body == null) return null;
-    if (body is String) return body.length;
-    if (body is List<int>) return body.length;
-    return null;
+    if (body is List<int>) return body.length; // already raw bytes
+    if (body is String) return utf8.encode(body).length;
+    try {
+      return utf8.encode(jsonEncode(body)).length;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Removes tracking entries for requests that never completed (cancelled
+  /// without an error hook, dropped, etc.) and closes out their store entry,
+  /// so [_idByRequest] / [_startByRequest] can't grow unbounded.
+  void _pruneStalePending() {
+    final now = DateTime.now();
+    final stale = [
+      for (final e in _startByRequest.entries)
+        if (now.difference(e.value) > _pendingTimeout) e.key,
+    ];
+    for (final key in stale) {
+      final id = _idByRequest.remove(key);
+      _startByRequest.remove(key);
+      if (id != null) {
+        _store.markNetworkError(id, DebugStrings.networkAbandoned);
+      }
+    }
   }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    _pruneStalePending();
     final id = _nextId();
     final key = identityHashCode(options);
     _idByRequest[key] = id;
@@ -158,7 +172,9 @@ class DebugLensDioInterceptor extends Interceptor {
           ? const <String, String>{}
           : _normalizeHeaders(err.response!.headers.map),
       responseBody: settings.captureResponseBody ? err.response?.data : null,
-      error: err.message ?? err.toString(),
+      error: err.type == DioExceptionType.cancel
+          ? DebugStrings.networkCancelled
+          : (err.message ?? err.toString()),
     );
     super.onError(err, handler);
   }
@@ -179,15 +195,8 @@ class DebugLensDioInterceptor extends Interceptor {
         ? null
         : DateTime.now().difference(start).inMilliseconds;
 
-    // RE-SNAPSHOT the entire request side from the current [options] —
-    // interceptors that run AFTER ours can mutate it before the request is
-    // actually sent. Concrete example: in the OperatorAppFlutter stack
-    // `WEDefaultHeaderInterceptor` is registered via `WEDioClient
-    // .getDioObject()` and ends up at the END of the chain, so it injects
-    // `token` / `X-APP-PLATFORM` / `X-DEVICE-ID` / etc. only after our
-    // onRequest has already captured. By onResponse / onError, those
-    // additions are present in `options.headers`, so we re-read everything
-    // to land a complete picture in the Network screen.
+    // Re-snapshot the request side: later interceptors can add headers (e.g.
+    // auth) after our onRequest ran, so re-read options for a complete entry.
     final completed = NetworkEntry(
       id: id,
       method: _methodOf(options.method),
@@ -231,24 +240,18 @@ class DebugLensDioInterceptor extends Interceptor {
   }
 }
 
-/// Configuration knobs for [DebugLensDioInterceptor]. All fields are
-/// `const`-friendly so the default can live as a `const` literal.
+/// Configuration for [DebugLensDioInterceptor].
 class DebugLensDioInterceptorSettings {
-  /// When `true`, every captured request / response / error also emits a
-  /// `DebugLensLogger` entry. Set `false` to keep the Network screen alone
-  /// without mirroring into Logs.
+  /// Also mirror each transaction into the Logs feed.
   final bool logToLogger;
 
-  /// Whether to copy the request body into the entry. Disable for very large
-  /// uploads or PII-sensitive payloads.
+  /// Capture the request body (disable for large/PII uploads).
   final bool captureRequestBody;
 
-  /// Whether to copy the response body into the entry. Disable for very
-  /// large downloads or streamed responses.
+  /// Capture the response body (disable for large/streamed downloads).
   final bool captureResponseBody;
 
-  /// Replaces values of `Authorization` and `Cookie` headers with
-  /// `••• redacted •••` in the captured entry. Defaults to `true`.
+  /// Redact `Authorization` / `Cookie` header values.
   final bool redactSensitiveHeaders;
 
   const DebugLensDioInterceptorSettings({

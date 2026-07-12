@@ -36,7 +36,7 @@ class PathAndTime extends StatelessWidget {
             StatusChip(statusText, color: statusTone),
             const SizedBox(width: 8),
             Text(
-              '${formatClock(entry.requestTime)} · $duration',
+              '${ClockFormat.clock(entry.requestTime)} · $duration',
               style: monoStyle(size: 11, color: DebugColors.textMuted),
             ),
           ],

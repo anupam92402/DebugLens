@@ -19,7 +19,7 @@ class NotificationTile extends StatelessWidget {
         style: monoStyle(size: 13),
       ),
       subtitle: Text(
-        '${entry.source} · ${entry.kindLabel} · ${formatClock(entry.time)}',
+        '${entry.source} · ${entry.kindLabel} · ${ClockFormat.clock(entry.time)}',
         style: monoStyle(size: 11, color: DebugColors.textMuted),
       ),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

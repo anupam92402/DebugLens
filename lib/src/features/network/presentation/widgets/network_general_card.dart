@@ -6,13 +6,9 @@ import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 
-/// "General" SectionCard on the Network detail Overview tab. Hosts every
-/// scalar field about the request — URL, method, status, timing, sizes,
-/// content/response types.
-///
-/// Headers are intentionally NOT here — they live in a sibling card
-/// (`NetworkHeadersCard` for request headers in Overview) so they can be
-/// copied independently and don't bloat this one.
+/// "General" SectionCard on the detail Overview tab: every scalar field
+/// (URL, method, status, timing, sizes, content/response types). Headers
+/// live in sibling cards.
 class NetworkGeneralCard extends StatelessWidget {
   final NetworkEntry entry;
   final void Function(String text, String label) onCopy;
@@ -23,15 +19,13 @@ class NetworkGeneralCard extends StatelessWidget {
     required this.onCopy,
   });
 
-  /// Computed response time (request time + duration). Returns `null` while
-  /// the request is in-flight. Derived, not stored, to keep [NetworkEntry]
-  /// focused on what the interceptor actually captures.
+  /// Response time (request time + duration); null while in-flight.
   DateTime? get _responseTime {
     if (entry.durationMs == null) return null;
     return entry.requestTime.add(Duration(milliseconds: entry.durationMs!));
   }
 
-  /// Plain-text rendering used by the COPY button on this card.
+  /// Plain-text rendering for this card's COPY button.
   String _asText() {
     return (StringBuffer()
           ..writeln('URL: ${entry.url}')
@@ -40,9 +34,9 @@ class NetworkGeneralCard extends StatelessWidget {
           ..writeln(
             'Status: ${entry.isPending ? 'pending' : HttpStatusCodes.labelFor(entry.statusCode)}',
           )
-          ..writeln('Request Time: ${entry.requestTime.toIso8601String()}')
+          ..writeln('Request Time: ${ClockFormat.dateTime(entry.requestTime)}')
           ..writeln(
-            'Response Time: ${_responseTime?.toIso8601String() ?? DebugConstants.emptyValue}',
+            'Response Time: ${_responseTime == null ? DebugConstants.emptyValue : ClockFormat.dateTime(_responseTime!)}',
           )
           ..writeln(
             'Duration: ${entry.isPending ? DebugConstants.emptyValue : '${entry.durationMs ?? 0} ms'}',
@@ -79,12 +73,13 @@ class NetworkGeneralCard extends StatelessWidget {
           ),
           KvRow(
             label: DebugStrings.networkLabelRequestTime,
-            value: entry.requestTime.toIso8601String(),
+            value: ClockFormat.dateTime(entry.requestTime),
           ),
           KvRow(
             label: DebugStrings.networkLabelResponseTime,
-            value:
-                _responseTime?.toIso8601String() ?? DebugConstants.emptyValue,
+            value: _responseTime == null
+                ? DebugConstants.emptyValue
+                : ClockFormat.dateTime(_responseTime!),
           ),
           KvRow(
             label: DebugStrings.networkLabelDuration,

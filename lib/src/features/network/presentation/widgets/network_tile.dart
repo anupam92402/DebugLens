@@ -15,25 +15,27 @@ import '../../../../shared/theme/debug_colors.dart';
 /// Single row in the Network list screen.
 ///
 /// Affordances:
-///   - tapping the row body → navigate to detail (handled by [onTap])
-///   - long-pressing the row → copy cURL + response, open share
-///   - swiping the row left or right → same copy + share (green "Copy cURL"
-///     background, then the row snaps back — nothing is removed)
+///   - tapping the row → navigate to detail (handled by [onTap])
+///   - swipe left→right → copy + share cURL only
+///   - swipe right→left → copy + share cURL + response
 class NetworkTile extends StatelessWidget {
   final NetworkEntry entry;
   final VoidCallback onTap;
 
   const NetworkTile({super.key, required this.entry, required this.onTap});
 
-  /// Builds the payload + drops it into the system share sheet. The clipboard
-  /// copy is kept so users can paste even if they dismiss the share sheet.
-  Future<void> _copyAndShare(BuildContext context) async {
-    final text = NetworkSerializer.formatCurlPlusResponse(entry);
+  /// Copies [text] to the clipboard and opens the share sheet; [toast] confirms
+  /// what was copied (kept so users can paste even if they dismiss the sheet).
+  Future<void> _copyAndShare(
+    BuildContext context,
+    String text,
+    String toast,
+  ) async {
     await Clipboard.setData(ClipboardData(text: text));
     if (!context.mounted) return;
     DebugToast.show(
       context,
-      DebugStrings.networkCopyShareToast,
+      toast,
       duration: const Duration(milliseconds: 1200),
     );
     await SharePlus.instance.share(
@@ -54,17 +56,31 @@ class NetworkTile extends StatelessWidget {
 
     return Dismissible(
       key: ObjectKey(entry),
-      // Swipe either direction copies cURL + response, then snaps back.
-      background: _swipeBackground(alignStart: true),
-      secondaryBackground: _swipeBackground(alignStart: false),
-      confirmDismiss: (_) async {
-        await _copyAndShare(context);
-        return false;
+      background: _swipeLabel(DebugStrings.networkSwipeCurl, alignStart: true),
+      secondaryBackground: _swipeLabel(
+        DebugStrings.networkSwipeCurlResponse,
+        alignStart: false,
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          // Left → right: cURL only.
+          await _copyAndShare(
+            context,
+            NetworkSerializer.renderCurl(entry),
+            DebugStrings.networkCopyCurlToast,
+          );
+        } else {
+          // Right → left: cURL + response.
+          await _copyAndShare(
+            context,
+            NetworkSerializer.formatCurlPlusResponse(entry),
+            DebugStrings.networkCopyShareToast,
+          );
+        }
+        return false; // never dismiss — the row snaps back
       },
       child: InkWell(
         onTap: onTap,
-        // Long-press to copy cURL + response and open the share sheet.
-        onLongPress: () => _copyAndShare(context),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
@@ -78,6 +94,7 @@ class NetworkTile extends StatelessWidget {
                   child: StatusChip(entry.methodLabel, color: methodTone),
                 ),
               ),
+              const SizedBox(width: 10),
               // Status moved down next to time/duration so the endpoint (path)
               // gets the full width of the top line.
               Expanded(
@@ -95,21 +112,21 @@ class NetworkTile extends StatelessWidget {
     );
   }
 
-  /// Green reveal shown while swiping, labelled "Copy cURL". [alignStart] left-
-  /// aligns the label for a left-to-right swipe; otherwise it right-aligns.
-  Widget _swipeBackground({required bool alignStart}) {
+  /// Green reveal shown while swiping, labelled [label]. [alignStart] left-
+  /// aligns for a left→right swipe; otherwise it right-aligns.
+  Widget _swipeLabel(String label, {required bool alignStart}) {
     return Container(
       color: DebugColors.success,
       alignment: alignStart ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.copy, size: 18, color: Colors.black),
-          SizedBox(width: 8),
+        children: [
+          const Icon(Icons.copy, size: 18, color: Colors.black),
+          const SizedBox(width: 8),
           Text(
-            DebugStrings.networkCopyCurl,
-            style: TextStyle(
+            label,
+            style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w700,
               fontSize: 13,

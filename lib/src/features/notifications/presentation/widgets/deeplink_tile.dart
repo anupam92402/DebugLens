@@ -23,7 +23,7 @@ class DeeplinkTile extends StatelessWidget {
         style: monoStyle(size: 13),
       ),
       subtitle: Text(
-        '${entry.source ?? DebugStrings.commonUnknown} · ${formatClock(entry.time)}',
+        '${entry.source ?? DebugStrings.commonUnknown} · ${ClockFormat.clock(entry.time)}',
         style: monoStyle(size: 11, color: DebugColors.textMuted),
       ),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

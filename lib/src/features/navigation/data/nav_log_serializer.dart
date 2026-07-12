@@ -21,7 +21,7 @@ class NavLogSerializer {
       b.writeln(
         '#${e.sequence} ${e.actionLabel} ${e.kindLabel} '
         '${e.previousRoute ?? DebugConstants.emptyValue} -> ${e.routeName} '
-        '[${e.navigator}] ${formatClock(e.time)}',
+        '[${e.navigator}] ${ClockFormat.clock(e.time)}',
       );
     }
     for (final entry in stacks.entries) {

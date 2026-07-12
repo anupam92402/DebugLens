@@ -7,22 +7,17 @@ class NetworkEntry {
   final HttpMethod method;
   final String url;
 
-  /// Optional base URL the request was issued against (when split). Populated
-  /// by [DebugLensDioInterceptor]; manually-built entries can leave it null
-  /// since [url] is always the full address.
+  /// Base URL the request was issued against; null for manually-built entries
+  /// ([url] is always the full address).
   final String? baseUrl;
 
-  /// Query parameters as a structured map (preserves types — values can be
-  /// `String`, `int`, `List`, etc.). Empty when none.
+  /// Query parameters, types preserved. Empty when none.
   final Map<String, dynamic> queryParameters;
 
-  /// `Content-Type` of the request (e.g. `application/json`). Convenience copy
-  /// of `requestHeaders['content-type']` exposed as its own field because the
-  /// detail screen surfaces it prominently.
+  /// Request `Content-Type` (e.g. `application/json`).
   final String? contentType;
 
-  /// Response decoding type (`json`, `plain`, `bytes`, `stream`). Populated
-  /// by the Dio interceptor from `RequestOptions.responseType`.
+  /// Response decoding type (`json`, `plain`, `bytes`, `stream`).
   final String? responseType;
 
   final int? statusCode;
@@ -36,9 +31,8 @@ class NetworkEntry {
   final int? requestBytes;
   final int? responseBytes;
 
-  /// Pre-rendered cURL command for the request — captured at interception time
-  /// so it survives the response body being released. Detail screen falls back
-  /// to rendering on-the-fly when this is null (e.g. for hand-built entries).
+  /// Pre-rendered cURL for the request; null for hand-built entries (the
+  /// detail screen renders one on the fly then).
   final String? curl;
 
   const NetworkEntry({
@@ -62,9 +56,7 @@ class NetworkEntry {
     this.curl,
   });
 
-  /// Returns a copy with the response-side fields filled in. Used by the
-  /// interceptor to swap a pending entry for the final one without mutating
-  /// the original instance.
+  /// Returns a copy with the response-side fields filled in.
   NetworkEntry copyWith({
     int? statusCode,
     int? durationMs,

@@ -12,10 +12,9 @@ import '../widgets/network_status_filter_row.dart';
 import '../widgets/network_tile.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Top-level list of captured HTTP transactions. Owns the search query +
-/// status filter + sort order state; delegates rendering to extracted
-/// widgets under `widgets/network/`. Thin assembler — no formatting,
-/// serialization, or per-row logic lives here.
+/// Top-level list of captured HTTP transactions. Owns the search/filter/sort
+/// state (as notifiers, so only the list rebuilds) and delegates rendering to
+/// extracted widgets.
 class NetworkListScreen extends StatefulWidget {
   const NetworkListScreen({super.key});
 
@@ -24,26 +23,33 @@ class NetworkListScreen extends StatefulWidget {
 }
 
 class _NetworkListScreenState extends State<NetworkListScreen> {
-  String _query = '';
-  NetworkStatusKind? _filter;
-  bool _newestFirst = true;
+  final ValueNotifier<String> _query = ValueNotifier<String>('');
+  final ValueNotifier<NetworkStatusKind?> _filter =
+      ValueNotifier<NetworkStatusKind?>(null);
+  final ValueNotifier<bool> _newestFirst = ValueNotifier<bool>(true);
 
-  /// Applies the current search / status filter to [all], returning a list
-  /// already in the chosen sort order. Pure function — easy to unit-test
-  /// once we add tests for the screen.
+  @override
+  void dispose() {
+    _query.dispose();
+    _filter.dispose();
+    _newestFirst.dispose();
+    super.dispose();
+  }
+
+  /// Applies the current search/status filter, returning the list already in
+  /// the chosen sort order.
   List<NetworkEntry> _filtered(List<NetworkEntry> all) {
     final filtered = all.where(_matches).toList();
-    return _newestFirst ? filtered.reversed.toList() : filtered;
+    return _newestFirst.value ? filtered.reversed.toList() : filtered;
   }
 
   bool _matches(NetworkEntry e) {
-    if (_filter != null && e.statusKind != _filter) return false;
-    if (_query.isNotEmpty) {
-      final q = _query.toLowerCase();
-      if (!e.url.toLowerCase().contains(q) &&
-          !e.methodLabel.toLowerCase().contains(q)) {
-        return false;
-      }
+    if (_filter.value != null && e.statusKind != _filter.value) return false;
+    final q = _query.value.toLowerCase();
+    if (q.isNotEmpty &&
+        !e.url.toLowerCase().contains(q) &&
+        !e.methodLabel.toLowerCase().contains(q)) {
+      return false;
     }
     return true;
   }
@@ -56,7 +62,6 @@ class _NetworkListScreenState extends State<NetworkListScreen> {
   @override
   Widget build(BuildContext context) {
     final all = context.watch<DebugStore>().network;
-    final items = _filtered(all);
 
     return Scaffold(
       appBar: AppBar(
@@ -82,45 +87,54 @@ class _NetworkListScreenState extends State<NetworkListScreen> {
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             child: DebugSearchField(
               hint: DebugStrings.networkSearchHint,
-              onChanged: (v) => setState(() => _query = v),
+              onChanged: (v) => _query.value = v,
             ),
           ),
           Row(
             children: [
               Expanded(
-                child: NetworkStatusFilterRow(
-                  selected: _filter,
-                  onSelected: (f) => setState(() => _filter = f),
+                child: ValueListenableBuilder<NetworkStatusKind?>(
+                  valueListenable: _filter,
+                  builder: (_, filter, _) => NetworkStatusFilterRow(
+                    selected: filter,
+                    onSelected: (f) => _filter.value = f,
+                  ),
                 ),
               ),
-              IconButton(
-                tooltip: _newestFirst
-                    ? DebugStrings.commonSortNewest
-                    : DebugStrings.commonSortOldest,
-                icon: const Icon(Icons.swap_vert),
-                onPressed: () => setState(() => _newestFirst = !_newestFirst),
+              ValueListenableBuilder<bool>(
+                valueListenable: _newestFirst,
+                builder: (_, newest, _) => SortToggle(
+                  newestFirst: newest,
+                  onToggle: () => _newestFirst.value = !newest,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
           Expanded(
-            child: items.isEmpty
-                ? const EmptyState(
+            child: ListenableBuilder(
+              listenable: Listenable.merge([_query, _filter, _newestFirst]),
+              builder: (context, _) {
+                final items = _filtered(all);
+                if (items.isEmpty) {
+                  return const EmptyState(
                     icon: Icons.cloud_off,
                     message: DebugStrings.networkEmpty,
-                  )
-                : ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: DebugColors.border),
-                    itemBuilder: (_, i) => NetworkTile(
-                      entry: items[i],
-                      onTap: () => Navigator.of(context).pushNamed(
-                        DebugRoutes.networkDetail,
-                        arguments: items[i],
-                      ),
-                    ),
+                  );
+                }
+                return ListView.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, color: DebugColors.border),
+                  itemBuilder: (_, i) => NetworkTile(
+                    entry: items[i],
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamed(DebugRoutes.networkDetail, arguments: items[i]),
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),

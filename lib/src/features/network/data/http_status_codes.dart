@@ -1,11 +1,7 @@
 import '../../../shared/debug_constants.dart';
 
-/// IANA reason phrases for the most common HTTP status codes — used in the
-/// Network list/detail UI to show `200 OK`, `404 Not Found`, etc.
-///
-/// Curated from `chucker_lib/src/helpers/status_code_map.dart` (we_logger) —
-/// trimmed to the codes actually seen in practice. Falls back to the class
-/// (`2xx Success`, `4xx Client Error`, …) for anything not in the table.
+/// HTTP status reason phrases (e.g. `200 OK`, `404 Not Found`), falling back
+/// to the status class (`4xx Client Error`) for codes not in the table.
 class HttpStatusCodes {
   HttpStatusCodes._();
 

@@ -4,9 +4,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// SectionCard for the request's query parameters. Always rendered (even
-/// when empty, where it shows "none") so the Overview tab's section layout
-/// stays predictable across rows.
+/// SectionCard for the request's query parameters (shows "none" when empty).
 class NetworkQueryCard extends StatelessWidget {
   final Map<String, dynamic> queryParameters;
   final void Function(String text, String label) onCopy;

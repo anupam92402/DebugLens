@@ -1,15 +1,16 @@
-// Time formatters shared by every DebugLens screen.
-//
-// Kept in `util/` (not `widgets/`) because the format produces plain
-// strings — no widgets, no Flutter dependency — which means it can be
-// reused by serializers, exporters, and tests without dragging in UI.
+/// Plain-string time formatters used across DebugLens.
+class ClockFormat {
+  ClockFormat._();
 
-/// Two-digit zero-padded helper used for clock formatting.
-String _pad(int n) => n.toString().padLeft(2, '0');
+  static String _pad(int n) => n.toString().padLeft(2, '0');
 
-/// Returns a fixed-width `HH:MM:SS` clock string for [t].
-///
-/// Used as the right-hand timestamp on most list rows. Stable width keeps
-/// the column from wobbling as the seconds digit changes.
-String formatClock(DateTime t) =>
-    '${_pad(t.hour)}:${_pad(t.minute)}:${_pad(t.second)}';
+  /// Fixed-width `HH:MM:SS` clock string for [t]. Stable width keeps list
+  /// columns from wobbling as the seconds digit changes.
+  static String clock(DateTime t) =>
+      '${_pad(t.hour)}:${_pad(t.minute)}:${_pad(t.second)}';
+
+  /// Readable `YYYY-MM-DD HH:MM:SS` string for [t].
+  static String dateTime(DateTime t) =>
+      '${t.year}-${_pad(t.month)}-${_pad(t.day)} '
+      '${_pad(t.hour)}:${_pad(t.minute)}:${_pad(t.second)}';
+}

@@ -29,6 +29,7 @@ class NavKindFilterRow extends StatelessWidget {
               onSelected: (_) => onChanged({}),
             ),
           ),
+
           /// 'other' (unclassified) is omitted from filters.
           for (final kind in NavRouteKind.values)
             if (kind != NavRouteKind.other)

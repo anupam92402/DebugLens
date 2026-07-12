@@ -204,6 +204,13 @@ class DebugStrings {
   static const String networkTitle = 'Network';
   static const String networkHistoryTooltip = 'API call history';
   static const String networkClearTooltip = 'Clear network log';
+  static const String networkCopyShareDetails = 'Copy + share details';
+  static const String networkDetailsLabel = 'Details';
+  static const String networkErrorLabel = 'Error';
+  static const String networkCopyError = 'Copy error';
+  static const String networkSwipeCurl = 'Copy cURL';
+  static const String networkSwipeCurlResponse = 'Copy cURL + response';
+  static const String networkCopyCurlToast = 'cURL copied — opening share…';
   static const String networkClearedToast = 'Network log cleared';
   static const String networkSearchHint = 'Search url / method';
   static const String networkEmpty = 'No requests captured';
@@ -217,7 +224,8 @@ class DebugStrings {
   static const String networkStatusError = 'Error';
   static const String networkStatusPending = 'Pending';
   static const String networkPending = 'pending';
-  static const String networkCopyCurl = 'Copy cURL';
+  static const String networkCancelled = 'Request cancelled';
+  static const String networkAbandoned = 'No response — request abandoned';
   static const String networkCopyShareToast =
       'cURL + response copied — opening share…';
   static const String networkCall = 'call';
@@ -234,7 +242,6 @@ class DebugStrings {
   static const String networkTabRequest = 'Request';
   static const String networkTabResponse = 'Response';
   static const String networkCurlLabel = 'cURL';
-  static const String networkCopyShareRequest = 'Copy + share full request';
   static const String networkCopyShareCurl = 'Copy + share cURL';
   static const String networkNoRequestBody = 'No request body';
   static const String networkNoResponseBody = 'No response body';

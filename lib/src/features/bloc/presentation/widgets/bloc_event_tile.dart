@@ -62,7 +62,7 @@ class BlocEventTile extends StatelessWidget {
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 2),
         child: Text(
-          '${_summary()} · ${formatClock(event.time)}',
+          '${_summary()} · ${ClockFormat.clock(event.time)}',
           style: monoStyle(size: 11, color: DebugColors.textMuted),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

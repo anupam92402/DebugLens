@@ -70,7 +70,7 @@ class NavEventTile extends StatelessWidget {
         ],
       ),
       subtitle: Text(
-        formatClock(event.time),
+        ClockFormat.clock(event.time),
         style: monoStyle(size: 11, color: DebugColors.textMuted),
       ),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

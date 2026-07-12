@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/network_entry.dart';
 import '../../../../shared/debug_strings.dart';
 
-/// Horizontal chip row that filters the Network list by [NetworkStatusKind].
-/// `null` selection = "All". Stateless — the screen owns the selected value
-/// and the change callback.
+/// Chip row filtering the Network list by [NetworkStatusKind]; null = "All".
 class NetworkStatusFilterRow extends StatelessWidget {
   final NetworkStatusKind? selected;
   final ValueChanged<NetworkStatusKind?> onSelected;

@@ -33,7 +33,7 @@ class MessageAndTag extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          '[$label] · ${formatClock(record.time)}',
+          '[$label] · ${ClockFormat.clock(record.time)}',
           style: monoStyle(size: 11, color: DebugColors.textMuted),
         ),
       ],

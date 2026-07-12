@@ -3,15 +3,10 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 /// Renders a copy-pasteable `curl` command for a Dio [RequestOptions].
-///
-/// Adapted from `we_logger/talker_dio_logger/helper/curl_helper.dart` —
-/// kept self-contained so the rest of debug_lens stays Dio-agnostic at the
-/// import level.
 class CurlHelper {
   CurlHelper._();
 
-  /// Returns the cURL representation, or `null` if rendering fails for any
-  /// reason (e.g. non-JSON-serialisable body). Never throws.
+  /// Returns the cURL string, or `null` if rendering fails (never throws).
   static String? render(RequestOptions options) {
     try {
       final parts = <String>['curl -i'];

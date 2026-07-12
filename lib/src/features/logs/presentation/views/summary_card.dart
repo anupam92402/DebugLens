@@ -25,7 +25,7 @@ class SummaryCard extends StatelessWidget {
           KvRow(label: DebugStrings.logsLabelSource, value: record.source.name),
           KvRow(
             label: DebugStrings.logsLabelTime,
-            value: formatClock(record.time),
+            value: ClockFormat.clock(record.time),
           ),
         ],
       ),

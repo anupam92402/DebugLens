@@ -12,16 +12,12 @@ import '../widgets/network_body_tab.dart';
 import '../widgets/network_overview_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Tabbed view of a single network entry. Owns the AppBar (method chip,
-/// path, copy+share actions) and the three tabs (Overview / Request /
-/// Response). Each tab body is its own widget so this file stays focused
-/// on layout and copy/share wiring.
+/// Tabbed view of a single network entry: AppBar (method, path, copy+share)
+/// and three tabs (Overview / Request / Response).
 class NetworkDetailScreen extends StatelessWidget {
   final NetworkEntry entry;
 
   const NetworkDetailScreen({super.key, required this.entry});
-
-  // --- copy / share helpers ----------------------------------------------
 
   /// Clipboard-only — used by per-SectionCard COPY buttons.
   void _copy(BuildContext context, String text, String label) {
@@ -33,8 +29,7 @@ class NetworkDetailScreen extends StatelessWidget {
     );
   }
 
-  /// Clipboard + open the system share sheet — used by the AppBar's two
-  /// "Copy + share …" actions. Matches the copy icon on Network list rows.
+  /// Clipboard + open the system share sheet — the AppBar's copy+share actions.
   Future<void> _copyAndShare(
     BuildContext context,
     String text,
@@ -76,17 +71,17 @@ class NetworkDetailScreen extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              tooltip: DebugStrings.networkCopyShareRequest,
+              tooltip: DebugStrings.networkCopyShareDetails,
               icon: const Icon(Icons.copy_all),
               onPressed: () => _copyAndShare(
                 context,
-                NetworkSerializer.formatEntry(entry),
-                DebugStrings.networkTabRequest,
+                NetworkSerializer.formatSections(entry),
+                DebugStrings.networkDetailsLabel,
               ),
             ),
             IconButton(
               tooltip: DebugStrings.networkCopyShareCurl,
-              icon: const Icon(Icons.terminal),
+              icon: const Icon(Icons.share),
               onPressed: () => _copyAndShare(
                 context,
                 NetworkSerializer.renderCurl(entry),

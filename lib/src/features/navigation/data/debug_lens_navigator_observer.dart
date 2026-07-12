@@ -43,6 +43,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
       navigator: label,
       kind: _kindOf(route),
     );
+
     /// Also surface in the Logs feed (debug level).
     DebugLensLogger().d(
       _formatNavMessage(action, routeName, previousName),

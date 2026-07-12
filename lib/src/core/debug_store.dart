@@ -16,19 +16,17 @@ import 'mock/mock_seed.dart';
 /// For the UI scaffold the lists are seeded from [MockSeed]; real capture
 /// sources will replace the seeds feature-by-feature.
 class DebugStore extends ChangeNotifier {
-  DebugStore._() {
-    // Fold the seeded entries into the session call history so the History
-    // screen is consistent with what the Network list shows on first open.
-    for (final e in network) {
-      _recordHistory(e);
-    }
-  }
+  DebugStore._();
 
   /// Shared instance: capture sources (observers, interceptors, loggers) write
   /// here, and the UI reads this same instance via Provider `.value`.
   static final DebugStore instance = DebugStore._();
 
-  final List<NetworkEntry> network = List.of(MockSeed.network());
+  final List<NetworkEntry> network = <NetworkEntry>[];
+
+  /// Cap on retained network entries — ring-buffered like nav/bloc so a long
+  /// session doesn't grow unbounded (each entry can hold full bodies).
+  static const int _maxNetworkEntries = 250;
 
   /// Session-scoped call counts per endpoint (method + path), surfaced on the
   /// Network → History screen. Independent of [network]: [clearNetwork] does
@@ -143,6 +141,7 @@ class DebugStore extends ChangeNotifier {
   /// register a request as pending the moment it goes out.
   void recordNetwork(NetworkEntry entry) {
     network.add(entry);
+    if (network.length > _maxNetworkEntries) network.removeAt(0);
     _recordHistory(entry);
     notifyListeners();
   }
@@ -157,6 +156,16 @@ class DebugStore extends ChangeNotifier {
       network[idx] = entry;
     }
     _updateHistory(entry);
+    notifyListeners();
+  }
+
+  /// Marks a still-pending entry (by [id]) as errored — used by the
+  /// interceptor to close out abandoned requests that never completed.
+  void markNetworkError(String id, String message) {
+    final idx = network.indexWhere((e) => e.id == id);
+    if (idx == -1 || !network[idx].isPending) return;
+    network[idx] = network[idx].copyWith(error: message);
+    _updateHistory(network[idx]);
     notifyListeners();
   }
 

@@ -6,24 +6,17 @@ import '../../../../shared/widgets/json_view.dart';
 import 'error_banner.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Request- or response-body tab content. Both tabs share the same shape:
-/// an optional search bar, an optional error banner, then a [JsonViewer]
-/// (Object/JSON toggle) for the body. Empty state when there's nothing to
-/// show.
-///
-/// The tab owns the search state (query, view mode, active match) so it can
-/// drive the match counter / prev-next controls and scroll the focused match
-/// into view via the body's [ScrollController].
+/// Request/response body tab: search bar, optional error banner, and a
+/// [JsonViewer]. Owns the in-body search state (query, mode, active match)
+/// and scrolls the focused match into view.
 class NetworkBodyTab extends StatefulWidget {
   final Object? body;
   final String emptyMessage;
 
-  /// Optional error string — when set, renders a red banner above the body.
-  /// Only the response tab uses this; request tab passes `null`.
+  /// Error string; when set, renders a red banner above the body.
   final String? error;
 
-  /// When provided, the body viewer shows a COPY button (works in both the
-  /// Object and JSON modes). [copyLabel] names the body in the copy toast.
+  /// When set, the body viewer shows a COPY button; [copyLabel] names it.
   final void Function(String text, String label)? onCopy;
   final String copyLabel;
 
@@ -124,7 +117,16 @@ class _NetworkBodyTabState extends State<NetworkBodyTab> {
             controller: _scroll,
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
             children: [
-              if (widget.error != null) ErrorBanner(message: widget.error!),
+              if (widget.error != null)
+                ErrorBanner(
+                  message: widget.error!,
+                  onCopy: widget.onCopy == null
+                      ? null
+                      : () => widget.onCopy!(
+                          widget.error!,
+                          DebugStrings.networkErrorLabel,
+                        ),
+                ),
               if (widget.body != null)
                 JsonViewer(
                   widget.body,

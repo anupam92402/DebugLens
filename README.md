@@ -127,3 +127,28 @@ DebugLens.sharedPrefsSource = () => [
 // Databases — implement DebugLensDatabase over your DB (drift/sqflite/…).
 DebugLens.registerDatabase(myDatabaseAdapter);
 ```
+
+### Locale
+
+Inspects the app's active localized strings, grouped into collapsible category
+dropdowns. Pull-based and read-only: the host registers a source returning the
+**current** locale's strings; DebugLens shows that one, keeping no copy.
+
+- **Grouped view** — strings grouped by top-level category (`{category: {key:
+  value}}`); flat maps are shown as-is.
+- **Search & sort** — free-text on category/key/value, and A→Z / Z→A category
+  order.
+- **Paginated** — a batch of categories per page, so a large locale stays
+  responsive.
+- **Refresh & share** — re-pulls on app resume; shares the current (filtered)
+  view as a log file.
+
+**Usage** — register the source once (e.g. after the lang data loads); return
+the active locale's map + label. Switching language just re-pulls it:
+
+```dart
+DebugLens.localeSource = () => DebugLensLocaleData(
+  entries: currentLangMap, // nested {category: {key: value}} or flat {key: value}
+  label: 'English',
+);
+```

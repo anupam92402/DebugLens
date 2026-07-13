@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/l10n/locale_cubit.dart';
+import '../../../../core/notifications/notification_service.dart';
 import '../cubit/settings_cubit.dart';
 
 /// Settings screen, opened from the AppBar gear icon.
@@ -46,6 +48,15 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const _LanguageCard(),
+              const SizedBox(height: 24),
+              Text(
+                'Notifications',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const _NotificationsCard(),
               const SizedBox(height: 24),
               Text(
                 'Preferences',
@@ -93,6 +104,35 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           );
+        },
+      ),
+    );
+  }
+}
+
+/// Fires a batch of on-device local notifications for the demo.
+class _NotificationsCard extends StatelessWidget {
+  const _NotificationsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final service = sl<NotificationService>();
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.notifications_active_outlined),
+        title: const Text('Send test notifications'),
+        subtitle: Text('Fires ${service.sampleCount} on-device notifications'),
+        trailing: const Icon(Icons.send_rounded),
+        onTap: () async {
+          await service.triggerSamples();
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Sent ${service.sampleCount} notifications'),
+              ),
+            );
         },
       ),
     );

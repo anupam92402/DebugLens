@@ -7,6 +7,7 @@ import '../../features/network_demo/presentation/bloc/playground/playground_bloc
 import '../../features/network_demo/presentation/bloc/posts/posts_bloc.dart';
 import '../l10n/app_strings.dart';
 import '../l10n/locale_cubit.dart';
+import '../notifications/notification_service.dart';
 
 /// Global service locator.
 final GetIt sl = GetIt.instance;
@@ -25,6 +26,9 @@ void setupLocator() {
   // Blocs as factories — a fresh instance per screen.
   sl.registerFactory<PostsBloc>(() => PostsBloc(sl<ApiRepository>()));
   sl.registerFactory<PlaygroundBloc>(() => PlaygroundBloc(sl<ApiRepository>()));
+
+  // On-device local notifications.
+  sl.registerLazySingleton<NotificationService>(NotificationService.new);
 
   // Language: one shared cubit, and a bridge feeding the active strings to the
   // DebugLens Locale inspector (read on demand — no copy kept).

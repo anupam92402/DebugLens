@@ -42,10 +42,20 @@ class DebugStore extends ChangeNotifier {
   /// Callers sort/filter as needed.
   List<ApiCallStat> get apiHistory => _apiStats.values.toList(growable: false);
 
-  final List<NotificationEntry> notifications = List.of(
-    MockSeed.notifications(),
-  );
-  final List<DeeplinkEntry> deeplinks = List.of(MockSeed.deeplinks());
+  /// Push/local notifications, newest-first. Populated live via
+  /// `DebugLens.recordNotification`; no seed data.
+  final List<NotificationEntry> notifications = <NotificationEntry>[];
+
+  /// Cap on retained notifications — ring-buffered so a long session doesn't
+  /// grow unbounded. Newest-first, so the oldest is trimmed from the end.
+  static const int _maxNotifications = 200;
+
+  /// Captured deep-links, newest-first. Populated live via
+  /// `DebugLens.recordDeeplink`; no seed data.
+  final List<DeeplinkEntry> deeplinks = <DeeplinkEntry>[];
+
+  /// Cap on retained deep-links — ring-buffered, newest-first (see above).
+  static const int _maxDeeplinks = 200;
   final List<NavEvent> navEvents =
       []; // populated live by the navigator observer
 
@@ -270,6 +280,47 @@ class DebugStore extends ChangeNotifier {
   void clearBlocEvents() {
     blocEvents.clear();
     _blocSeq = 0;
+    notifyListeners();
+  }
+
+  /// Deep-copies a notification [payload] so the logged entry is decoupled from
+  /// the caller's live map (later mutations don't alter it) and non-JSON values
+  /// fall back to `toString()`. Reuses [_snapshotArguments]; on any failure the
+  /// keys are kept with stringified values.
+  static Map<String, Object?> snapshotPayload(Map<String, Object?> payload) {
+    if (payload.isEmpty) return const {};
+    final snap = _snapshotArguments(payload);
+    if (snap is Map<String, Object?>) return snap;
+    return {for (final e in payload.entries) e.key: e.value?.toString()};
+  }
+
+  /// Records a push/local notification (called from `DebugLens.recordNotification`).
+  /// Inserted newest-first; the ring buffer trims the oldest past
+  /// [_maxNotifications].
+  void recordNotification(NotificationEntry entry) {
+    notifications.insert(0, entry);
+    if (notifications.length > _maxNotifications) notifications.removeLast();
+    notifyListeners();
+  }
+
+  /// Records a captured deep-link (called from `DebugLens.recordDeeplink`).
+  /// Inserted newest-first; the ring buffer trims the oldest past
+  /// [_maxDeeplinks].
+  void recordDeeplink(DeeplinkEntry entry) {
+    deeplinks.insert(0, entry);
+    if (deeplinks.length > _maxDeeplinks) deeplinks.removeLast();
+    notifyListeners();
+  }
+
+  /// Clears the captured notifications (Notifications tab).
+  void clearNotifications() {
+    notifications.clear();
+    notifyListeners();
+  }
+
+  /// Clears the captured deep-links (Deep-links tab).
+  void clearDeeplinks() {
+    deeplinks.clear();
     notifyListeners();
   }
 

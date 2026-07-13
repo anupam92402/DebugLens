@@ -152,3 +152,41 @@ DebugLens.localeSource = () => DebugLensLocaleData(
   label: 'English',
 );
 ```
+
+### Notifications & Deep-links
+
+Records the notifications your app shows/handles and the deep-links it opens,
+over two tabs. Push-based: the host reports each event through a one-line call;
+DebugLens generates the id and timestamp. Session-only (in memory, newest-first,
+ring-buffered to the latest 200 each).
+
+- **Notifications** — title, body, source, and `received` / `tapped` kind, with
+  the payload as expandable JSON.
+- **Deep-links** — the URI broken into scheme / host / path, with query
+  parameters as JSON.
+- **Search & sort** — free-text (title/body/source, or URI), toggled between
+  recent-first and A–Z. Tab labels show live counts.
+- **Copy, share & clear** — copy a row, share the active tab as a log file, or
+  clear it from the AppBar.
+- **Safe by default** — the payload is deep-copied on record, so later mutations
+  of your map never alter the logged entry and non-JSON values are stringified.
+
+**Usage** — report events from your notification / deep-link handlers. Call
+`recordNotification` both when a notification is shown and when it's tapped
+(`tapped: true`):
+
+```dart
+// On show (and again on tap with tapped: true).
+DebugLens.recordNotification(
+  title: message.title,
+  body: message.body,
+  payload: message.data,
+  source: 'FCM',
+);
+
+// From your app-links / deep-link handler.
+DebugLens.recordDeeplink(uri.toString(), source: 'os');
+```
+
+> Clear programmatically with `DebugLens.clearNotifications()` /
+> `DebugLens.clearDeeplinks()`.

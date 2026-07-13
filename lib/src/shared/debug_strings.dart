@@ -61,6 +61,8 @@ class DebugStrings {
   // --- Common (shared across event feeds) -----------------------------------
   static const String commonSortNewest = 'Newest first (tap for oldest)';
   static const String commonSortOldest = 'Oldest first (tap for newest)';
+  static const String commonSortRecent = 'Recent first (tap for A–Z)';
+  static const String commonSortAlpha = 'A–Z (tap for recent)';
   static const String commonFilterAll = 'All';
   static const String commonNoMatch = 'No events match the filter';
   static const String commonUnknown = 'unknown';
@@ -75,9 +77,23 @@ class DebugStrings {
   static const String notificationsTabDeeplinks = 'Deeplinks';
   static const String notificationsEmpty = 'No notifications';
   static const String notificationsNoTitle = '(no title)';
+  static const String notificationsSearchHint = 'Search title / body';
+  static const String notificationsClearTooltip = 'Clear notifications';
+  static const String notificationsClearedToast = 'Notifications cleared';
+  static const String notificationsShareTooltip = 'Share notifications';
+  static const String notificationsShareSubject = 'DebugLens notifications';
+  static const String notificationsCopy = 'Copy notification';
+  static const String notificationsCopiedToast = 'Notification copied';
 
   // --- Deeplinks ------------------------------------------------------------
   static const String deeplinksEmpty = 'No deeplinks';
+  static const String deeplinksSearchHint = 'Search uri';
+  static const String deeplinksClearTooltip = 'Clear deeplinks';
+  static const String deeplinksClearedToast = 'Deeplinks cleared';
+  static const String deeplinksShareTooltip = 'Share deeplinks';
+  static const String deeplinksShareSubject = 'DebugLens deeplinks';
+  static const String deeplinksCopy = 'Copy uri';
+  static const String deeplinksCopiedToast = 'Uri copied';
   static const String deeplinksScheme = 'scheme';
   static const String deeplinksHost = 'host';
   static const String deeplinksPath = 'path';

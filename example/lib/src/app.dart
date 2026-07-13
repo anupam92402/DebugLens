@@ -2,6 +2,7 @@ import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/app_navigator.dart';
 import 'core/di/service_locator.dart';
 import 'core/l10n/locale_cubit.dart';
 import 'core/theme/app_theme.dart';
@@ -42,6 +43,7 @@ class ExampleApp extends StatelessWidget {
           return MaterialApp(
             title: 'DebugLens Example',
             debugShowCheckedModeBanner: false,
+            navigatorKey: appNavigatorKey,
             navigatorObservers: [DebugLens.navigatorObserver],
             builder: (context, child) =>
                 DebugLens.wrap(child ?? const SizedBox.shrink()),

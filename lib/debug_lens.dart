@@ -12,6 +12,8 @@ import 'src/features/locale/data/debug_locale_source.dart';
 import 'src/core/debug_role.dart';
 import 'src/features/storage/data/debug_shared_prefs_source.dart';
 import 'src/core/debug_store.dart';
+import 'src/features/notifications/domain/notification_entry.dart';
+import 'src/features/notifications/domain/deeplink_entry.dart';
 import 'src/features/navigation/data/debug_lens_navigator_observer.dart';
 import 'src/shell/debug_bubble.dart';
 import 'src/shell/debug_panel.dart';
@@ -101,6 +103,59 @@ class DebugLens {
   /// The registered Firebase services shown on the Firebase screen.
   static List<DebugLensFirebaseService> get firebaseServices =>
       DebugLensFirebase.services;
+
+  /// Records a push/local notification on the Notifications screen. Call from
+  /// your notification handler on both display and tap ([tapped] `true` for a
+  /// tap). DebugLens generates the id and timestamp. [payload] is the raw data
+  /// map; [source] labels the origin (e.g. `FCM`, `local`).
+  static void recordNotification({
+    String? title,
+    String? body,
+    Map<String, Object?> payload = const {},
+    String source = 'FCM',
+    bool tapped = false,
+  }) {
+    DebugStore.instance.recordNotification(
+      NotificationEntry(
+        id: _nextRecordId('ntf'),
+        time: DateTime.now(),
+        title: title,
+        body: body,
+        payload: DebugStore.snapshotPayload(payload),
+        source: source,
+        kind: tapped ? NotificationKind.tapped : NotificationKind.received,
+      ),
+    );
+  }
+
+  /// Clears the captured notifications shown on the Notifications tab.
+  static void clearNotifications() => DebugStore.instance.clearNotifications();
+
+  /// Clears the captured deep-links shown on the Deep-links tab.
+  static void clearDeeplinks() => DebugStore.instance.clearDeeplinks();
+
+  /// Records a captured deep-link on the Notifications screen's Deep-links tab.
+  /// Call from your deep-link/app-links handler. DebugLens generates the id and
+  /// timestamp; [source] labels the origin (e.g. `push`, `browser`, `in-app`).
+  static void recordDeeplink(String uri, {String? source}) {
+    DebugStore.instance.recordDeeplink(
+      DeeplinkEntry(
+        id: _nextRecordId('dl'),
+        uri: uri,
+        time: DateTime.now(),
+        source: source,
+      ),
+    );
+  }
+
+  /// Monotonic id suffix so entries recorded within the same millisecond stay
+  /// unique (mirrors the dio interceptor's id scheme).
+  static int _recordSeq = 0;
+
+  static String _nextRecordId(String prefix) {
+    _recordSeq++;
+    return '${prefix}_${DateTime.now().millisecondsSinceEpoch}_$_recordSeq';
+  }
 
   /// Wraps [child] (use from `MaterialApp.builder`) to provide the DebugLens
   /// state and overlay a draggable bubble. Tapping the bubble opens the panel.

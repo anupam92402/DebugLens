@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../app_navigator.dart';
+import '../firebase/mock_firebase.dart';
 import '../../features/notifications/presentation/views/notification_landing_screen.dart';
 
 /// Shows on-device local notifications (no Firebase / backend). Used to
@@ -52,7 +53,12 @@ class NotificationService {
     ),
   ];
 
-  int get sampleCount => _samples.length;
+  /// How many samples a trigger will actually fire — capped by the mock
+  /// Remote Config `notification_batch_size` flag (feature-flagged batch size).
+  int get sampleCount {
+    final cap = MockFirebase.remoteConfig.getInt('notification_batch_size');
+    return cap > 0 && cap < _samples.length ? cap : _samples.length;
+  }
 
   Future<void> init() async {
     if (_initialized) return;
@@ -106,9 +112,18 @@ class NotificationService {
     );
   }
 
-  /// Fires all [_samples] as immediate notifications.
+  /// Fires the first [sampleCount] samples as immediate notifications, timed as
+  /// a mock-Firebase performance trace.
   Future<void> triggerSamples() async {
     await init();
+    final count = sampleCount;
+    final trace = MockFirebase.performance.newTrace('notifications_dispatch')
+      ..putAttribute('batch', '$count')
+      ..start();
+    MockFirebase.analytics.logEvent(
+      'test_notifications_sent',
+      parameters: {'count': count},
+    );
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,
@@ -118,7 +133,7 @@ class NotificationService {
       ),
       iOS: DarwinNotificationDetails(),
     );
-    for (var i = 0; i < _samples.length; i++) {
+    for (var i = 0; i < count; i++) {
       final (title, body, payload) = _samples[i];
       // Carry title/body in the payload too, so the tap landing screen can
       // show them without another lookup.
@@ -137,5 +152,6 @@ class NotificationService {
         source: 'local',
       );
     }
+    trace.stop();
   }
 }

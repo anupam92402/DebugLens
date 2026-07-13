@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/firebase/mock_firebase.dart';
+
 final class SettingsState extends Equatable {
   const SettingsState({
     this.darkMode = false,
@@ -30,10 +32,25 @@ final class SettingsState extends Equatable {
 class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit() : super(const SettingsState());
 
-  void toggleDarkMode(bool value) => emit(state.copyWith(darkMode: value));
+  void toggleDarkMode(bool value) {
+    MockFirebase.analytics.logEvent(
+      'theme_changed',
+      parameters: {'dark': value},
+    );
+    MockFirebase.crashlytics.setCustomKey('dark_mode', value);
+    emit(state.copyWith(darkMode: value));
+  }
 
-  void togglePush(bool value) => emit(state.copyWith(pushEnabled: value));
+  void togglePush(bool value) {
+    MockFirebase.analytics.logEvent('push_toggled', parameters: {'on': value});
+    emit(state.copyWith(pushEnabled: value));
+  }
 
-  void toggleAnalytics(bool value) =>
-      emit(state.copyWith(analyticsEnabled: value));
+  void toggleAnalytics(bool value) {
+    MockFirebase.analytics.logEvent(
+      'analytics_toggled',
+      parameters: {'on': value},
+    );
+    emit(state.copyWith(analyticsEnabled: value));
+  }
 }

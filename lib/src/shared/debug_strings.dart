@@ -162,6 +162,9 @@ class DebugStrings {
   static const String firebaseReload = 'Reload';
   static const String firebaseServiceEmpty = 'No data';
   static const String firebaseNone = 'none';
+  static const String firebaseSearchHint = 'Search keys / values';
+  static const String firebaseSortAlpha = 'Sorted A–Z (tap for original)';
+  static const String firebaseSortOriginal = 'Original order (tap for A–Z)';
   static const String commonRetry = 'Retry';
   static String firebaseLoadFailed(Object? error) => 'Failed to load\n$error';
 

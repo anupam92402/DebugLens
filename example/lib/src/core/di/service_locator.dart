@@ -5,6 +5,7 @@ import '../../features/network_demo/data/api_repository.dart';
 import '../../features/network_demo/data/api_service.dart';
 import '../../features/network_demo/presentation/bloc/playground/playground_bloc.dart';
 import '../../features/network_demo/presentation/bloc/posts/posts_bloc.dart';
+import '../firebase/firebase_inspectors.dart';
 import '../l10n/app_strings.dart';
 import '../l10n/locale_cubit.dart';
 import '../notifications/notification_service.dart';
@@ -40,4 +41,8 @@ void setupLocator() {
       label: AppStrings.label(lang),
     );
   };
+
+  // Mock Firebase (Analytics, Performance, Crashlytics, Remote Config) surfaced
+  // in the DebugLens Firebase inspector. Read on demand — no copy kept.
+  registerFirebaseInspectors();
 }

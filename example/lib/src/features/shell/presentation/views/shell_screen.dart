@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/firebase/mock_firebase.dart';
 import '../../../../core/navigation/tab_routes.dart';
 import '../../../home/presentation/widgets/add_activity_sheet.dart';
 import '../cubit/shell_cubit.dart';
@@ -35,6 +36,12 @@ class _ShellScreenState extends State<ShellScreen> {
       _tabNavigator(index)?.popUntil((route) => route.isFirst);
     } else {
       cubit.select(index);
+      // Mock Firebase: log the screen view + a crash breadcrumb for the tab.
+      final tab = index == 0 ? 'home' : 'apis';
+      MockFirebase.analytics.logScreenView(tab);
+      MockFirebase.crashlytics
+        ..log('Navigated to $tab tab')
+        ..setCustomKey('current_tab', tab);
     }
   }
 

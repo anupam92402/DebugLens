@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/firebase/mock_firebase.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/l10n/locale_cubit.dart';
 import '../../../../core/notifications/notification_service.dart';
@@ -57,6 +58,15 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const _NotificationsCard(),
+              const SizedBox(height: 24),
+              Text(
+                'Diagnostics',
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const _DiagnosticsCard(),
               const SizedBox(height: 24),
               Text(
                 'Preferences',
@@ -132,6 +142,40 @@ class _NotificationsCard extends StatelessWidget {
               SnackBar(
                 content: Text('Sent ${service.sampleCount} notifications'),
               ),
+            );
+        },
+      ),
+    );
+  }
+}
+
+/// Records a mock-Firebase Crashlytics non-fatal, so the Crashlytics inspector
+/// has a recorded error to show without needing a real failure.
+class _DiagnosticsCard extends StatelessWidget {
+  const _DiagnosticsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.bug_report_outlined),
+        title: const Text('Simulate non-fatal error'),
+        subtitle: const Text('Records a Crashlytics non-fatal report'),
+        trailing: const Icon(Icons.warning_amber_rounded),
+        onTap: () {
+          try {
+            throw StateError('Simulated non-fatal from Settings');
+          } catch (e, stack) {
+            MockFirebase.crashlytics.recordError(
+              e,
+              stack,
+              reason: 'User tapped "Simulate non-fatal error"',
+            );
+          }
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('Recorded a non-fatal report')),
             );
         },
       ),

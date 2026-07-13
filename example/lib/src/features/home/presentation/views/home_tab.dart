@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/firebase/mock_firebase.dart';
 import '../../../../core/l10n/locale_cubit.dart';
 import '../../../shell/presentation/widgets/shell_app_bar_actions.dart';
 import '../bloc/home_bloc.dart';
@@ -14,9 +15,10 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Header text comes from mock Remote Config (feature-flagged copy).
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text(MockFirebase.remoteConfig.getString('home_header_title')),
         actions: const [ShellAppBarActions()],
       ),
       body: _HomeBody(),
@@ -35,9 +37,32 @@ class _HomeBody extends StatelessWidget {
         final textTheme = Theme.of(context).textTheme;
         final scheme = Theme.of(context).colorScheme;
         final l = context.l10n;
+        // Mock Remote Config: A/B promo banner + optional summary cards.
+        final promo = MockFirebase.remoteConfig.getString('promo_banner_text');
+        final showSummary = MockFirebase.remoteConfig.getBool(
+          'show_summary_card',
+        );
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
+            if (promo.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  promo,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: scheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Text(
               l.greeting,
               style: textTheme.titleLarge?.copyWith(
@@ -51,28 +76,30 @@ class _HomeBody extends StatelessWidget {
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: SummaryCard(
-                    label: l.pending,
-                    value: '${state.pendingCount}',
-                    icon: Icons.pending_actions_rounded,
-                    color: scheme.primary,
+            if (showSummary) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: SummaryCard(
+                      label: l.pending,
+                      value: '${state.pendingCount}',
+                      icon: Icons.pending_actions_rounded,
+                      color: scheme.primary,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SummaryCard(
-                    label: l.completed,
-                    value: '${state.completedCount}',
-                    icon: Icons.task_alt_rounded,
-                    color: const Color(0xFF059669),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SummaryCard(
+                      label: l.completed,
+                      value: '${state.completedCount}',
+                      icon: Icons.task_alt_rounded,
+                      color: const Color(0xFF059669),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
             const SizedBox(height: 24),
             Text(
               l.recentActivity,

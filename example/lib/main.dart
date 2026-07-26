@@ -54,10 +54,7 @@ Future<void> _bootstrap() async {
 
   /// Fetch + activate Remote Config (applies any persisted device overrides).
   await MockFirebase.activate(sl<SharedPreferences>());
-  log.d(
-    'Remote Config activated · ${MockFirebase.remoteConfig.lastFetchStatus}',
-    name: 'config',
-  );
+  log.d('Remote Config activated', name: 'config');
 
   /// Local notifications — request permission up front.
   try {

@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:debug_lens/debug_lens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// One Remote Config parameter: its key, type and Firebase (source-of-truth)
-/// value.
+/// One Remote Config parameter: its key and Firebase (source-of-truth) value.
+/// The value's runtime type *is* the parameter's type — DebugLens infers it, so
+/// nothing declares it twice.
 class _RcParam {
   final String key;
-  final DebugLensConfigType type;
   final Object value;
-  const _RcParam(this.key, this.type, this.value);
+  const _RcParam(this.key, this.value);
 }
 
 /// In-memory stand-in for `FirebaseRemoteConfig` that also implements the
@@ -27,17 +27,13 @@ class MockRemoteConfig extends DebugLensConfigEditor {
   static final MockRemoteConfig instance = MockRemoteConfig._();
 
   static const List<_RcParam> _params = [
-    _RcParam('home_header_title', DebugLensConfigType.string, 'Your day'),
-    _RcParam('show_summary_card', DebugLensConfigType.boolean, true),
-    _RcParam(
-      'promo_banner_text',
-      DebugLensConfigType.string,
-      '🎉 20% off Pro — this week only',
-    ),
-    _RcParam('home_layout_experiment', DebugLensConfigType.string, 'variant_b'),
-    _RcParam('notification_batch_size', DebugLensConfigType.integer, 4),
-    _RcParam('discount_percentage', DebugLensConfigType.double, 12.5),
-    _RcParam('api_timeout_seconds', DebugLensConfigType.integer, 30),
+    _RcParam('home_header_title', 'Your day'),
+    _RcParam('show_summary_card', true),
+    _RcParam('promo_banner_text', '🎉 20% off Pro — this week only'),
+    _RcParam('home_layout_experiment', 'variant_b'),
+    _RcParam('notification_batch_size', 4),
+    _RcParam('discount_percentage', 12.5),
+    _RcParam('api_timeout_seconds', 30),
   ];
 
   static const _kCustom = 'mock_rc_custom_enabled';
@@ -49,11 +45,6 @@ class MockRemoteConfig extends DebugLensConfigEditor {
 
   /// Values active for this session (recomputed only on [fetchAndActivate]).
   final Map<String, Object> _active = {};
-
-  DateTime? lastFetchTime;
-  String lastFetchStatus = 'noFetchYet';
-
-  _RcParam _param(String key) => _params.firstWhere((p) => p.key == key);
 
   /// Loads persisted overrides + the custom flag, then activates the effective
   /// values for this session (overrides win only while custom mode is on).
@@ -67,31 +58,19 @@ class MockRemoteConfig extends DebugLensConfigEditor {
         : Map<String, String>.from(jsonDecode(raw) as Map);
     for (final p in _params) {
       final override = _customEnabled ? _overrides[p.key] : null;
-      // A persisted override could predate a type change; fall back rather
-      // than crash startup.
-      _active[p.key] = override != null && p.type.accepts(override)
-          ? _parse(p.type, override)
-          : p.value;
+      _active[p.key] = override == null ? p.value : _parse(p.value, override);
     }
-    lastFetchTime = DateTime.now();
-    lastFetchStatus = 'success';
     return true;
   }
 
-  /// Parses [v] as [type]. Callers must have checked
-  /// [DebugLensConfigType.accepts] first — this throws rather than silently
-  /// coercing a bad value to zero.
-  static Object _parse(DebugLensConfigType type, String v) {
-    switch (type) {
-      case DebugLensConfigType.boolean:
-        return v.toLowerCase() == 'true';
-      case DebugLensConfigType.integer:
-        return int.parse(v);
-      case DebugLensConfigType.double:
-        return double.parse(v);
-      case DebugLensConfigType.string:
-        return v;
-    }
+  /// Reads [raw] back in the shape of [firebaseValue], falling back to it when
+  /// the string doesn't fit — a persisted override could predate a change to the
+  /// parameter's type.
+  static Object _parse(Object firebaseValue, String raw) {
+    if (firebaseValue is bool) return raw.toLowerCase() == 'true';
+    if (firebaseValue is int) return int.tryParse(raw) ?? firebaseValue;
+    if (firebaseValue is double) return double.tryParse(raw) ?? firebaseValue;
+    return raw;
   }
 
   // --- Reads (used by the app) ---------------------------------------------
@@ -126,11 +105,12 @@ class MockRemoteConfig extends DebugLensConfigEditor {
     for (final p in _params)
       DebugLensConfigEntry(
         key: p.key,
-        type: p.type,
+
+        /// Pass live values, not strings — DebugLens infers the type from them.
         value: _customEnabled && _overrides.containsKey(p.key)
-            ? _overrides[p.key]!
-            : '${p.value}',
-        sourceValue: '${p.value}',
+            ? _parse(p.value, _overrides[p.key]!)
+            : p.value,
+        sourceValue: p.value,
         overridden: _customEnabled && _overrides.containsKey(p.key),
       ),
   ];
@@ -148,12 +128,6 @@ class MockRemoteConfig extends DebugLensConfigEditor {
 
   @override
   Future<void> setValue(String key, String value) async {
-    // The inspector only hands over values that pass `accepts`; assert it here
-    // so a programmatic caller can't slip an unparseable one into the store.
-    assert(
-      _param(key).type.accepts(value),
-      'Value "$value" is not a valid ${_param(key).type.label} for "$key"',
-    );
     _overrides[key] = value;
     await _prefs?.setString(_kOverrides, jsonEncode(_overrides));
   }

@@ -310,14 +310,15 @@ class MyRemoteConfig extends DebugLensConfigEditor {
   @override
   bool get overrideEnabled => _customMode;
 
+  /// Pass live values — DebugLens infers the type (bool / int / double /
+  /// String) from each one, so you never name it.
   @override
   List<DebugLensConfigEntry> get entries => [
     for (final p in _params)
       DebugLensConfigEntry(
         key: p.key,
-        type: p.type,              // bool / int / double / String
         value: _effective(p.key),
-        sourceValue: '${p.remoteValue}',
+        sourceValue: p.remoteValue,
         overridden: _overrides.containsKey(p.key),
       ),
   ];
@@ -330,6 +331,17 @@ class MyRemoteConfig extends DebugLensConfigEditor {
 }
 ```
 
+Already holding your config as a map? Skip the loop:
+
+```dart
+@override
+List<DebugLensConfigEntry> get entries => DebugLensConfigEntry.fromMap(
+  _effectiveValues,                      // Map<String, Object?>
+  sourceValues: _remoteValues,           // optional
+  overridden: _overrides.keys.toSet(),   // optional
+);
+```
+
 > `requiresRestart` (default `true`) makes the inspector confirm before
 > switching source, so cancelling leaves the current mode untouched. Values
-> handed to `setValue` are already validated against the entry's type.
+> handed to `setValue` are already validated against the inferred type.

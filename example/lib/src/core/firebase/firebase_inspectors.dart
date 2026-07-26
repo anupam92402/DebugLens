@@ -130,30 +130,13 @@ class _CrashlyticsInspector extends DebugLensService {
   }
 }
 
-/// Remote Config — editable, typed key/value store with device overrides. Uses
-/// the editor's Reset (not delete) to drop overrides, so [canClear] stays
-/// false. [load] returns the fetch status, which renders as a header card above
-/// the editable rows.
+/// Remote Config — editable key/value store with device overrides. Uses the
+/// editor's Reset (not delete) to drop overrides, so [canClear] stays false,
+/// and [load] is left at its empty default.
 class _RemoteConfigInspector extends DebugLensService {
   @override
   String get name => 'Remote Config';
 
   @override
   DebugLensConfigEditor get editor => MockFirebase.remoteConfig;
-
-  @override
-  Future<List<DebugLensServiceGroup>> load() async {
-    final rc = MockFirebase.remoteConfig;
-    return [
-      DebugLensServiceGroup(
-        title: 'Fetch',
-        values: {
-          'status': rc.lastFetchStatus,
-          'lastFetch': rc.lastFetchTime == null
-              ? 'never'
-              : _hms(rc.lastFetchTime!),
-        },
-      ),
-    ];
-  }
 }

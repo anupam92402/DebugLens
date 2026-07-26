@@ -49,9 +49,7 @@ class ReorderableDashGrid extends StatelessWidget {
           mainAxisSpacing: _spacing,
           crossAxisSpacing: _spacing,
           childAspectRatio: _aspectRatio,
-          children: [
-            for (var i = 0; i < items.length; i++) _cell(i, cell),
-          ],
+          children: [for (var i = 0; i < items.length; i++) _cell(i, cell)],
         );
       },
     );

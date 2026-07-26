@@ -32,8 +32,7 @@ export 'src/features/services/data/debug_service_source.dart'
     show DebugLensService;
 export 'src/features/services/domain/service_group.dart'
     show DebugLensServiceGroup;
-export 'src/features/services/domain/crash_event.dart'
-    show DebugLensCrashEvent;
+export 'src/features/services/domain/crash_event.dart' show DebugLensCrashEvent;
 export 'src/features/logs/data/debug_lens_logger.dart'
     show DebugLensLogger, DebugLogObserver;
 export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;

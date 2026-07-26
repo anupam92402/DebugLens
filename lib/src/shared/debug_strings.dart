@@ -5,8 +5,8 @@ import 'debug_constants.dart';
 /// One flat, feature-prefixed namespace (e.g. [networkTitle], [logsEmpty]).
 /// Copy that needs runtime values is exposed as a static method
 /// (e.g. [settingsMaxItems]). Technical strings — map/JSON keys, route names,
-/// log tags, `MockSeed` data, and pure-composition interpolations
-/// (`'$a $b'`) — are intentionally NOT centralised here.
+/// log tags, and pure-composition interpolations (`'$a $b'`) — are
+/// intentionally NOT centralised here.
 class DebugStrings {
   DebugStrings._();
 

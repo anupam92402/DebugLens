@@ -8,13 +8,12 @@ import '../features/network/domain/network_entry.dart';
 import '../features/notifications/domain/notification_entry.dart';
 import '../features/notifications/domain/deeplink_entry.dart';
 import '../features/navigation/domain/nav_event.dart';
-import '../features/device/domain/device_app_info.dart';
-import 'mock/mock_seed.dart';
 
 /// Holds all captured debug data in memory.
 ///
-/// For the UI scaffold the lists are seeded from [MockSeed]; real capture
-/// sources will replace the seeds feature-by-feature.
+/// Everything here is captured live — by the observers, interceptors and
+/// loggers that write to [instance]. Data a source can be asked for on demand
+/// (services, storage, locale, device info) deliberately isn't held here.
 class DebugStore extends ChangeNotifier {
   DebugStore._();
 
@@ -75,7 +74,9 @@ class DebugStore extends ChangeNotifier {
   // screen reads the app's live prefs via `DebugLens.sharedPrefsSource` and its
   // databases via `DebugLens.registerDatabase` — DebugLens keeps no copy. See
   // `debug_shared_prefs_source.dart` and `debug_database_source.dart`.
-  final List<InfoSection> deviceInfo = List.of(MockSeed.deviceInfo());
+  // Device/app facts are NOT stored here either. The Device screen reads them
+  // live from the platform plugins and the current MediaQuery on each build.
+  // See `device_info_source.dart`.
 
   // Service data is NOT stored here. The Services screen reads each service’s
   // live data on demand via `DebugLens.registerService` and renders it

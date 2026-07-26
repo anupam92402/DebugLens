@@ -16,9 +16,9 @@ class NavLogSerializer {
         !hideDebugLens || !name.startsWith(DebugRoutes.prefix);
     final visible = events.where((e) => keep(e.routeName)).toList();
 
-    final b = StringBuffer()..writeln('Events (${visible.length}):');
+    final sb = StringBuffer()..writeln('Events (${visible.length}):');
     for (final e in visible) {
-      b.writeln(
+      sb.writeln(
         '#${e.sequence} ${e.actionLabel} ${e.kindLabel} '
         '${e.previousRoute ?? DebugConstants.emptyValue} -> ${e.routeName} '
         '[${e.navigator}] ${ClockFormat.clock(e.time)}',
@@ -27,13 +27,13 @@ class NavLogSerializer {
     for (final entry in stacks.entries) {
       final rows = entry.value.where(keep).toList();
       if (rows.isEmpty) continue;
-      b
+      sb
         ..writeln()
         ..writeln('Stack (${entry.key}):');
       for (var i = rows.length - 1; i >= 0; i--) {
-        b.writeln('${i + 1} ${rows[i]}');
+        sb.writeln('${i + 1} ${rows[i]}');
       }
     }
-    return b.toString().trimRight();
+    return sb.toString().trimRight();
   }
 }

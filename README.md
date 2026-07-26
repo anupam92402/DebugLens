@@ -190,3 +190,91 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 > Clear programmatically with `DebugLens.clearNotifications()` /
 > `DebugLens.clearDeeplinks()`.
+
+### Services
+
+Surfaces whatever backends and SDKs your app talks to — Firebase Analytics,
+Crashlytics, Performance, Remote Config, LaunchDarkly, your own API client — as
+a list of services, each with its own screen. Vendor-neutral and pull-based: you
+implement a small adapter, DebugLens calls it on demand and keeps no copy, so
+the package depends on none of these SDKs.
+
+- **Records** — each service renders as expandable rows (an analytics event, a
+  trace, a crash report): primary label, optional subtitle, fields as JSON.
+- **Editable config** — a service can expose a `DebugLensConfigEditor` to flip
+  between remote values and device-local overrides, editing typed values
+  (`bool` / `int` / `double` / `String`) in place. Invalid input can't be saved.
+- **Search, sort & share** — free-text over titles and fields, A–Z or original
+  order, and a share that exports exactly the rows on screen.
+- **Live** — re-pulls on the refresh action, on app resume, and whenever the
+  service signals a change, so a screen left open keeps up.
+- **Safe by default** — fields listed in `sensitiveKeys` are masked behind an
+  eye toggle and always redacted from shared log files.
+
+**Usage** — extend `DebugLensService` (don't implement it: only `name` is
+required) and register it once at startup:
+
+```dart
+class AnalyticsInspector extends DebugLensService {
+  @override
+  String get name => 'Analytics';
+
+  @override
+  bool get canClear => true;
+
+  @override
+  Future<void> clear() async => myAnalytics.clearBuffer();
+
+  /// Optional: re-pull the open screen as new events arrive.
+  @override
+  Listenable get changes => myAnalytics.revision;
+
+  @override
+  Future<List<DebugLensServiceGroup>> load() async => [
+    for (final e in myAnalytics.events)
+      DebugLensServiceGroup(
+        title: e.name,
+        subtitle: e.time.toIso8601String(),
+        values: {'screen': e.screen, 'token': e.token},
+        sensitiveKeys: const {'token'}, // masked + never shared
+      ),
+  ];
+}
+
+DebugLens.registerService(AnalyticsInspector());
+```
+
+For an editable service (Remote Config and friends), also extend
+`DebugLensConfigEditor` and return it from `editor`:
+
+```dart
+class MyRemoteConfig extends DebugLensConfigEditor {
+  @override
+  String get sourceLabel => 'Firebase'; // names the non-override side
+
+  @override
+  bool get overrideEnabled => _customMode;
+
+  @override
+  List<DebugLensConfigEntry> get entries => [
+    for (final p in _params)
+      DebugLensConfigEntry(
+        key: p.key,
+        type: p.type,              // bool / int / double / String
+        value: _effective(p.key),
+        sourceValue: '${p.remoteValue}',
+        overridden: _overrides.containsKey(p.key),
+      ),
+  ];
+
+  @override
+  Future<void> setOverrideEnabled(bool enabled) async { /* persist */ }
+
+  @override
+  Future<void> setValue(String key, String value) async { /* persist */ }
+}
+```
+
+> `requiresRestart` (default `true`) makes the inspector confirm before
+> switching source, so cancelling leaves the current mode untouched. Values
+> handed to `setValue` are already validated against the entry's type.

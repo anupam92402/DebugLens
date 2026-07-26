@@ -35,21 +35,30 @@ class SettingsCubit extends Cubit<SettingsState> {
   void toggleDarkMode(bool value) {
     MockFirebase.analytics.logEvent(
       'theme_changed',
-      parameters: {'dark': value},
+      action: value ? 'enable' : 'disable',
+      screenName: 'SettingsScreen',
+      category: 'settings',
     );
     MockFirebase.crashlytics.setCustomKey('dark_mode', value);
     emit(state.copyWith(darkMode: value));
   }
 
   void togglePush(bool value) {
-    MockFirebase.analytics.logEvent('push_toggled', parameters: {'on': value});
+    MockFirebase.analytics.logEvent(
+      'push_toggled',
+      action: value ? 'enable' : 'disable',
+      screenName: 'SettingsScreen',
+      category: 'settings',
+    );
     emit(state.copyWith(pushEnabled: value));
   }
 
   void toggleAnalytics(bool value) {
     MockFirebase.analytics.logEvent(
       'analytics_toggled',
-      parameters: {'on': value},
+      action: value ? 'enable' : 'disable',
+      screenName: 'SettingsScreen',
+      category: 'settings',
     );
     emit(state.copyWith(analyticsEnabled: value));
   }

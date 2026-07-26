@@ -60,6 +60,10 @@ class MockPerformance {
   /// Newest-first, ring-buffered to the latest [_maxTraces].
   final List<MockTraceRecord> traces = [];
 
+  /// Bumped whenever [traces] changes — the service's DebugLens `changes`
+  /// signal, so an open inspector re-pulls as traces finish.
+  final ValueNotifier<int> revision = ValueNotifier<int>(0);
+
   MockTrace newTrace(String name) => MockTrace(this, name);
 
   /// Times [action] under a trace of [name] and records it — the common
@@ -76,5 +80,11 @@ class MockPerformance {
   void _record(MockTraceRecord record) {
     traces.insert(0, record);
     if (traces.length > _maxTraces) traces.removeLast();
+    revision.value++;
+  }
+
+  void clear() {
+    traces.clear();
+    revision.value++;
   }
 }

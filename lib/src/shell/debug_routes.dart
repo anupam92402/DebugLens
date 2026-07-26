@@ -26,8 +26,8 @@ class DebugRoutes {
   static const databaseTables = 'debug_lens/storage/database';
   static const databaseData = 'debug_lens/storage/database/table';
   static const device = 'debug_lens/device';
-  static const firebase = 'debug_lens/firebase';
-  static const firebaseService = 'debug_lens/firebase/service';
+  static const services = 'debug_lens/services';
+  static const serviceDetail = 'debug_lens/services/detail';
   static const locale = 'debug_lens/locale';
   static const settings = 'debug_lens/settings';
 }

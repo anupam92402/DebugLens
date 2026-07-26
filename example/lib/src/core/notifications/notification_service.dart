@@ -122,7 +122,9 @@ class NotificationService {
       ..start();
     MockFirebase.analytics.logEvent(
       'test_notifications_sent',
-      parameters: {'count': count},
+      action: 'send',
+      screenName: 'SettingsScreen',
+      category: 'notifications',
     );
     const details = NotificationDetails(
       android: AndroidNotificationDetails(

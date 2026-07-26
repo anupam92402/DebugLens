@@ -43,7 +43,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
     MockFirebase.analytics.logEvent(
       'activity_added',
-      parameters: {'category': event.category.name},
+      action: 'add',
+      screenName: 'HomeScreen',
+      category: event.category.name,
     );
     emit(state.copyWith(activities: [activity, ...state.activities]));
   }
@@ -58,7 +60,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ];
     MockFirebase.analytics.logEvent(
       'activity_toggled',
-      parameters: {'id': event.id},
+      action: 'toggle',
+      screenName: 'HomeScreen',
+      category: 'activity',
     );
     emit(state.copyWith(activities: activities));
   }

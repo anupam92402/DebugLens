@@ -23,7 +23,9 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
     emit(state.updated(action, const ActionResult(phase: ActionPhase.loading)));
     MockFirebase.analytics.logEvent(
       'api_action',
-      parameters: {'action': action.name},
+      action: action.name,
+      screenName: 'ApiPlaygroundScreen',
+      category: 'network',
     );
     try {
       // Time each call as a mock-Firebase performance trace (one per action).

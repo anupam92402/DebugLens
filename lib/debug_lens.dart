@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'src/features/storage/data/debug_database_source.dart';
-import 'src/features/firebase/data/debug_firebase_source.dart';
+import 'src/features/services/data/debug_service_source.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
@@ -21,9 +21,12 @@ import 'src/shell/debug_panel.dart';
 export 'src/features/storage/data/debug_database_source.dart'
     show DebugLensDatabase;
 export 'src/features/storage/domain/table_data.dart' show DebugLensTableData;
-export 'src/features/firebase/data/debug_firebase_source.dart'
-    show DebugLensFirebaseService;
-export 'src/features/firebase/domain/info_group.dart' show DebugLensInfoGroup;
+export 'src/features/services/data/debug_service_source.dart'
+    show DebugLensService;
+export 'src/features/services/domain/service_group.dart'
+    show DebugLensServiceGroup;
+export 'src/features/services/domain/config_editor.dart'
+    show DebugLensConfigEditor, DebugLensConfigEntry, DebugLensConfigType;
 export 'src/features/logs/data/debug_lens_logger.dart' show DebugLensLogger;
 export 'src/features/logs/domain/log_record.dart'
     show DebugLogLevel, DebugLogRecord, DebugLogSource;
@@ -93,16 +96,16 @@ class DebugLens {
   /// The registered databases shown in the Database tab.
   static List<DebugLensDatabase> get databases => DebugLensDatabases.sources;
 
-  /// Registers a Firebase service for the Firebase screen. DebugLens calls its
-  /// `load()` on demand and renders the returned info groups; it keeps no copy.
-  /// Idempotent by [DebugLensFirebaseService.name]. DebugLens stays generic —
-  /// it never imports any Firebase package.
-  static void registerFirebaseService(DebugLensFirebaseService service) =>
-      DebugLensFirebase.register(service);
+  /// Registers a backend/SDK service for the Services screen (Firebase
+  /// Analytics, Remote Config, LaunchDarkly, your own API client, …). DebugLens
+  /// calls its `load()` on demand and renders the returned groups; it keeps no
+  /// copy. Idempotent by [DebugLensService.name]. DebugLens stays generic — it
+  /// never imports any vendor package.
+  static void registerService(DebugLensService service) =>
+      DebugLensServices.register(service);
 
-  /// The registered Firebase services shown on the Firebase screen.
-  static List<DebugLensFirebaseService> get firebaseServices =>
-      DebugLensFirebase.services;
+  /// The registered services shown on the Services screen.
+  static List<DebugLensService> get services => DebugLensServices.services;
 
   /// Records a push/local notification on the Notifications screen. Call from
   /// your notification handler on both display and tap ([tapped] `true` for a

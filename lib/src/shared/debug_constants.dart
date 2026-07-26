@@ -22,8 +22,13 @@ class DebugConstants {
   /// Suffix marking a SharedPreferences entry stored via encrypted prefs.
   static const String encryptedMarker = '*';
 
-  /// Placeholder shown in place of a hidden (encrypted) value.
+  /// Placeholder shown in place of a hidden (encrypted or sensitive) value.
   static const String maskedValue = '••••••';
+
+  /// Canonical string form of a boolean, used when parsing and emitting
+  /// editable config values (see `DebugLensConfigType`).
+  static const String trueValue = 'true';
+  static const String falseValue = 'false';
 
   // SharedPreferences keys DebugLens persists its own state under.
 

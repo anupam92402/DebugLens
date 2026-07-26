@@ -77,9 +77,9 @@ class DebugStore extends ChangeNotifier {
   // `debug_shared_prefs_source.dart` and `debug_database_source.dart`.
   final List<InfoSection> deviceInfo = List.of(MockSeed.deviceInfo());
 
-  // Firebase data is NOT stored here. The Firebase screen reads each service's
-  // live data on demand via `DebugLens.registerFirebaseService` and renders it
-  // without DebugLens keeping a copy. See `debug_firebase_source.dart`.
+  // Service data is NOT stored here. The Services screen reads each service’s
+  // live data on demand via `DebugLens.registerService` and renders it
+  // without DebugLens keeping a copy. See `debug_service_source.dart`.
 
   // Locale data is intentionally NOT stored here. The Locale screen reads the
   // app's live strings on demand via `DebugLens.localeSource` and renders them

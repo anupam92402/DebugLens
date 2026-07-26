@@ -38,9 +38,9 @@ class DashboardScreen extends StatelessWidget {
       DebugRoutes.device,
     ),
     DashItem(
-      Icons.local_fire_department,
-      DebugStrings.dashboardFirebase,
-      DebugRoutes.firebase,
+      Icons.cloud_outlined,
+      DebugStrings.dashboardServices,
+      DebugRoutes.services,
     ),
     DashItem(Icons.translate, DebugStrings.dashboardLocale, DebugRoutes.locale),
     DashItem(

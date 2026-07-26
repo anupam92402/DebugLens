@@ -28,8 +28,8 @@ class DebugAccents {
         return DebugColors.storage;
       case DebugRoutes.device:
         return DebugColors.device;
-      case DebugRoutes.firebase:
-        return DebugColors.firebase;
+      case DebugRoutes.services:
+        return DebugColors.service;
       case DebugRoutes.locale:
         return DebugColors.locale;
       case DebugRoutes.settings:

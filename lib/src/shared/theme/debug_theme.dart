@@ -5,6 +5,7 @@ import '../../features/bloc/domain/bloc_event.dart';
 import '../../features/navigation/domain/nav_event.dart';
 import '../../features/network/domain/network_entry.dart';
 import '../../features/storage/domain/pref_entry.dart';
+import '../../features/services/domain/config_editor.dart';
 import 'debug_colors.dart';
 
 class DebugTheme {
@@ -109,6 +110,21 @@ Color toneForPrefType(DebugLensPrefType type) {
       return DebugColors.storage;
     case DebugLensPrefType.unknown:
       return DebugColors.textMuted;
+  }
+}
+
+/// Tint for an editable-config type chip. The label lives on the enum itself
+/// (`DebugLensConfigType.label`), mirroring `DebugLensPrefType`.
+Color toneForConfigType(DebugLensConfigType type) {
+  switch (type) {
+    case DebugLensConfigType.boolean:
+      return DebugColors.warning;
+    case DebugLensConfigType.integer:
+      return DebugColors.info;
+    case DebugLensConfigType.double:
+      return DebugColors.success;
+    case DebugLensConfigType.string:
+      return DebugColors.console;
   }
 }
 

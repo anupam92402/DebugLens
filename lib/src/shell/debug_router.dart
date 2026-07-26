@@ -6,8 +6,8 @@ import '../features/bloc/presentation/views/bloc_screen.dart';
 import '../features/dashboard/presentation/views/dashboard_screen.dart';
 import '../features/storage/presentation/views/database_tables_screen.dart';
 import '../features/device/presentation/views/device_info_screen.dart';
-import '../features/firebase/presentation/views/firebase_screen.dart';
-import '../features/firebase/presentation/views/firebase_service_screen.dart';
+import '../features/services/presentation/views/services_screen.dart';
+import '../features/services/presentation/views/service_detail_screen.dart';
 import '../features/locale/presentation/views/locale_screen.dart';
 import '../features/logs/presentation/views/log_detail_screen.dart';
 import '../features/logs/presentation/views/logs_screen.dart';
@@ -56,10 +56,10 @@ class DebugRouter {
         page = TableDataScreen(database: dbArgs.database, table: dbArgs.table);
       case DebugRoutes.device:
         page = const DeviceInfoScreen();
-      case DebugRoutes.firebase:
-        page = const FirebaseScreen();
-      case DebugRoutes.firebaseService:
-        page = FirebaseServiceScreen(service: args as DebugLensFirebaseService);
+      case DebugRoutes.services:
+        page = const ServicesScreen();
+      case DebugRoutes.serviceDetail:
+        page = ServiceDetailScreen(service: args as DebugLensService);
       case DebugRoutes.locale:
         page = const LocaleScreen();
       case DebugRoutes.settings:

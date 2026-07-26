@@ -36,7 +36,7 @@ class DebugColors {
   static const bloc = Color(0xFFE11D48); // rose
   static const storage = Color(0xFF2DD4BF); // teal
   static const device = Color(0xFF22D3EE); // cyan
-  static const firebase = Color(0xFFFB923C); // orange
+  static const service = Color(0xFFFB923C); // orange
   static const locale = Color(0xFFEC4899); // pink
   static const settings = Color(0xFF94A3B8); // slate
 

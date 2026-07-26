@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 /// Centralised creator + sharer of DebugLens log files.
 ///
-/// Any feature/service (navigation, bloc, firebase, …) contributes data under
+/// Any feature/service (navigation, bloc, services, …) contributes data under
 /// a named source — either by pushing over time with [log] / [setSection], or
 /// by passing sections inline to [shareLogFile]. Calling [shareLogFile] writes
 /// a brand-new file and opens the OS share sheet; that is the only supported

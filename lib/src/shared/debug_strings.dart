@@ -13,6 +13,8 @@ class DebugStrings {
   // --- Common ---------------------------------------------------------------
   static const String commonClose = 'Close';
   static const String commonCancel = 'Cancel';
+  static const String commonTrue = 'true';
+  static const String commonFalse = 'false';
 
   // --- Dashboard ------------------------------------------------------------
   static const String dashboardTitle = '🔍 DebugLens';
@@ -23,7 +25,7 @@ class DebugStrings {
   static const String dashboardBloc = 'Bloc';
   static const String dashboardStorage = 'Storage';
   static const String dashboardDevice = 'Device & App';
-  static const String dashboardFirebase = 'Firebase';
+  static const String dashboardServices = 'Services';
   static const String dashboardLocale = 'Locale';
   static const String dashboardSettings = 'Settings';
   static const String dashboardDeveloperAccess = 'Developer access';
@@ -156,17 +158,39 @@ class DebugStrings {
   static const String localeNextPage = 'Next page';
   static String localePageLabel(int page, int total) => 'Page $page / $total';
 
-  // --- Firebase -------------------------------------------------------------
-  static const String firebaseTitle = 'Firebase';
-  static const String firebaseEmpty = 'No Firebase services';
-  static const String firebaseReload = 'Reload';
-  static const String firebaseServiceEmpty = 'No data';
-  static const String firebaseNone = 'none';
-  static const String firebaseSearchHint = 'Search keys / values';
-  static const String firebaseSortAlpha = 'Sorted A–Z (tap for original)';
-  static const String firebaseSortOriginal = 'Original order (tap for A–Z)';
+  // --- Services -------------------------------------------------------------
+  static const String servicesTitle = 'Services';
+  static const String servicesEmpty = 'No services registered';
+  static const String serviceEmpty = 'No data';
+  static const String serviceRefreshTooltip = 'Refresh';
+  static const String serviceShareTooltip = 'Share';
+  static String serviceShareSubject(String name) => 'DebugLens $name';
+  static const String serviceSearchHint = 'Search';
+  static const String serviceSortAlpha = 'Sorted A–Z (tap for original)';
+  static const String serviceSortOriginal = 'Original order (tap for A–Z)';
+  static const String serviceClearTooltip = 'Clear data';
+  static const String serviceClearedToast = 'Cleared';
+  static const String serviceShowSensitive = 'Reveal sensitive values';
+  static const String serviceHideSensitive = 'Hide sensitive values';
+  static const String serviceResetTooltip = 'Reset to source values';
+  static const String serviceResetToast = 'Reset to source values';
+  static const String serviceResetLabel = 'Reset';
+  static const String serviceSourceRemote = 'Remote';
+  static const String serviceSourceCustom = 'Custom';
+  static String serviceSourceRemoteTooltip(String label) =>
+      'Use $label values';
+  static const String serviceSourceCustomTooltip = 'Use device overrides';
+  static const String serviceSourceValueLabel = 'Source value';
+  static const String serviceOverridden = 'custom';
+  static const String serviceRestartTitle = 'Restart required';
+  static const String serviceRestartMessage =
+      'The change will be applied on the next app restart.';
+  static const String serviceSave = 'Save';
+  static const String serviceOk = 'OK';
+  static String serviceEditTitle(String key) => 'Edit $key';
+  static String serviceInvalidValue(String type) => 'Enter a valid $type';
   static const String commonRetry = 'Retry';
-  static String firebaseLoadFailed(Object? error) => 'Failed to load\n$error';
+  static String serviceLoadFailed(Object? error) => 'Failed to load\n$error';
 
   // --- Common (continued) ---------------------------------------------------
   static const String commonCopy = 'Copy';

@@ -3,13 +3,17 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Error view with a retry action — load failures are common for live Firebase
+/// Error view with a retry action — load failures are common for live service
 /// wrappers (no network, not initialised, …), so make recovery one tap.
-class ErrorState extends StatelessWidget {
+class ServiceErrorState extends StatelessWidget {
   final Object? error;
   final VoidCallback onRetry;
 
-  const ErrorState({super.key, required this.error, required this.onRetry});
+  const ServiceErrorState({
+    super.key,
+    required this.error,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class ErrorState extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
-              DebugStrings.firebaseLoadFailed(error),
+              DebugStrings.serviceLoadFailed(error),
               textAlign: TextAlign.center,
               style: monoStyle(size: 12, color: DebugColors.textMuted),
             ),

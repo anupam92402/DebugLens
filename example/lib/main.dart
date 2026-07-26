@@ -1,6 +1,7 @@
 import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app.dart';
 import 'src/core/di/service_locator.dart';
@@ -18,17 +19,23 @@ Future<void> main() async {
   Bloc.observer = DebugLensBlocObserver();
   setupLocator();
 
-  // Mock Firebase init: stage remote-config values, then fetch + activate them.
+  // Mock Firebase init: seed realistic data + identify the user.
   MockFirebase.configure();
-  await MockFirebase.activate();
 
   // Real app storage (SharedPreferences + Drift), bridged to DebugLens.
   await setupStorage();
+
+  // Fetch + activate Remote Config (applies any persisted device overrides).
+  await MockFirebase.activate(sl<SharedPreferences>());
 
   // Local notifications — request permission up front.
   await sl<NotificationService>().init();
 
   startTrace.stop();
-  MockFirebase.analytics.logEvent('app_open');
+  MockFirebase.analytics.logEvent(
+    'app_open',
+    action: 'launch',
+    category: 'lifecycle',
+  );
   runApp(const ExampleApp());
 }

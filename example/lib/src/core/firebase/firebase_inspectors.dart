@@ -1,18 +1,18 @@
-import 'dart:convert';
-
 import 'package:debug_lens/debug_lens.dart';
+import 'package:flutter/foundation.dart';
 
 import 'mock_firebase.dart';
-import 'mock_remote_config.dart';
 
-/// Registers all four mock Firebase services with the DebugLens Firebase
+/// Registers all four mock Firebase services with the DebugLens Services
 /// inspector. Idempotent (DebugLens dedupes by name), so it is safe to call
 /// from `setupLocator`.
+///
+/// Firebase is just this app's choice — `DebugLensService` is vendor-neutral.
 void registerFirebaseInspectors() {
-  DebugLens.registerFirebaseService(_AnalyticsInspector());
-  DebugLens.registerFirebaseService(_PerformanceInspector());
-  DebugLens.registerFirebaseService(_CrashlyticsInspector());
-  DebugLens.registerFirebaseService(_RemoteConfigInspector());
+  DebugLens.registerService(_AnalyticsInspector());
+  DebugLens.registerService(_PerformanceInspector());
+  DebugLens.registerService(_CrashlyticsInspector());
+  DebugLens.registerService(_RemoteConfigInspector());
 }
 
 String _hms(DateTime t) {
@@ -20,134 +20,138 @@ String _hms(DateTime t) {
   return '${two(t.hour)}:${two(t.minute)}:${two(t.second)}';
 }
 
-class _AnalyticsInspector extends DebugLensFirebaseService {
+/// Analytics — one record per logged event (name + fields + timestamp).
+class _AnalyticsInspector extends DebugLensService {
   @override
   String get name => 'Analytics';
 
   @override
-  Future<List<DebugLensInfoGroup>> load() async {
-    final a = MockFirebase.analytics;
+  bool get canClear => true;
+
+  /// Live-updates the open inspector as the app logs events.
+  @override
+  Listenable get changes => MockFirebase.analytics.revision;
+
+  @override
+  Future<void> clear() async => MockFirebase.analytics.clear();
+
+  @override
+  Future<List<DebugLensServiceGroup>> load() async {
     return [
-      DebugLensInfoGroup(
-        title: 'Summary',
-        values: {
-          'Events logged': '${a.events.length}',
-          'User id': a.userId ?? '—',
-        },
-      ),
-      if (a.userProperties.isNotEmpty)
-        DebugLensInfoGroup(title: 'User properties', values: a.userProperties),
-      DebugLensInfoGroup(
-        title: 'Recent events',
-        values: {
-          for (var i = 0; i < a.events.length && i < 20; i++)
-            '#${i + 1} ${a.events[i].name}':
-                '${_hms(a.events[i].time)}'
-                '${a.events[i].parameters.isEmpty ? '' : ' · ${jsonEncode(a.events[i].parameters)}'}',
-        },
-      ),
+      for (final e in MockFirebase.analytics.events)
+        DebugLensServiceGroup(
+          title: e.name,
+          subtitle: _hms(e.time),
+          values: {
+            if (e.action != null) 'action': e.action!,
+            if (e.screenName != null) 'screen': e.screenName!,
+            if (e.category != null) 'category': e.category!,
+          },
+        ),
     ];
   }
 }
 
-class _PerformanceInspector extends DebugLensFirebaseService {
+/// Performance — one record per finished trace (screen load / network call).
+class _PerformanceInspector extends DebugLensService {
   @override
   String get name => 'Performance';
 
   @override
-  Future<List<DebugLensInfoGroup>> load() async {
-    final traces = MockFirebase.performance.traces;
-    final slowest = traces.isEmpty
-        ? null
-        : traces.reduce((a, b) => a.duration >= b.duration ? a : b);
+  bool get canClear => true;
+
+  @override
+  Listenable get changes => MockFirebase.performance.revision;
+
+  @override
+  Future<void> clear() async => MockFirebase.performance.clear();
+
+  @override
+  Future<List<DebugLensServiceGroup>> load() async {
     return [
-      DebugLensInfoGroup(
-        title: 'Summary',
-        values: {
-          'Traces': '${traces.length}',
-          'Slowest': slowest == null
-              ? '—'
-              : '${slowest.name} (${slowest.duration.inMilliseconds} ms)',
-        },
-      ),
-      DebugLensInfoGroup(
-        title: 'Recent traces',
-        values: {
-          for (var i = 0; i < traces.length && i < 20; i++)
-            '#${i + 1} ${traces[i].name}':
-                '${traces[i].duration.inMilliseconds} ms · ${_hms(traces[i].time)}'
-                '${traces[i].attributes.isEmpty ? '' : ' · ${jsonEncode(traces[i].attributes)}'}',
-        },
-      ),
+      for (final t in MockFirebase.performance.traces)
+        DebugLensServiceGroup(
+          title: t.name,
+          subtitle: '${t.duration.inMilliseconds} ms · ${_hms(t.time)}',
+          values: {
+            'duration': '${t.duration.inMilliseconds} ms',
+            ...t.attributes,
+            for (final m in t.metrics.entries) m.key: '${m.value}',
+          },
+        ),
     ];
   }
 }
 
-class _CrashlyticsInspector extends DebugLensFirebaseService {
+/// Crashlytics — one record per recorded error, then breadcrumbs. The install
+/// id is marked sensitive, so DebugLens masks it until revealed and always
+/// redacts it from shared log files.
+class _CrashlyticsInspector extends DebugLensService {
   @override
   String get name => 'Crashlytics';
 
   @override
-  Future<List<DebugLensInfoGroup>> load() async {
+  bool get canClear => true;
+
+  @override
+  Listenable get changes => MockFirebase.crashlytics.revision;
+
+  @override
+  Future<void> clear() async => MockFirebase.crashlytics.clear();
+
+  @override
+  Future<List<DebugLensServiceGroup>> load() async {
     final c = MockFirebase.crashlytics;
-    final fatal = c.reports.where((r) => r.fatal).length;
     return [
-      DebugLensInfoGroup(
-        title: 'Summary',
+      DebugLensServiceGroup(
+        title: 'Session',
+        subtitle: 'installation',
         values: {
-          'Non-fatal': '${c.reports.length - fatal}',
-          'Fatal': '$fatal',
-          'User': c.userIdentifier ?? '—',
+          if (c.userIdentifier != null) 'userId': c.userIdentifier!,
+          'installId': c.installId,
         },
-        sensitiveKeys: const {'User'},
+        sensitiveKeys: const {'installId'},
       ),
-      if (c.customKeys.isNotEmpty)
-        DebugLensInfoGroup(title: 'Custom keys', values: c.customKeys),
-      DebugLensInfoGroup(
-        title: 'Recent errors',
-        values: {
-          for (var i = 0; i < c.reports.length && i < 15; i++)
-            '#${i + 1} ${c.reports[i].fatal ? '[fatal] ' : ''}${_hms(c.reports[i].time)}':
-                c.reports[i].message,
-        },
-      ),
-      DebugLensInfoGroup(
-        title: 'Breadcrumbs',
-        values: {
-          for (var i = 0; i < c.breadcrumbs.length && i < 20; i++)
-            '#${i + 1}': c.breadcrumbs[i],
-        },
-      ),
+      for (final r in c.reports)
+        DebugLensServiceGroup(
+          title: r.message,
+          subtitle: '${r.fatal ? 'fatal' : 'non-fatal'} · ${_hms(r.time)}',
+          values: {
+            if (r.reason != null) 'reason': r.reason!,
+            if (r.stack != null) 'stack': r.stack!,
+          },
+        ),
+      for (final b in c.breadcrumbs)
+        DebugLensServiceGroup(
+          title: b.message,
+          subtitle: 'breadcrumb · ${_hms(b.time)}',
+        ),
     ];
   }
 }
 
-class _RemoteConfigInspector extends DebugLensFirebaseService {
+/// Remote Config — editable, typed key/value store with device overrides. Uses
+/// the editor's Reset (not delete) to drop overrides, so [canClear] stays
+/// false. [load] returns the fetch status, which renders as a header card above
+/// the editable rows.
+class _RemoteConfigInspector extends DebugLensService {
   @override
   String get name => 'Remote Config';
 
   @override
-  Future<List<DebugLensInfoGroup>> load() async {
+  DebugLensConfigEditor get editor => MockFirebase.remoteConfig;
+
+  @override
+  Future<List<DebugLensServiceGroup>> load() async {
     final rc = MockFirebase.remoteConfig;
-    final active = rc.all;
     return [
-      DebugLensInfoGroup(
-        title: 'Fetch status',
+      DebugLensServiceGroup(
+        title: 'Fetch',
         values: {
-          'Status': rc.lastFetchStatus,
-          'Last fetch': rc.lastFetchTime == null
-              ? '—'
+          'status': rc.lastFetchStatus,
+          'lastFetch': rc.lastFetchTime == null
+              ? 'never'
               : _hms(rc.lastFetchTime!),
-          'Parameters': '${active.length}',
-        },
-      ),
-      DebugLensInfoGroup(
-        title: 'Parameters',
-        values: {
-          for (final e in active.entries)
-            e.key:
-                '${e.value}  '
-                '(${rc.sourceOf(e.key) == RemoteConfigValueSource.remote ? 'remote' : 'default'})',
         },
       ),
     ];

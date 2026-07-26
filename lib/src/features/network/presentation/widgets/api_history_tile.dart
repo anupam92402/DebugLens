@@ -9,7 +9,8 @@ import 'breakdown.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Single row on the Network → History screen: the endpoint (method + path),
-/// its outcome breakdown, and the call count for the active filter.
+/// its outcome breakdown, and the call count for the active filter. Tapping it
+/// opens the endpoint's individual calls.
 class ApiHistoryTile extends StatelessWidget {
   final ApiCallStat stat;
 
@@ -17,7 +18,14 @@ class ApiHistoryTile extends StatelessWidget {
   /// `null` shows the total ("frequency") count.
   final NetworkStatusKind? filter;
 
-  const ApiHistoryTile({super.key, required this.stat, this.filter});
+  final VoidCallback onTap;
+
+  const ApiHistoryTile({
+    super.key,
+    required this.stat,
+    required this.onTap,
+    this.filter,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,55 +35,58 @@ class ApiHistoryTile extends StatelessWidget {
         ? DebugColors.textPrimary
         : toneForStatus(filter!);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 60,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: StatusChip(stat.methodLabel, color: methodTone),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 60,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: StatusChip(stat.methodLabel, color: methodTone),
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    stat.path,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: monoStyle(size: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  Breakdown(stat: stat),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  stat.path,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: monoStyle(size: 12),
+                  '$count',
+                  style: monoStyle(
+                    size: 18,
+                    weight: FontWeight.w700,
+                    color: countTone,
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Breakdown(stat: stat),
+                Text(
+                  count == 1
+                      ? DebugStrings.networkCall
+                      : DebugStrings.networkCalls,
+                  style: monoStyle(size: 10, color: DebugColors.textMuted),
+                ),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$count',
-                style: monoStyle(
-                  size: 18,
-                  weight: FontWeight.w700,
-                  color: countTone,
-                ),
-              ),
-              Text(
-                count == 1
-                    ? DebugStrings.networkCall
-                    : DebugStrings.networkCalls,
-                style: monoStyle(size: 10, color: DebugColors.textMuted),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

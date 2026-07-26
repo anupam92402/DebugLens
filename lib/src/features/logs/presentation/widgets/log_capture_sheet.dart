@@ -6,6 +6,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/glass.dart';
+import 'log_capture_switch.dart';
 
 /// Bottom sheet listing DebugLens's own log producers with a switch each, so
 /// the user can silence a noisy one mid-session.
@@ -51,7 +52,7 @@ class LogCaptureSheet extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (final origin in DebugLogOrigin.values)
-                      _CaptureSwitch(origin: origin, logger: logger),
+                      LogCaptureSwitch(origin: origin, logger: logger),
                   ],
                 ),
               ),
@@ -59,30 +60,6 @@ class LogCaptureSheet extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// One origin row — its name, the integration behind it, and the switch. The
-/// switch position is the state, so the row doesn't spell it out again.
-class _CaptureSwitch extends StatelessWidget {
-  final DebugLogOrigin origin;
-  final DebugLensLogger logger;
-
-  const _CaptureSwitch({required this.origin, required this.logger});
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      dense: true,
-      value: logger.isCapturing(origin),
-      title: Text(origin.label, style: monoStyle(size: 13)),
-      subtitle: Text(
-        origin.description,
-        style: monoStyle(size: 11, color: DebugColors.textMuted),
-      ),
-      onChanged: (next) => logger.setCapturing(origin, next),
     );
   }
 }

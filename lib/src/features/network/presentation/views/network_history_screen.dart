@@ -6,6 +6,7 @@ import '../../domain/api_call_stat.dart';
 import '../../domain/network_entry.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../widgets/api_calls_sheet.dart';
 import '../widgets/api_history_tile.dart';
 import '../widgets/network_status_filter_row.dart';
 import '../../../../shared/theme/debug_colors.dart';
@@ -112,8 +113,11 @@ class _NetworkHistoryScreenState extends State<NetworkHistoryScreen> {
                   itemCount: items.length,
                   separatorBuilder: (_, _) =>
                       const Divider(height: 1, color: DebugColors.border),
-                  itemBuilder: (_, i) =>
-                      ApiHistoryTile(stat: items[i], filter: _filter.value),
+                  itemBuilder: (_, i) => ApiHistoryTile(
+                    stat: items[i],
+                    filter: _filter.value,
+                    onTap: () => ApiCallsSheet.show(context, items[i]),
+                  ),
                 );
               },
             ),

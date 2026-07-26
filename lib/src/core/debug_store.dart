@@ -214,8 +214,7 @@ class DebugStore extends ChangeNotifier {
       ),
     );
     final status = entry.statusKind;
-    stat.total += 1;
-    stat.lastCalled = entry.requestTime;
+    stat.recordCall(entry.requestTime);
     _bumpStatus(stat, status, 1);
     _entryStatus[entry.id] = status;
   }

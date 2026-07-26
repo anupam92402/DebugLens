@@ -181,6 +181,7 @@ class DebugStrings {
   static const String serviceSourceCustomTooltip = 'Use device overrides';
   static const String serviceSourceValueLabel = 'Source value';
   static const String serviceOverridden = 'custom';
+  static const String serviceRestartToast = 'Applies on next restart';
   static const String serviceRestartTitle = 'Restart required';
   static const String serviceRestartMessage =
       'The change will be applied on the next app restart.';

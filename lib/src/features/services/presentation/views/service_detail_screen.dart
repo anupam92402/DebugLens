@@ -51,6 +51,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   /// Whether host-flagged sensitive values are currently unmasked.
   final ValueNotifier<bool> _revealSensitive = ValueNotifier<bool>(false);
 
+  /// Bumped whenever the editor's own state moves — a value overridden, the
+  /// source switched, overrides reset. The three regions that read the editor
+  /// listen to this, so none of it needs a screen-wide rebuild.
+  final ValueNotifier<int> _editorRevision = ValueNotifier<int>(0);
+
   DebugLensConfigEditor? get _editor => widget.service.editor;
 
   /// Resolved once — a host getter that returns a fresh object each call would
@@ -78,6 +83,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     _query.dispose();
     _sortAlpha.dispose();
     _revealSensitive.dispose();
+    _editorRevision.dispose();
     super.dispose();
   }
 
@@ -93,7 +99,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   void _refresh() {
     if (!mounted) return;
     // Entries are read straight off the editor; groups still need a pull.
-    if (_editor != null) setState(() {});
+    if (_editor != null) _editorRevision.value++;
     _fetch();
   }
 
@@ -206,7 +212,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       if (confirmed != true) return;
     }
     await _editor!.setOverrideEnabled(enabled);
-    if (mounted) setState(() {});
+    _editorRevision.value++;
   }
 
   Future<void> _reset() async {
@@ -214,15 +220,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     if (!mounted) return;
     // No restart dialog here — it's shown once when switching source.
     DebugToast.show(context, DebugStrings.serviceResetToast);
-    setState(() {});
+    _editorRevision.value++;
   }
 
   Future<void> _editEntry(DebugLensConfigEntry entry) async {
     final value = await showConfigEditDialog(context, entry);
     if (value == null || !mounted) return;
     await _editor!.setValue(entry.key, value);
-    // No restart dialog per edit — it's shown once when switching to custom.
-    if (mounted) setState(() {});
+    if (!mounted) return;
+
+    /// A toast, not a dialog — the value is saved, it just isn't read until the
+    /// app restarts. The source switch has its own confirmation.
+    DebugToast.show(context, DebugStrings.serviceRestartToast);
+    _editorRevision.value++;
   }
 
   /// Confirms the source switch. Returns true to apply, false/null to cancel.
@@ -269,11 +279,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
             onPressed: _share,
           ),
           // Reset only shows in custom mode once overrides exist.
-          if (editor != null && editor.overrideEnabled && editor.hasOverrides)
-            IconButton(
-              tooltip: DebugStrings.serviceResetTooltip,
-              icon: const Icon(Icons.settings_backup_restore),
-              onPressed: _reset,
+          if (editor != null)
+            ValueListenableBuilder<int>(
+              valueListenable: _editorRevision,
+              builder: (_, _, _) =>
+                  editor.overrideEnabled && editor.hasOverrides
+                  ? IconButton(
+                      tooltip: DebugStrings.serviceResetTooltip,
+                      icon: const Icon(Icons.settings_backup_restore),
+                      onPressed: _reset,
+                    )
+                  : const SizedBox.shrink(),
             ),
           // Delete only for read-only services; editable ones use Reset.
           if (editor == null && widget.service.canClear)
@@ -294,26 +310,29 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       preferredSize: const Size.fromHeight(52),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        child: SegmentedButton<bool>(
-          segments: [
-            ButtonSegment(
-              value: false,
-              label: Text(editor.sourceLabel),
-              icon: const Icon(Icons.cloud_outlined, size: 16),
-              tooltip: DebugStrings.serviceSourceRemoteTooltip(
-                editor.sourceLabel,
+        child: ValueListenableBuilder<int>(
+          valueListenable: _editorRevision,
+          builder: (_, _, _) => SegmentedButton<bool>(
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text(editor.sourceLabel),
+                icon: const Icon(Icons.cloud_outlined, size: 16),
+                tooltip: DebugStrings.serviceSourceRemoteTooltip(
+                  editor.sourceLabel,
+                ),
               ),
-            ),
-            const ButtonSegment(
-              value: true,
-              label: Text(DebugStrings.serviceSourceCustom),
-              icon: Icon(Icons.tune, size: 16),
-              tooltip: DebugStrings.serviceSourceCustomTooltip,
-            ),
-          ],
-          selected: {editor.overrideEnabled},
-          showSelectedIcon: false,
-          onSelectionChanged: (s) => _toggleOverride(s.first),
+              const ButtonSegment(
+                value: true,
+                label: Text(DebugStrings.serviceSourceCustom),
+                icon: Icon(Icons.tune, size: 16),
+                tooltip: DebugStrings.serviceSourceCustomTooltip,
+              ),
+            ],
+            selected: {editor.overrideEnabled},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => _toggleOverride(s.first),
+          ),
         ),
       ),
     );
@@ -397,7 +416,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
           ),
         Expanded(
           child: ListenableBuilder(
-            listenable: Listenable.merge([_query, _sortAlpha]),
+            listenable: Listenable.merge([_query, _sortAlpha, _editorRevision]),
             builder: (context, _) => ServiceConfigView(
               entries: _visibleEntries,
               editable: editor.overrideEnabled,

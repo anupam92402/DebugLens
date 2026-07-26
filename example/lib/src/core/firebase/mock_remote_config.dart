@@ -8,8 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class _RcParam {
   final String key;
   final DebugLensConfigType type;
-  final Object firebaseValue;
-  const _RcParam(this.key, this.type, this.firebaseValue);
+  final Object value;
+  const _RcParam(this.key, this.type, this.value);
 }
 
 /// In-memory stand-in for `FirebaseRemoteConfig` that also implements the
@@ -21,7 +21,7 @@ class _RcParam {
 class MockRemoteConfig extends DebugLensConfigEditor {
   MockRemoteConfig._() {
     for (final p in _params) {
-      _active[p.key] = p.firebaseValue;
+      _active[p.key] = p.value;
     }
   }
   static final MockRemoteConfig instance = MockRemoteConfig._();
@@ -71,7 +71,7 @@ class MockRemoteConfig extends DebugLensConfigEditor {
       // than crash startup.
       _active[p.key] = override != null && p.type.accepts(override)
           ? _parse(p.type, override)
-          : p.firebaseValue;
+          : p.value;
     }
     lastFetchTime = DateTime.now();
     lastFetchStatus = 'success';
@@ -129,8 +129,8 @@ class MockRemoteConfig extends DebugLensConfigEditor {
         type: p.type,
         value: _customEnabled && _overrides.containsKey(p.key)
             ? _overrides[p.key]!
-            : '${p.firebaseValue}',
-        sourceValue: '${p.firebaseValue}',
+            : '${p.value}',
+        sourceValue: '${p.value}',
         overridden: _customEnabled && _overrides.containsKey(p.key),
       ),
   ];

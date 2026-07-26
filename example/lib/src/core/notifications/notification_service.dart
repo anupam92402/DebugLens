@@ -129,9 +129,6 @@ class NotificationService {
   Future<void> triggerSamples() async {
     await init();
     final count = sampleCount;
-    final trace = MockFirebase.performance.newTrace('notifications_dispatch')
-      ..putAttribute('batch', '$count')
-      ..start();
     MockFirebase.analytics.logEvent(
       'test_notifications_sent',
       parameters: {
@@ -140,35 +137,37 @@ class NotificationService {
         'category': 'notifications',
       },
     );
-    const details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
-      ),
-      iOS: DarwinNotificationDetails(),
-    );
-    for (var i = 0; i < count; i++) {
-      final (title, body, payload) = _samples[i];
-      // Carry title/body in the payload too, so the tap landing screen can
-      // show them without another lookup.
-      await _plugin.show(
-        i,
-        title,
-        body,
-        details,
-        payload: jsonEncode({'title': title, 'body': body, ...payload}),
+    await MockFirebase.performance.trace('notifications_dispatch', () async {
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        ),
+        iOS: DarwinNotificationDetails(),
       );
-      // Mirror the shown notification into DebugLens's Notifications inspector.
-      DebugLens.recordNotification(
-        title: title,
-        body: body,
-        payload: payload,
-        source: 'local',
-      );
-    }
-    trace.stop();
+      for (var i = 0; i < count; i++) {
+        final (title, body, payload) = _samples[i];
+        // Carry title/body in the payload too, so the tap landing screen can
+        // show them without another lookup.
+        await _plugin.show(
+          i,
+          title,
+          body,
+          details,
+          payload: jsonEncode({'title': title, 'body': body, ...payload}),
+        );
+        // Mirror the shown notification into DebugLens's Notifications
+        // inspector.
+        DebugLens.recordNotification(
+          title: title,
+          body: body,
+          payload: payload,
+          source: 'local',
+        );
+      }
+    });
     log.d('Dispatched $count local notifications', name: 'notifications');
   }
 }

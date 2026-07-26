@@ -191,6 +191,8 @@ class DebugStrings {
   // --- Services · pushed services -------------------------------------------
   static const String serviceCrashName = 'Crashlytics';
   static const String serviceAnalyticsName = 'Analytics';
+  static const String servicePerformanceName = 'Performance';
+  static String traceDuration(int ms) => '$ms ms';
   static const String crashFatal = 'fatal';
   static const String crashNonFatal = 'non-fatal';
   static const String crashErrorLabel = 'error';

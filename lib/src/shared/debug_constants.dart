@@ -39,6 +39,9 @@ class DebugConstants {
   /// and hit sooner, since a chatty app logs one on every screen.
   static const int maxAnalyticsEvents = 100;
 
+  /// Cap on retained performance traces (see `DebugTraceStore`) — as above.
+  static const int maxTraceEvents = 100;
+
   // SharedPreferences keys DebugLens persists its own state under.
 
   /// Access role for the panel (see `DebugRoleController`).

@@ -26,6 +26,7 @@ class MockFirebase {
     _configured = true;
     analytics.initialize();
     crashlytics.initialize();
+    performance.initialize();
   }
 
   /// Simulates Firebase startup: fetch + activate Remote Config (applying any

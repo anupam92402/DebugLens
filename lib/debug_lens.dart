@@ -8,8 +8,10 @@ import 'src/features/services/data/debug_analytics_store.dart';
 import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_crash_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
+import 'src/features/services/data/debug_trace_store.dart';
 import 'src/features/services/domain/analytics_event.dart';
 import 'src/features/services/domain/crash_event.dart';
+import 'src/features/services/domain/trace_event.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
@@ -236,6 +238,43 @@ class DebugLens {
     if (!_analyticsStarted) initAnalytics();
     DebugAnalyticsStore.instance.record(
       DebugLensAnalyticsEvent(name: name, parameters: parameters),
+    );
+  }
+
+  /// Whether the performance service has been put on the Services screen yet —
+  /// see [_crashReportingStarted].
+  static bool _performanceStarted = false;
+
+  /// Adds the performance service to the Services screen under [name]. Call it
+  /// from your performance wrapper's own `initialize()`, so the screen is there
+  /// from startup rather than appearing with the first finished trace.
+  void initPerformance({String name = DebugStrings.servicePerformanceName}) {
+    _performanceStarted = true;
+    DebugLensServices.register(DebugTraceService(name: name));
+  }
+
+  /// Records a **finished** trace on the Services screen's performance service.
+  ///
+  /// Call it where your trace stops — you keep owning the running trace, so
+  /// DebugLens never holds a half-timed one. [name] is the row title and
+  /// [duration] its second line; fold the trace's metrics and attributes into
+  /// [attributes] and they show as fields when the row is expanded. Nothing is
+  /// uploaded.
+  ///
+  /// Performance SDKs are write-only, which is why this is pushed rather than
+  /// pulled like the adapter-based services.
+  void recordTrace(
+    String name,
+    Duration duration, {
+    Map<String, Object?> attributes = const {},
+  }) {
+    if (!_performanceStarted) initPerformance();
+    DebugTraceStore.instance.record(
+      DebugLensTraceEvent(
+        name: name,
+        duration: duration,
+        attributes: attributes,
+      ),
     );
   }
 

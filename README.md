@@ -248,14 +248,17 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 ### Services
 
-Surfaces whatever backends and SDKs your app talks to — Firebase Performance,
-LaunchDarkly, your own API client — as a list of services, each with its own
-screen. Vendor-neutral: you implement a small adapter, DebugLens calls it on
-demand and keeps no copy, so the package depends on none of these SDKs.
+Surfaces whatever backends and SDKs your app talks to as a list of services,
+each with its own screen. Vendor-neutral throughout: DebugLens depends on none
+of these SDKs and imports none of them.
 
-Three services are built in and **pushed** to rather than pulled from, because
-none of the three sources can be read back — see *Remote config*, *Crash
-reports* and *Analytics* below.
+There are two ways in. **Push** for a source you can only write to — a crash
+reporter, an analytics or performance SDK, a config fetch — where you hand
+DebugLens the payload as you send it upstream. Four of those are built in; see
+*Remote config*, *Crash reports*, *Analytics* and *Performance* below. **Pull**
+for a source you can read back — your own API client, a feature-flag cache, an
+in-memory queue — where you write a small adapter and DebugLens calls it on
+demand, keeping no copy.
 
 - **Records** — each service renders as expandable rows (an analytics event, a
   trace, a crash report): primary label, optional subtitle, fields as JSON.
@@ -267,6 +270,8 @@ reports* and *Analytics* below.
   them.
 - **Analytics** — same deal for the events you log: name, time, and whatever
   parameters you sent.
+- **Performance** — and for finished traces: name, duration, and the metrics and
+  attributes you put on them.
 - **Search, sort & share** — free-text over titles and fields, newest or oldest
   first (A–Z for config keys), and a share that exports exactly the rows on
   screen.
@@ -275,40 +280,41 @@ reports* and *Analytics* below.
 - **Values are shown as given** — DebugLens does no masking, and a shared log
   file carries exactly what is on screen. Keep secrets out of `values`.
 
-**Usage** — extend `DebugLensService` (don't implement it: only `name` is
+**Usage (pull)** — extend `DebugLensService` (don't implement it: only `name` is
 required) and register it once at startup:
 
 ```dart
-class PerformanceInspector extends DebugLensService {
+class ApiCacheInspector extends DebugLensService {
   @override
-  String get name => 'Performance';
+  String get name => 'API cache';
 
   @override
   bool get canClear => true;
 
   @override
-  Future<void> clear() async => myPerformance.clearTraces();
+  Future<void> clear() async => myCache.evictAll();
 
-  /// Optional: re-pull the open screen as new traces finish.
+  /// Optional: re-pull the open screen as the cache changes.
   @override
-  Listenable get changes => myPerformance.revision;
+  Listenable get changes => myCache.revision;
 
   @override
   Future<List<DebugLensServiceGroup>> load() async => [
-    for (final t in myPerformance.traces)
+    for (final entry in myCache.entries)
       DebugLensServiceGroup(
-        title: t.name,
-        subtitle: '${t.duration.inMilliseconds} ms',
-        values: {'screen': t.screen, ...t.attributes},
+        title: entry.key,
+        subtitle: 'expires ${entry.expiry}',
+        values: {'size': '${entry.bytes} B', ...entry.headers},
       ),
   ];
 }
 
-DebugLens.registerService(PerformanceInspector());
+DebugLens.registerService(ApiCacheInspector());
 ```
 
-Reach for this when your source *can* be read back. If it can't — an SDK you can
-only write to — push instead, the way the three built-ins below do.
+`load()` is called on demand, so return live data rather than a snapshot you keep
+in sync yourself. If your source *can't* be read back, push instead — the four
+built-ins below show the shape.
 
 ### Remote config
 
@@ -507,4 +513,67 @@ to satisfy and no wrapper type to construct.
 **`initAnalytics` is optional.** The first `recordAnalyticsEvent` registers the
 service if you skip it, but then it only shows up once an event has been logged.
 Pass `name:` to label it something other than `Analytics`.
+
+### Performance
+
+See what your app actually spent its time on — startup, page loads, individual
+network calls — on the device, in the same session, without a dashboard round
+trip.
+
+Pushed like the two above, with one difference: **you keep owning the running
+trace.** The stopwatch and the metrics and attributes accumulating on it stay in
+your wrapper, and you push once when the trace stops, so DebugLens only ever
+holds finished traces (in memory, newest-first, ring-buffered to the latest 100).
+
+- **Records** — one row per finished trace: the name, then duration and time
+  under it, expanding to the metrics and attributes you attached. The duration
+  isn't repeated as a field, since it's already on the row.
+- **Search, sort & share** — free-text over names and attributes, newest or
+  oldest first, and a share that exports exactly the rows on screen.
+- **Live** — the open screen picks up traces that finish behind it; clear the
+  list from the AppBar.
+
+Keep it to the one file that already wraps your SDK — the push belongs in `stop`,
+next to the Firebase trace it mirrors:
+
+```dart
+class PerfTrace {
+  PerfTrace(this.name) : _firebase = FirebasePerformance.instance.newTrace(name);
+
+  final String name;
+  final Trace _firebase;
+  final Map<String, Object?> _data = {};
+  final Stopwatch _sw = Stopwatch();
+
+  Future<void> start() async {
+    _sw.start();
+    await _firebase.start();
+  }
+
+  void putAttribute(String key, String value) {
+    _data[key] = value;
+    _firebase.putAttribute(key, value);
+  }
+
+  void setMetric(String key, int value) {
+    _data[key] = value;
+    _firebase.setMetric(key, value);
+  }
+
+  Future<void> stop() async {
+    _sw.stop();
+    await _firebase.stop();
+
+    /// The finished trace, kept on the device.
+    DebugLens.instance.recordTrace(name, _sw.elapsed, attributes: _data);
+  }
+}
+```
+
+`recordTrace` takes metrics and attributes as one `attributes` map — DebugLens
+draws no distinction between them, so merge them however your wrapper holds them.
+
+**`initPerformance` is optional.** The first `recordTrace` registers the service
+if you skip it, but then it only shows up once a trace has finished. Pass `name:`
+to label it something other than `Performance`.
 

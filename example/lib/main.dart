@@ -39,35 +39,34 @@ Future<void> _bootstrap() async {
   final startup = Stopwatch()..start();
 
   /// Time the whole startup as a mock-Firebase performance trace.
-  final startTrace = MockFirebase.performance.newTrace('app_start')..start();
+  await MockFirebase.performance.trace('app_start', () async {
+    /// Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
+    Bloc.observer = DebugLensBlocObserver();
+    setupLocator();
 
-  /// Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
-  Bloc.observer = DebugLensBlocObserver();
-  setupLocator();
+    /// Mock Firebase init: seed realistic data + identify the user.
+    MockFirebase.configure();
 
-  /// Mock Firebase init: seed realistic data + identify the user.
-  MockFirebase.configure();
+    /// Real app storage (SharedPreferences + Drift), bridged to DebugLens.
+    await setupStorage();
 
-  /// Real app storage (SharedPreferences + Drift), bridged to DebugLens.
-  await setupStorage();
+    /// Fetch + activate Remote Config (applies any persisted device overrides).
+    await MockFirebase.activate();
+    log.d('Remote Config activated', name: 'config');
 
-  /// Fetch + activate Remote Config (applies any persisted device overrides).
-  await MockFirebase.activate();
-  log.d('Remote Config activated', name: 'config');
+    /// Local notifications — request permission up front.
+    try {
+      await sl<NotificationService>().init();
+    } catch (error, stack) {
+      log.e(
+        'Notification setup failed',
+        name: 'notifications',
+        error: error,
+        stackTrace: stack,
+      );
+    }
+  });
 
-  /// Local notifications — request permission up front.
-  try {
-    await sl<NotificationService>().init();
-  } catch (error, stack) {
-    log.e(
-      'Notification setup failed',
-      name: 'notifications',
-      error: error,
-      stackTrace: stack,
-    );
-  }
-
-  startTrace.stop();
   startup.stop();
   MockFirebase.analytics.logEvent(
     'app_open',

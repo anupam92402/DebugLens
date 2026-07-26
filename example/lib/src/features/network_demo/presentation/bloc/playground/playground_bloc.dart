@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/firebase/mock_firebase.dart';
+import '../../../../../core/logging/app_log.dart';
 import '../../../data/api_repository.dart';
 import '../../../domain/api_action.dart';
 
@@ -48,6 +49,12 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
         e,
         stack,
         reason: 'API ${action.name} failed ($detail)',
+      );
+      log.e(
+        'API ${action.name} failed · $detail',
+        name: 'api',
+        error: e,
+        stackTrace: stack,
       );
       emit(
         state.updated(

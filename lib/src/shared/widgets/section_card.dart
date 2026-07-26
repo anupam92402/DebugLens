@@ -7,9 +7,8 @@ import '../theme/debug_colors.dart';
 
 /// Titled, bordered container used to group content on detail screens.
 ///
-/// When [onCopy] is provided, a compact `Copy` text button is drawn at the
-/// top-right of the title row — same affordance as we_logger's chucker
-/// overview, where every block has a one-tap copy.
+/// When [onCopy] is provided, a compact `COPY` text button is drawn at the
+/// top-right of the title row, so each block can be copied on its own.
 class SectionCard extends StatelessWidget {
   final String? title;
   final Widget child;

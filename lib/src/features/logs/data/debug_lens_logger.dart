@@ -1,9 +1,13 @@
 import 'package:flutter/foundation.dart';
 
+import '../../storage/data/debug_shared_prefs_source.dart';
+import '../../../shared/debug_constants.dart';
+import '../../../shared/debug_strings.dart';
+import '../domain/log_origin.dart';
 import '../domain/log_record.dart';
 
-/// Optional external observer signature — mirrors WeLogger's so server-forward
-/// code written against WeLogger keeps working.
+/// Signature for an external log observer — the hook for forwarding records
+/// somewhere else, e.g. a crash reporter or your own server.
 typedef DebugLogObserver =
     void Function(
       String message,
@@ -13,62 +17,141 @@ typedef DebugLogObserver =
       StackTrace? stackTrace,
     });
 
-/// Singleton logger used by app code to emit logs that appear in DebugLens.
+/// The log store behind the Logs screen.
 ///
-/// Mirrors the API of `WeLogger` from the team's `we_core` package so existing
-/// call-sites translate directly:
+/// ## Purpose
+///
+/// One place for everything the app says, on-device, so you aren't tied to a
+/// terminal. Records arrive two ways:
+///
+/// 1. **Your own calls** — [i] / [d] / [e].
+/// 2. **DebugLens's own services** — the Dio interceptor, Bloc observer and
+///    Navigator observer, each switchable at runtime from the Logs screen
+///    (see [setCapturing]).
+///
+/// Framework and uncaught async errors aren't hooked for you — route them in
+/// from your own `FlutterError.onError` / `PlatformDispatcher.onError` so you
+/// stay in control of what DebugLens sees.
+///
+/// ## Usage
 ///
 /// ```dart
-/// DebugLensLogger().i('Login succeeded', name: 'auth');
-/// DebugLensLogger().e('Charge failed', name: 'payment', error: e, stackTrace: s);
-/// DebugLensLogger().d('Frame built in 8ms');
+/// DebugLensLogger.instance.i('Login succeeded', name: 'auth');
+/// DebugLensLogger.instance.d('Fetched ${posts.length} posts', name: 'api');
+/// DebugLensLogger.instance.e('Charge failed', name: 'payment', error: e, stackTrace: s);
 /// ```
 ///
-/// Extends [ChangeNotifier] so the Logs screen rebuilds automatically when a
-/// record is appended.
+/// `name` becomes the `[tag]` on the row and what the screen's search matches.
+/// Prefer a stable area name (`auth`, `api`, `checkout`) over a class name.
+///
+/// Terminal output is yours to control: [printToConsole] decides whether the
+/// logger echoes each record through `debugPrint`. Set it from your own build
+/// config, and turn it off when you already have a logger printing:
+///
+/// ```dart
+/// DebugLensLogger.instance.printToConsole = kDebugMode; // or false
+/// ```
+///
+/// Size the buffer once at startup ([defaultMaxHistory] records otherwise):
+///
+/// ```dart
+/// DebugLensLogger.instance.maxHistory = 5000;
+/// ```
+///
+/// Forward records elsewhere with [addLogObserver]. Extends [ChangeNotifier],
+/// so the Logs screen rebuilds as records land.
 class DebugLensLogger extends ChangeNotifier {
   DebugLensLogger._internal();
 
-  static final DebugLensLogger _instance = DebugLensLogger._internal();
+  /// Singleton accessor.
+  static final DebugLensLogger instance = DebugLensLogger._internal();
 
-  /// Singleton accessor. The factory makes `DebugLensLogger()` and
-  /// `DebugLensLogger.instance` interchangeable.
-  factory DebugLensLogger() => _instance;
-
-  /// Convenience alias matching the rest of the package's static accessors.
-  static DebugLensLogger get instance => _instance;
-
-  /// When `false`, calls produce neither console output nor observer
-  /// callbacks (records are still appended to in-memory history so DebugLens
-  /// always shows them). Defaults to `kDebugMode` to match WeLogger.
-  bool showLogs = kDebugMode;
-
-  /// Hard cap on retained records — oldest are dropped first.
-  static const int _maxHistory = 1000;
-
-  final List<DebugLogRecord> _history = [];
-  final List<DebugLogObserver> _onLog = [];
-
-  /// Read-only view of recorded logs (oldest first).
-  List<DebugLogRecord> get history => List.unmodifiable(_history);
-
-  /// Registers an external observer. Useful for shipping logs to a server.
+  /// Whether records are echoed to the console. They are stored and shown
+  /// either way; a single call overrides this with `force: true`.
+  ///
+  /// Yours to decide — wire it to your own build config rather than leaving it
+  /// at the default, so DebugLens never silently changes what your terminal
+  /// shows between builds:
   ///
   /// ```dart
-  /// DebugLensLogger().setLogObserver((message, level, {name, error, stackTrace}) {
-  ///   sendLogToServer(message, name, error, stackTrace);
-  /// });
+  /// DebugLensLogger.instance.printToConsole = kDebugMode; // or a flavor flag
   /// ```
-  ///
-  /// Note:
-  /// - Don't call [DebugLensLogger] methods inside the observer — it will
-  ///   recurse forever (StackOverflow).
-  /// - If running inside [runZonedGuarded], don't use `print` inside the
-  ///   observer for the same reason.
-  /// - Pair with [removeLogObserver] when the observer is no longer needed.
-  void setLogObserver(DebugLogObserver onLog) => _onLog.add(onLog);
+  bool printToConsole = true;
 
-  /// Removes a previously registered observer. See [setLogObserver].
+  /// Buffer size when the host hasn't set [maxHistory].
+  static const int defaultMaxHistory = 1000;
+
+  int _maxHistory = defaultMaxHistory;
+
+  /// Cap on retained records, oldest dropped first. Lowering it trims now;
+  /// values below 1 are ignored.
+  int get maxHistory => _maxHistory;
+
+  set maxHistory(int value) {
+    assert(value > 0, 'maxHistory must be greater than 0, got $value');
+    if (value < 1 || value == _maxHistory) return;
+    _maxHistory = value;
+    if (_trimToLimit()) notifyListeners();
+  }
+
+  /// The records themselves, oldest first — read via [history], capped by
+  /// [maxHistory]. This is what the Logs screen renders and share exports.
+  final List<DebugLogRecord> _history = [];
+
+  /// Forwarders registered with [addLogObserver], invoked on every record.
+  final List<DebugLogObserver> _onLog = [];
+
+  /// Origins switched off in the capture sheet. Holding the *muted* ones keeps
+  /// every origin on by default, including any added later.
+  final Set<DebugLogOrigin> _mutedOrigins = <DebugLogOrigin>{};
+
+  /// Whether [restoreCaptureSettings] has already run this session.
+  bool _captureRestored = false;
+
+  /// Recorded logs, oldest first.
+  List<DebugLogRecord> get history => List.unmodifiable(_history);
+
+  /// Whether records from [origin] are currently being recorded.
+  bool isCapturing(DebugLogOrigin origin) => !_mutedOrigins.contains(origin);
+
+  /// Starts or stops recording [origin], and persists the choice. Applies to
+  /// new records only — rows already in [history] stay.
+  void setCapturing(DebugLogOrigin origin, bool enabled) {
+    final changed = enabled
+        ? _mutedOrigins.remove(origin)
+        : _mutedOrigins.add(origin);
+    if (!changed) return;
+    DebugLensSharedPrefs.setBool(origin.prefsKey, enabled);
+    notifyListeners();
+  }
+
+  /// Reloads the persisted capture switches. `DebugLens.wrap()` calls this once
+  /// — hosts don't need to, and it must not run before the binding exists.
+  /// Only an explicit `false` mutes, so an untouched (or newly added) origin
+  /// stays on; storage failures leave every origin recording.
+  Future<void> restoreCaptureSettings() async {
+    if (_captureRestored) return;
+    _captureRestored = true;
+    var changed = false;
+    try {
+      for (final origin in DebugLogOrigin.values) {
+        if (await DebugLensSharedPrefs.getBool(origin.prefsKey) == false) {
+          _mutedOrigins.add(origin);
+          changed = true;
+        }
+      }
+    } catch (_) {
+      // Storage unavailable — defaults apply for this session.
+    }
+    if (changed) notifyListeners();
+  }
+
+  /// Registers a forwarder. Observers fire regardless of [printToConsole], so
+  /// silencing the console never stops forwarding. Never call the logger from
+  /// inside one — it recurses. Pair with [removeLogObserver].
+  void addLogObserver(DebugLogObserver onLog) => _onLog.add(onLog);
+
+  /// Removes an observer registered with [addLogObserver].
   void removeLogObserver(DebugLogObserver onLog) => _onLog.remove(onLog);
 
   /// Logs an info message.
@@ -99,19 +182,6 @@ class DebugLensLogger extends ChangeNotifier {
     _log(message, name: name, level: DebugLogLevel.debug, force: force);
   }
 
-  /// Internal hook used by the console-capture wiring in `DebugLens.wrap()`
-  /// to inject `debugPrint` / `print` lines as records. Not for app code.
-  void recordConsole(String message) {
-    _append(
-      DebugLogRecord(
-        level: DebugLogLevel.debug,
-        source: DebugLogSource.console,
-        message: message,
-        time: DateTime.now(),
-      ),
-    );
-  }
-
   /// Drops all retained records.
   void clear() {
     if (_history.isEmpty) return;
@@ -127,12 +197,10 @@ class DebugLensLogger extends ChangeNotifier {
     required DebugLogLevel level,
     bool force = false,
   }) {
-    final logBuffer = StringBuffer('Flutter-Log');
+    final logBuffer = StringBuffer(DebugConstants.logTagPrefix);
     if (name?.isNotEmpty ?? false) logBuffer.write('-$name');
     final logName = logBuffer.toString();
 
-    // Records always land in history so DebugLens can show them, even when
-    // console output / observers are disabled.
     _append(
       DebugLogRecord(
         level: level,
@@ -144,68 +212,40 @@ class DebugLensLogger extends ChangeNotifier {
       ),
     );
 
-    if (showLogs || force) {
-      final messageBuffer = StringBuffer()..write('[$logName] $message');
-      if (error != null) messageBuffer.write('\nError: $error');
-      if (stackTrace != null) messageBuffer.write('\nStackTrace: $stackTrace');
-
-      _printColored(
-        messageBuffer.toString(),
-        level == DebugLogLevel.info
-            ? _ansiGreen
-            : level == DebugLogLevel.error
-            ? _ansiRed
-            : _ansiBlue,
-      );
-
-      for (final observer in _onLog) {
-        observer.call(
-          message,
-          level,
-          name: logName,
-          error: error,
-          stackTrace: stackTrace,
-        );
+    if (printToConsole || force) {
+      final messageBuffer = StringBuffer()
+        ..write('${level.paddedName} [$logName] $message');
+      if (error != null) {
+        messageBuffer.write('\n${DebugStrings.logsPrintError}: $error');
       }
+      if (stackTrace != null) {
+        messageBuffer.write('\n${DebugStrings.logsPrintStack}: $stackTrace');
+      }
+      debugPrint(messageBuffer.toString());
+    }
+
+    for (final observer in _onLog) {
+      observer.call(
+        message,
+        level,
+        name: logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
   void _append(DebugLogRecord record) {
     _history.add(record);
-    if (_history.length > _maxHistory) _history.removeAt(0);
+    _trimToLimit();
     notifyListeners();
   }
 
-  /// Prints text in chunks to avoid the ~1KB truncation Flutter applies to
-  /// long console lines. See:
-  /// https://github.com/flutter/flutter/issues/22665#issuecomment-458186456
-  ///
-  /// Splits on newlines *first* so a stack-trace frame is never broken across
-  /// chunks — only individual lines longer than [chunkSize] are subdivided.
-  /// Uses raw [print] rather than [debugPrint] so the console-capture override
-  /// installed by `DebugLens.wrap()` (which hooks [debugPrint]) can't recurse
-  /// back into the logger.
-  void _printColored(String text, String colorCode) {
-    const chunkSize = 800;
-    for (final line in text.split('\n')) {
-      if (line.length <= chunkSize) {
-        // ignore: avoid_print
-        print('$colorCode$line$_ansiReset');
-      } else {
-        for (var i = 0; i < line.length; i += chunkSize) {
-          final end = (i + chunkSize < line.length)
-              ? i + chunkSize
-              : line.length;
-          // ignore: avoid_print
-          print('$colorCode${line.substring(i, end)}$_ansiReset');
-        }
-      }
-    }
+  /// Drops records above [maxHistory]; true if any went.
+  bool _trimToLimit() {
+    final excess = _history.length - _maxHistory;
+    if (excess <= 0) return false;
+    _history.removeRange(0, excess);
+    return true;
   }
 }
-
-// ANSI escape codes for coloring console output.
-const String _ansiBlue = '\x1B[34m';
-const String _ansiGreen = '\x1B[32m';
-const String _ansiRed = '\x1B[31m';
-const String _ansiReset = '\x1B[0m';

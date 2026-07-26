@@ -7,9 +7,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import 'message_and_tag.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// One row in the Logs list. Console-sourced rows are visually distinct —
-/// purple "C" badge, purple-tinted message — so they pop in a mixed feed
-/// even when the level filter is open.
+/// One row in the Logs list: a level badge, the message, and its tag + time.
 class LogTile extends StatelessWidget {
   final DebugLogRecord record;
   final VoidCallback onTap;
@@ -18,15 +16,6 @@ class LogTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isConsole = record.source == DebugLogSource.console;
-    final tone = isConsole ? DebugColors.console : toneForLevel(record.level);
-    final label =
-        record.name ??
-        (isConsole ? DebugStrings.logsConsole : DebugStrings.logsLog);
-    // Console rows show a 'C' badge so they're distinguishable from custom
-    // debug-level rows (which show 'D').
-    final badge = isConsole ? DebugStrings.logsConsoleBadge : record.levelLabel;
-
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -34,13 +23,16 @@ class LogTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            StatusChip(badge, color: tone, filled: true),
+            StatusChip(
+              record.levelLabel,
+              color: toneForLevel(record.level),
+              filled: true,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: MessageAndTag(
                 record: record,
-                isConsole: isConsole,
-                label: label,
+                label: record.name ?? DebugStrings.logsLog,
               ),
             ),
             const Icon(Icons.chevron_right, color: DebugColors.textMuted),

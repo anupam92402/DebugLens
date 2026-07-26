@@ -3,19 +3,12 @@ import '../../domain/log_record.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Two-line block — message on top, "[label] · time" below. Pulled out so
-/// the tinting logic for console rows is colocated with the rendering.
+/// Two-line block — message on top, "[label] · time" below.
 class MessageAndTag extends StatelessWidget {
   final DebugLogRecord record;
-  final bool isConsole;
   final String label;
 
-  const MessageAndTag({
-    super.key,
-    required this.record,
-    required this.isConsole,
-    required this.label,
-  });
+  const MessageAndTag({super.key, required this.record, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +19,7 @@ class MessageAndTag extends StatelessWidget {
           record.message,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: monoStyle(
-            size: 13,
-            color: isConsole ? DebugColors.console : null,
-          ),
+          style: monoStyle(size: 13),
         ),
         const SizedBox(height: 2),
         Text(

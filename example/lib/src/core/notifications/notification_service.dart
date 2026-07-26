@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../app_navigator.dart';
+import '../logging/app_log.dart';
 import '../firebase/mock_firebase.dart';
 import '../../features/notifications/presentation/views/notification_landing_screen.dart';
 
@@ -79,6 +80,7 @@ class NotificationService {
         >()
         ?.requestPermissions(alert: true, badge: true, sound: true);
     _initialized = true;
+    log.i('Local notifications initialised', name: 'notifications');
   }
 
   /// On tap, deep-link to the landing screen using the notification's payload.
@@ -88,8 +90,14 @@ class NotificationService {
     if (raw != null && raw.isNotEmpty) {
       try {
         data = jsonDecode(raw) as Map<String, dynamic>;
-      } catch (_) {
-        // Non-JSON payload — nothing to route on.
+      } catch (error, stack) {
+        /// Non-JSON payload — nothing to route on, but worth surfacing.
+        log.e(
+          'Unreadable notification payload',
+          name: 'notifications',
+          error: error,
+          stackTrace: stack,
+        );
       }
     }
     // Surface the tap in DebugLens, plus the route it deep-links to.
@@ -99,6 +107,10 @@ class NotificationService {
       payload: data,
       source: 'local',
       tapped: true,
+    );
+    log.i(
+      'Notification tapped · ${data['title'] ?? 'untitled'}',
+      name: 'notifications',
     );
     final route = data['route'];
     if (route is String && route.isNotEmpty) {
@@ -155,5 +167,6 @@ class NotificationService {
       );
     }
     trace.stop();
+    log.d('Dispatched $count local notifications', name: 'notifications');
   }
 }

@@ -5,7 +5,7 @@ import 'debug_constants.dart';
 /// One flat, feature-prefixed namespace (e.g. [networkTitle], [logsEmpty]).
 /// Copy that needs runtime values is exposed as a static method
 /// (e.g. [settingsMaxItems]). Technical strings — map/JSON keys, route names,
-/// log tags, ANSI codes, `MockSeed` data, and pure-composition interpolations
+/// log tags, `MockSeed` data, and pure-composition interpolations
 /// (`'$a $b'`) — are intentionally NOT centralised here.
 class DebugStrings {
   DebugStrings._();
@@ -177,8 +177,7 @@ class DebugStrings {
   static const String serviceResetLabel = 'Reset';
   static const String serviceSourceRemote = 'Remote';
   static const String serviceSourceCustom = 'Custom';
-  static String serviceSourceRemoteTooltip(String label) =>
-      'Use $label values';
+  static String serviceSourceRemoteTooltip(String label) => 'Use $label values';
   static const String serviceSourceCustomTooltip = 'Use device overrides';
   static const String serviceSourceValueLabel = 'Source value';
   static const String serviceOverridden = 'custom';
@@ -238,18 +237,35 @@ class DebugStrings {
   static const String logsDetailTitle = 'Log detail';
   static const String logsCopyFullTooltip = 'Copy full record';
   static const String logsCopiedToast = 'Log copied to clipboard';
-  static const String logsConsoleBadge = 'C';
   static const String logsSummaryCard = 'Summary';
   static const String logsMessageCard = 'Message';
   static const String logsErrorCard = 'Error';
   static const String logsStackCard = 'Stack trace';
   static const String logsLabelLevel = 'Level';
   static const String logsLabelName = 'Name';
-  static const String logsLabelSource = 'Source';
   static const String logsLabelTime = 'Time';
-  static const String logsConsole = 'console';
   static const String logsLog = 'log';
-  static String logsShareSubject(String stamp) => 'DebugLens logs ($stamp)';
+  static const String logsLevelInfoBadge = 'I';
+  static const String logsLevelErrorBadge = 'E';
+  static const String logsLevelDebugBadge = 'D';
+  static const String logsOriginNetwork = 'Network';
+  static const String logsOriginBloc = 'Bloc';
+  static const String logsOriginNavigation = 'Navigation';
+  static const String logsOriginNetworkHint = 'Dio interceptor';
+  static const String logsOriginBlocHint = 'Bloc observer';
+  static const String logsOriginNavigationHint = 'Navigator observer';
+  static const String logsExportTitle = 'DebugLens log export';
+  static String logsExportGenerated(String at) => 'Generated: $at';
+  static String logsExportCount(int n) => 'Records: $n';
+  static const String logsExportError = 'error';
+  static const String logsExportStack = 'stack';
+  static const String logsPrintError = 'Error';
+  static const String logsPrintStack = 'StackTrace';
+  static const String logsCaptureTooltip = 'Capture sources';
+  static const String logsCaptureTitle = 'Capture sources';
+  static const String logsCaptureHint =
+      'Off stops new logs. Existing ones stay.';
+  static const String logsShareSubject = 'DebugLens logs';
 
   // --- Common (continued) ---------------------------------------------------
   static String commonCopied(String label) => '$label copied';

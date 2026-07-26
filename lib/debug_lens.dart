@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,9 +25,11 @@ export 'src/features/services/domain/service_group.dart'
     show DebugLensServiceGroup;
 export 'src/features/services/domain/config_editor.dart'
     show DebugLensConfigEditor, DebugLensConfigEntry, DebugLensConfigType;
-export 'src/features/logs/data/debug_lens_logger.dart' show DebugLensLogger;
+export 'src/features/logs/data/debug_lens_logger.dart'
+    show DebugLensLogger, DebugLogObserver;
+export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;
 export 'src/features/logs/domain/log_record.dart'
-    show DebugLogLevel, DebugLogRecord, DebugLogSource;
+    show DebugLogLevel, DebugLogRecord;
 export 'src/features/locale/data/debug_locale_source.dart'
     show DebugLensLocaleSource;
 export 'src/features/locale/domain/locale_data.dart' show DebugLensLocaleData;
@@ -162,13 +162,10 @@ class DebugLens {
 
   /// Wraps [child] (use from `MaterialApp.builder`) to provide the DebugLens
   /// state and overlay a draggable bubble. Tapping the bubble opens the panel.
-  ///
-  /// Also installs a `debugPrint` override on first call so framework prints
-  /// and `debugPrint(...)` calls are captured into the Logs screen with
-  /// `DebugLogSource.console`. Raw `print(...)` is not captured by default —
-  /// wrap your `main()` in [runZoned] for full coverage.
   static Widget wrap(Widget child) {
-    _installConsoleCapture();
+    /// Restoring the Logs capture switches reads SharedPreferences, which needs
+    /// the binding — safe here, since [wrap] runs once the tree is up.
+    DebugLensLogger.instance.restoreCaptureSettings();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DebugLensController()),
@@ -203,54 +200,6 @@ class DebugLens {
     );
     controller.attachRoute(route);
     navigator.push(route).whenComplete(controller.detachRoute);
-  }
-
-  /// Opt-in wrapper that captures raw `print(...)` calls and uncaught zone
-  /// errors into the Logs screen. Use it around your app's entry point when
-  /// you want full console capture:
-  ///
-  /// ```dart
-  /// void main() {
-  ///   DebugLens.runZoned(() => runApp(const MyApp()));
-  /// }
-  /// ```
-  ///
-  /// The `debugPrint` override installed by [wrap] is independent — this is
-  /// only needed for raw `print()` and zone-unhandled errors.
-  static T? runZoned<T>(T Function() body) {
-    return runZonedGuarded<T>(
-      body,
-      (error, stack) {
-        DebugLensLogger.instance.e(
-          'Uncaught zone error',
-          name: 'zone',
-          error: error,
-          stackTrace: stack,
-        );
-      },
-      zoneSpecification: ZoneSpecification(
-        print: (self, parent, zone, line) {
-          DebugLensLogger.instance.recordConsole(line);
-          parent.print(zone, line);
-        },
-      ),
-    );
-  }
-
-  // --- Console capture wiring ---------------------------------------------
-
-  static bool _consoleCaptureInstalled = false;
-
-  static void _installConsoleCapture() {
-    if (_consoleCaptureInstalled) return;
-    _consoleCaptureInstalled = true;
-    final original = debugPrint;
-    debugPrint = (String? message, {int? wrapWidth}) {
-      if (message != null) {
-        DebugLensLogger.instance.recordConsole(message);
-      }
-      original(message, wrapWidth: wrapWidth);
-    };
   }
 }
 

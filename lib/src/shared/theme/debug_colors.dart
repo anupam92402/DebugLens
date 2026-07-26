@@ -24,7 +24,7 @@ class DebugColors {
   static const info = Color(0xFF5B9DFF);
   static const pending = Color(0xFF9AA7B5);
 
-  /// Distinct hue for console-sourced logs (debugPrint / print captures).
+  /// Accent used for `String`-typed value chips (prefs, remote config).
   static const console = Color(0xFFC77DFF); // light purple
 
   // Per-tool accents — dashboard tiles + per-screen theming.

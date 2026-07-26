@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
+import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
 import '../domain/bloc_event.dart';
 
@@ -22,6 +23,24 @@ class DebugLensBlocObserver extends BlocObserver {
   /// Logs tag for grepping by bloc class, e.g. `bloc.AuthCubit`.
   String _name(BlocBase<dynamic> bloc) => 'bloc.${bloc.runtimeType}';
 
+  /// Mirrors one event into the Logs feed, unless the user paused bloc capture
+  /// from the Logs screen. The Bloc screen keeps its own record either way, so
+  /// pausing here only quiets the Logs list.
+  void _mirror(
+    String message,
+    String tag, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    final logger = DebugLensLogger.instance;
+    if (!logger.isCapturing(DebugLogOrigin.bloc)) return;
+    if (error == null) {
+      logger.d(message, name: tag);
+    } else {
+      logger.e(message, name: tag, error: error, stackTrace: stackTrace);
+    }
+  }
+
   /// Defers [body] to the next microtask. `onCreate` fires synchronously from
   /// `BlocBase`'s constructor; notifying the store mid-`BlocProvider.create()`
   /// crashes Provider's introspection, so we let that chain finish first.
@@ -35,7 +54,7 @@ class DebugLensBlocObserver extends BlocObserver {
     final tag = _name(bloc);
     _defer(() {
       _store.recordBlocEvent(kind: BlocActionKind.create, blocName: blocName);
-      DebugLensLogger().d('created', name: tag);
+      _mirror('created', tag);
     });
   }
 
@@ -52,7 +71,7 @@ class DebugLensBlocObserver extends BlocObserver {
         blocName: blocName,
         event: eventStr,
       );
-      DebugLensLogger().d('event: $eventStr', name: tag);
+      _mirror('event: $eventStr', tag);
     });
   }
 
@@ -71,7 +90,7 @@ class DebugLensBlocObserver extends BlocObserver {
         currentState: current,
         nextState: next,
       );
-      DebugLensLogger().d('change: $current → $next', name: tag);
+      _mirror('change: $current → $next', tag);
     });
   }
 
@@ -95,10 +114,7 @@ class DebugLensBlocObserver extends BlocObserver {
         currentState: current,
         nextState: next,
       );
-      DebugLensLogger().d(
-        'transition: $current → $next (event: $eventStr)',
-        name: tag,
-      );
+      _mirror('transition: $current → $next (event: $eventStr)', tag);
     });
   }
 
@@ -115,12 +131,7 @@ class DebugLensBlocObserver extends BlocObserver {
         error: error.toString(),
         stackTrace: stackTrace.toString(),
       );
-      DebugLensLogger().e(
-        'error: $error',
-        name: tag,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      _mirror('error: $error', tag, error: error, stackTrace: stackTrace);
     });
   }
 
@@ -132,7 +143,7 @@ class DebugLensBlocObserver extends BlocObserver {
     final tag = _name(bloc);
     _defer(() {
       _store.recordBlocEvent(kind: BlocActionKind.close, blocName: blocName);
-      DebugLensLogger().d('closed', name: tag);
+      _mirror('closed', tag);
     });
   }
 }

@@ -34,13 +34,12 @@ class _ConfigEditDialog extends StatefulWidget {
 }
 
 class _ConfigEditDialogState extends State<_ConfigEditDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.entry.value)
-        ..addListener(() => setState(() {}));
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.entry.value,
+  )..addListener(() => setState(() {}));
   late bool _boolValue = _asBool(widget.entry.value);
 
-  static bool _asBool(String v) =>
-      v.toLowerCase() == DebugConstants.trueValue;
+  static bool _asBool(String v) => v.toLowerCase() == DebugConstants.trueValue;
 
   DebugLensConfigType get _type => widget.entry.type;
 

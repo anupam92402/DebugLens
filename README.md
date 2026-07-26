@@ -74,6 +74,61 @@ DebugLensDioInterceptor(
 );
 ```
 
+### Logs
+
+One feed for everything the app says: your own `.i` / `.d` / `.e` calls plus the
+events DebugLens's own observers mirror in. Session-only (in memory, oldest
+dropped first). Search and filter by level, tap a row for the message / error /
+stack detail.
+
+**Usage** — log from anywhere; nothing to register:
+
+```dart
+DebugLensLogger.instance.i('Login succeeded', name: 'auth');
+DebugLensLogger.instance.d('Fetched ${posts.length} posts', name: 'api');
+DebugLensLogger.instance.e('Charge failed', name: 'payment', error: e, stackTrace: s);
+```
+
+`name` is the `[tag]` shown on the row and what search matches on.
+
+Whether records also reach the terminal is yours to set — DebugLens doesn't
+assume a build mode. Turn it off when you already have a logger printing, and
+the record still shows in the feed with no duplicate line:
+
+```dart
+DebugLensLogger.instance.printToConsole = kDebugMode; // or false
+```
+
+**Buffer size** — 1000 records by default; lowering it trims immediately:
+
+```dart
+DebugLensLogger.instance.maxHistory = 5000;
+```
+
+**Crashes** — DebugLens doesn't hook Flutter's error channels for you; point
+them at the logger so framework and uncaught async errors land in the feed:
+
+```dart
+FlutterError.onError = (details) {
+  DebugLensLogger.instance.e(
+    details.exceptionAsString(),
+    name: 'flutter',
+    error: details.exception,
+    stackTrace: details.stack,
+  );
+  FlutterError.presentError(details);
+};
+
+PlatformDispatcher.instance.onError = (error, stack) {
+  DebugLensLogger.instance.e('Uncaught error', error: error, stackTrace: stack);
+  return false;
+};
+```
+
+> Silence a noisy DebugLens source (Network, Bloc, Navigation) with its
+> switch in the capture sheet — the first AppBar action; rows already
+> captured stay. Share exports the buffer as a log file.
+
 ### Bloc
 
 Records every Bloc/Cubit lifecycle event (create, event, change, transition,

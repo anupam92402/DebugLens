@@ -1,18 +1,20 @@
-/// The level a log was recorded at. Mirrors the three-tier scheme used by
-/// the team's existing WeLogger so call-sites can swap in DebugLensLogger
-/// with no semantic change.
-enum DebugLogLevel { info, error, debug }
+import '../../../shared/debug_strings.dart';
 
-/// Where a log record came from.
-///
-/// * [custom] — produced by an explicit `DebugLensLogger` call.
-/// * [console] — captured from `debugPrint` / `print` by the console hook.
-enum DebugLogSource { custom, console }
+/// The level a log was recorded at. Deliberately a small three-tier scheme —
+/// most app loggers map onto `info` / `error` / `debug` without loss.
+enum DebugLogLevel {
+  info,
+  error,
+  debug;
+
+  /// Uppercase and padded to a fixed width, so console lines and exported
+  /// files line up in columns whatever the level.
+  String get paddedName => name.toUpperCase().padRight(5);
+}
 
 /// A single immutable log record displayed by the Logs screen.
 class DebugLogRecord {
   final DebugLogLevel level;
-  final DebugLogSource source;
   final String message;
   final String? name;
   final Object? error;
@@ -23,7 +25,6 @@ class DebugLogRecord {
     required this.level,
     required this.message,
     required this.time,
-    this.source = DebugLogSource.custom,
     this.name,
     this.error,
     this.stackTrace,
@@ -33,11 +34,11 @@ class DebugLogRecord {
   String get levelLabel {
     switch (level) {
       case DebugLogLevel.info:
-        return 'I';
+        return DebugStrings.logsLevelInfoBadge;
       case DebugLogLevel.error:
-        return 'E';
+        return DebugStrings.logsLevelErrorBadge;
       case DebugLogLevel.debug:
-        return 'D';
+        return DebugStrings.logsLevelDebugBadge;
     }
   }
 }

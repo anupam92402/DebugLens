@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
+import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
 import '../domain/nav_event.dart';
 
@@ -44,11 +45,14 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
       kind: _kindOf(route),
     );
 
-    /// Also surface in the Logs feed (debug level).
-    DebugLensLogger().d(
-      _formatNavMessage(action, routeName, previousName),
-      name: 'nav.$label',
-    );
+    /// Mirror into the Logs feed, unless the user paused navigation
+    /// capture from the Logs screen.
+    if (DebugLensLogger.instance.isCapturing(DebugLogOrigin.navigation)) {
+      DebugLensLogger.instance.d(
+        _formatNavMessage(action, routeName, previousName),
+        name: 'nav.$label',
+      );
+    }
   }
 
   /// Compact one-liner for the Logs feed.

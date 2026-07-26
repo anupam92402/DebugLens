@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
+import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
 import '../../../shared/debug_constants.dart';
 import '../../../shared/debug_strings.dart';
@@ -23,6 +24,12 @@ class DebugLensDioInterceptor extends Interceptor {
 
   /// Per-interceptor options — gate logging, body capture, header redaction.
   final DebugLensDioInterceptorSettings settings;
+
+  /// Whether the Logs mirror is live. [settings] is the host's build-time
+  /// choice; the capture toggle is the user's runtime one, flipped from the
+  /// Logs screen. The Network screen itself is unaffected either way.
+  bool get _capturingLogs =>
+      DebugLensLogger.instance.isCapturing(DebugLogOrigin.network);
 
   /// RequestOptions identity → pending entry id, so the response/error can
   /// update the right entry.
@@ -138,8 +145,8 @@ class DebugLensDioInterceptor extends Interceptor {
     );
     _store.recordNetwork(entry);
 
-    if (settings.logToLogger) {
-      DebugLensLogger().d(
+    if (settings.logToLogger && _capturingLogs) {
+      DebugLensLogger.instance.d(
         '${entry.methodLabel} ${entry.url}',
         name: 'network.${entry.methodLabel}',
       );
@@ -221,16 +228,16 @@ class DebugLensDioInterceptor extends Interceptor {
     );
     _store.updateNetwork(completed);
 
-    if (settings.logToLogger) {
+    if (settings.logToLogger && _capturingLogs) {
       final tag = 'network.${completed.methodLabel}';
       if (error != null) {
-        DebugLensLogger().e(
+        DebugLensLogger.instance.e(
           '${completed.methodLabel} ${statusCode ?? DebugConstants.emptyValue} '
           '${completed.url} (${durationMs ?? DebugConstants.unknownValue}ms): $error',
           name: tag,
         );
       } else {
-        DebugLensLogger().d(
+        DebugLensLogger.instance.d(
           '${completed.methodLabel} ${statusCode ?? DebugConstants.unknownValue} '
           '${completed.url} (${durationMs ?? DebugConstants.unknownValue}ms)',
           name: tag,

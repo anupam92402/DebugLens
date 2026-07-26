@@ -1,4 +1,5 @@
 import 'api_service.dart';
+import '../../../core/logging/app_log.dart';
 import '../domain/post.dart';
 
 /// Maps [ApiService] responses to domain models. The bloc talks only to this,
@@ -9,12 +10,16 @@ class ApiRepository {
 
   final ApiService _service;
 
+  /// The Dio interceptor already logs the HTTP line; these log the *domain*
+  /// outcome, which is what you actually scan the feed for.
   Future<List<Post>> fetchPosts() async {
     final res = await _service.getPosts();
     final data = (res.data as List<dynamic>);
-    return data
+    final posts = data
         .map((e) => Post.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
+    log.d('Fetched ${posts.length} posts', name: 'api');
+    return posts;
   }
 
   Future<String> fetchCatFact() async {
@@ -26,12 +31,16 @@ class ApiRepository {
 
   Future<Post> createPost() async {
     final res = await _service.createPost();
-    return Post.fromJson(res.data as Map<String, dynamic>);
+    final post = Post.fromJson(res.data as Map<String, dynamic>);
+    log.i('Created post #${post.id}', name: 'api');
+    return post;
   }
 
   Future<Post> updatePost() async {
     final res = await _service.updatePost();
-    return Post.fromJson(res.data as Map<String, dynamic>);
+    final post = Post.fromJson(res.data as Map<String, dynamic>);
+    log.i('Updated post #${post.id}', name: 'api');
+    return post;
   }
 
   Future<void> deletePost() => _service.deletePost();

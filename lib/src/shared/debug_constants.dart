@@ -37,4 +37,11 @@ class DebugConstants {
 
   /// Navigation screen's eye toggle (hide `debug_lens/` routes).
   static const String navHideInternalPrefsKey = 'debug_lens_nav_hide_internal';
+
+  /// Prefix on the tag the logger prints, e.g. `Flutter-Log-auth`.
+  static const String logTagPrefix = 'Flutter-Log';
+
+  /// Prefix for the Logs screen's per-source capture switches. The full key is
+  /// this plus the origin's `name` — see `DebugLogOrigin.prefsKey`.
+  static const String logCapturePrefsKeyPrefix = 'debug_lens_log_capture_';
 }

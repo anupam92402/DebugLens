@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../di/service_locator.dart';
+import '../logging/app_log.dart';
 import 'app_database.dart';
 import 'drift_debug_lens_adapter.dart';
 import 'prefs_bridge.dart';
@@ -19,6 +20,7 @@ Future<void> setupStorage() async {
     locator.registerSingleton<SharedPreferences>(prefs);
   }
   DebugLens.sharedPrefsSource = () => PrefsBridge.snapshot(prefs);
+  log.i('Prefs ready · ${prefs.getKeys().length} keys', name: 'storage');
 
   final db = AppDatabase();
   await db.seedIfEmpty();

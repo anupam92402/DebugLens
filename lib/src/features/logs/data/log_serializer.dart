@@ -1,3 +1,4 @@
+import '../../../shared/debug_strings.dart';
 import '../domain/log_record.dart';
 
 /// Plain-text serializers for [DebugLogRecord] used by the Logs screen
@@ -24,13 +25,15 @@ class LogSerializer {
     final buf = StringBuffer()
       ..writeln(
         '[${r.time.toIso8601String()}] '
-        '${r.level.name.toUpperCase().padRight(5)} '
+        '${r.level.paddedName} '
         '[${_tag(r)}] '
         '${r.message}',
       );
-    if (r.error != null) buf.writeln('  error: ${r.error}');
+    if (r.error != null) {
+      buf.writeln('  ${DebugStrings.logsExportError}: ${r.error}');
+    }
     if (r.stackTrace != null) {
-      buf.writeln('  stack:');
+      buf.writeln('  ${DebugStrings.logsExportStack}:');
       for (final line in r.stackTrace!.split('\n')) {
         if (line.trim().isEmpty) continue;
         buf.writeln('    $line');
@@ -43,9 +46,11 @@ class LogSerializer {
   /// block + one [formatRecord] per row.
   static String formatBundle(List<DebugLogRecord> records) {
     final buf = StringBuffer()
-      ..writeln('DebugLens log export')
-      ..writeln('Generated: ${DateTime.now().toIso8601String()}')
-      ..writeln('Records: ${records.length}')
+      ..writeln(DebugStrings.logsExportTitle)
+      ..writeln(
+        DebugStrings.logsExportGenerated(DateTime.now().toIso8601String()),
+      )
+      ..writeln(DebugStrings.logsExportCount(records.length))
       ..writeln('=' * 60);
     for (final r in records) {
       buf.write(formatRecord(r));
@@ -53,8 +58,6 @@ class LogSerializer {
     return buf.toString();
   }
 
-  /// Tag rendered in square brackets — falls back to a source-derived label
-  /// when no explicit `name` was provided.
-  static String _tag(DebugLogRecord r) =>
-      r.name ?? (r.source == DebugLogSource.console ? 'console' : 'log');
+  /// Tag rendered in square brackets — a default when the call passed no `name`.
+  static String _tag(DebugLogRecord r) => r.name ?? DebugStrings.logsLog;
 }

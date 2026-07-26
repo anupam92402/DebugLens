@@ -10,6 +10,18 @@ import '../debug_strings.dart';
 class MatrixRain {
   MatrixRain._();
 
+  /// How long the rain takes to reach full opacity.
+  static const Duration _fadeIn = Duration(milliseconds: 300);
+
+  /// How long after [show] the screen is fully covered — [_fadeIn] plus a frame
+  /// of slack for the overlay to mount and its ticker to start.
+  ///
+  /// Await this before changing whatever is underneath, so the change happens
+  /// behind the curtain and the rain *reveals* it. Changing first and showing
+  /// the rain afterwards means the user sees the new state, then watches an
+  /// animation announce what they already saw.
+  static const Duration coverDelay = Duration(milliseconds: 350);
+
   /// Inserts the rain over the root overlay, with [label] (e.g. the new role)
   /// glowing in the centre, then removes itself after [duration].
   static void show(
@@ -114,9 +126,13 @@ class _MatrixRainOverlayState extends State<_MatrixRainOverlay>
       if (row >= 0 && row < _rows) _grid[c][row] = _rng.nextInt(10);
     }
 
-    // Fade in over the first 300ms, hold, fade out over the last 450ms.
+    // Fade in, hold, then fade out over the last 450ms. `MatrixRain.coverDelay`
+    // is derived from the fade-in, so both move together.
     final total = widget.duration.inMilliseconds;
-    final fadeIn = (_elapsedMs / 300).clamp(0.0, 1.0);
+    final fadeIn = (_elapsedMs / MatrixRain._fadeIn.inMilliseconds).clamp(
+      0.0,
+      1.0,
+    );
     final fadeOut = ((total - _elapsedMs) / 450).clamp(0.0, 1.0);
     _opacity = (fadeIn * fadeOut).clamp(0.0, 1.0);
 

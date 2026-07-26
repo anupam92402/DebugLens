@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/glass.dart';
-import 'dash_item.dart';
+import '../../domain/dash_item.dart';
 
 /// Glass tile for one dashboard entry — tapping it opens the entry's route.
 class DashCard extends StatelessWidget {

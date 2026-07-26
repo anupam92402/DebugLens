@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/theme/debug_accents.dart';
+import '../../../shared/theme/debug_accents.dart';
 
 /// A single dashboard tile's data: icon, title, and the route it opens.
 class DashItem {

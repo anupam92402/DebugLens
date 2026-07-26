@@ -3,8 +3,9 @@ import 'package:flutter/foundation.dart';
 
 import 'mock_firebase.dart';
 
-/// Registers all four mock Firebase services with the DebugLens Services
-/// inspector. Idempotent (DebugLens dedupes by name), so it is safe to call
+/// Registers the three read-only mock Firebase services with the DebugLens
+/// Services inspector. Remote Config isn't here — `DebugLens.registerConfig`
+/// registers that one itself, from `MockRemoteConfig.fetchAndActivate`. Idempotent (DebugLens dedupes by name), so it is safe to call
 /// from `setupLocator`.
 ///
 /// Firebase is just this app's choice — `DebugLensService` is vendor-neutral.
@@ -12,7 +13,6 @@ void registerFirebaseInspectors() {
   DebugLens.registerService(_AnalyticsInspector());
   DebugLens.registerService(_PerformanceInspector());
   DebugLens.registerService(_CrashlyticsInspector());
-  DebugLens.registerService(_RemoteConfigInspector());
 }
 
 String _hms(DateTime t) {
@@ -128,15 +128,4 @@ class _CrashlyticsInspector extends DebugLensService {
         ),
     ];
   }
-}
-
-/// Remote Config — editable key/value store with device overrides. Uses the
-/// editor's Reset (not delete) to drop overrides, so [canClear] stays false,
-/// and [load] is left at its empty default.
-class _RemoteConfigInspector extends DebugLensService {
-  @override
-  String get name => 'Remote Config';
-
-  @override
-  DebugLensConfigEditor get editor => MockFirebase.remoteConfig;
 }

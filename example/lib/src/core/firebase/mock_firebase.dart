@@ -1,5 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'mock_analytics.dart';
 import 'mock_crashlytics.dart';
 import 'mock_performance.dart';
@@ -32,12 +30,9 @@ class MockFirebase {
   /// Simulates Firebase startup: fetch + activate Remote Config (applying any
   /// persisted device overrides) inside a perf trace, leaving a breadcrumb and
   /// an analytics event.
-  static Future<void> activate(SharedPreferences prefs) async {
+  static Future<void> activate() async {
     crashlytics.log('App startup');
-    await performance.trace(
-      'remote_config_fetch',
-      () => remoteConfig.fetchAndActivate(prefs),
-    );
+    await performance.trace('remote_config_fetch', remoteConfig.initialize);
     analytics.logEvent(
       'remote_config_activated',
       action: 'fetch',

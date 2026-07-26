@@ -38,4 +38,28 @@ class DebugLensSharedPrefs {
       // Persistence failed — nothing to do.
     }
   }
+
+  /// Reads a string under [key]; `null` when unset or storage is unavailable.
+  static Future<String?> getString(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Persists [value] under [key], or removes the key when [value] is null.
+  static Future<void> setString(String key, String? value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (value == null) {
+        await prefs.remove(key);
+      } else {
+        await prefs.setString(key, value);
+      }
+    } catch (_) {
+      // Persistence failed — nothing to do.
+    }
+  }
 }

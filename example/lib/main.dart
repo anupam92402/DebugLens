@@ -2,7 +2,6 @@ import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app.dart';
 import 'src/core/di/service_locator.dart';
@@ -53,7 +52,7 @@ Future<void> _bootstrap() async {
   await setupStorage();
 
   /// Fetch + activate Remote Config (applies any persisted device overrides).
-  await MockFirebase.activate(sl<SharedPreferences>());
+  await MockFirebase.activate();
   log.d('Remote Config activated', name: 'config');
 
   /// Local notifications — request permission up front.

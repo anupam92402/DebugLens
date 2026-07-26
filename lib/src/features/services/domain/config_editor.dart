@@ -77,37 +77,16 @@ class DebugLensConfigEntry {
   }) : value = '${value ?? ''}',
        type = _typeOf(value),
        sourceValue = sourceValue?.toString();
-
-  /// Builds an entry per key in [values] — the bulk alternative to looping.
-  /// [sourceValues] supplies the remote value per key, and [overridden] names
-  /// the keys currently carrying a device override.
-  static List<DebugLensConfigEntry> fromMap(
-    Map<String, Object?> values, {
-    Map<String, Object?> sourceValues = const {},
-    Set<String> overridden = const {},
-  }) => [
-    for (final e in values.entries)
-      DebugLensConfigEntry(
-        key: e.key,
-        value: e.value,
-        sourceValue: sourceValues[e.key],
-        overridden: overridden.contains(e.key),
-      ),
-  ];
 }
 
-/// Optional capability that lets the inspector edit a service's values
-/// on-device — e.g. Remote Config overrides. Provider-agnostic: it is just a
-/// typed key/value store with a device-local override mode, so it fits Firebase
-/// Remote Config, AWS AppConfig, LaunchDarkly, or a hand-rolled flag store.
+/// The seam between the Services screen's editable rows and whatever stores the
+/// values. DebugLens supplies the only implementation — `DebugConfigStore` —
+/// which is why this type isn't exported: a host registers a plain map through
+/// `DebugLens.registerConfig` and never implements any of this.
 ///
 /// A service exposes one via `DebugLensService.editor`; when present, the
 /// service screen renders a source toggle and (in override mode) editable,
 /// type-tagged rows instead of the read-only list.
-///
-/// **`extends` this, don't `implements` it** — only [overrideEnabled],
-/// [entries], [setOverrideEnabled] and [setValue] are required; the rest have
-/// working defaults that `implements` would force you to re-declare.
 abstract class DebugLensConfigEditor {
   /// Whether device-local override ("custom") mode is on. Defaults off.
   bool get overrideEnabled;

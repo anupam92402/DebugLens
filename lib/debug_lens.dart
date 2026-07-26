@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'src/features/storage/data/debug_database_source.dart';
+import 'src/shared/debug_constants.dart';
+import 'src/shared/debug_strings.dart';
+import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
@@ -23,8 +26,6 @@ export 'src/features/services/data/debug_service_source.dart'
     show DebugLensService;
 export 'src/features/services/domain/service_group.dart'
     show DebugLensServiceGroup;
-export 'src/features/services/domain/config_editor.dart'
-    show DebugLensConfigEditor, DebugLensConfigEntry, DebugLensConfigType;
 export 'src/features/logs/data/debug_lens_logger.dart'
     show DebugLensLogger, DebugLogObserver;
 export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;
@@ -48,6 +49,10 @@ export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
 /// Public entry point for the DebugLens in-app debugging overlay.
 class DebugLens {
   DebugLens._();
+
+  /// Singleton for the instance-side API — the config methods below. Everything
+  /// else on this class is static.
+  static final DebugLens instance = DebugLens._();
 
   /// Route name given to DebugLens's own panel route on the host navigator, so
   /// it shows a readable label (instead of `PageRouteBuilder`) on the
@@ -106,6 +111,67 @@ class DebugLens {
 
   /// The registered services shown on the Services screen.
   static List<DebugLensService> get services => DebugLensServices.services;
+
+  /// Hands DebugLens the config values you just fetched — Firebase Remote
+  /// Config, AWS AppConfig, LaunchDarkly, a hand-rolled flag store.
+  ///
+  /// DebugLens shows them on the Services screen under [name], infers each
+  /// parameter's type from its value, and owns everything about overriding
+  /// them: which keys, the source/custom switch, persistence, reset. Label the
+  /// non-override side with [sourceLabel].
+  ///
+  /// **Await it**, once, during startup — it loads the overrides saved on a
+  /// previous run, and the getters below only mean anything afterwards.
+  ///
+  /// Pass raw values (`bool` / `int` / `double` / `String`). If your provider
+  /// wraps them — Firebase's `getAll()` returns `RemoteConfigValue` objects —
+  /// unwrap first, or the panel shows the wrapper rather than the value.
+  Future<void> setRemoteConfigData(
+    Map<String, Object?> values, {
+    String sourceLabel = DebugStrings.serviceSourceRemote,
+    String name = DebugStrings.serviceConfigName,
+  }) async {
+    await DebugConfigStore.instance.load(values, sourceLabel);
+    DebugLensServices.register(DebugConfigService(name: name));
+  }
+
+  /// The value in force for [key], or `null` when nothing is registered under
+  /// it. The override when one applies this session, otherwise the value you
+  /// registered — so this is the whole read, with no fallback to supply.
+  ///
+  /// Use it directly for anything the typed getters don't cover; they are all
+  /// built on it.
+  Object? getKey(String key) => DebugConfigStore.instance.resolvedValue(key);
+
+  /// [getKey] as a String — empty when the key is unknown.
+  String getString(String key) => getKey(key)?.toString() ?? '';
+
+  /// [getKey] as a bool — `false` when the key is unknown.
+  ///
+  /// Accepts a real `bool` or the strings `'true'` / `'false'`, since providers
+  /// that store everything as text (Firebase Remote Config among them) hand
+  /// back the latter.
+  bool getBool(String key) {
+    final value = getKey(key);
+    if (value is bool) return value;
+    return value?.toString().toLowerCase() == DebugConstants.trueValue;
+  }
+
+  /// [getKey] as an int — `0` when the key is unknown or doesn't parse.
+  /// Accepts a real number or its string form.
+  int getInt(String key) {
+    final value = getKey(key);
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  /// [getKey] as a double — `0` when the key is unknown or doesn't parse.
+  /// Accepts a real number or its string form.
+  double getDouble(String key) {
+    final value = getKey(key);
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
 
   /// Records a push/local notification on the Notifications screen. Call from
   /// your notification handler on both display and tap ([tapped] `true` for a

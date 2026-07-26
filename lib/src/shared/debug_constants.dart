@@ -38,6 +38,12 @@ class DebugConstants {
   /// Navigation screen's eye toggle (hide `debug_lens/` routes).
   static const String navHideInternalPrefsKey = 'debug_lens_nav_hide_internal';
 
+  /// Whether the Services config editor is in device-override ("custom") mode.
+  static const String configCustomPrefsKey = 'debug_lens_config_custom';
+
+  /// The device overrides themselves, as a JSON `key -> string` map.
+  static const String configOverridesPrefsKey = 'debug_lens_config_overrides';
+
   /// Prefix on the tag the logger prints, e.g. `Flutter-Log-auth`.
   static const String logTagPrefix = 'Flutter-Log';
 

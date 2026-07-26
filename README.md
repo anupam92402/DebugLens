@@ -256,9 +256,9 @@ the package depends on none of these SDKs.
 
 - **Records** — each service renders as expandable rows (an analytics event, a
   trace, a crash report): primary label, optional subtitle, fields as JSON.
-- **Editable config** — a service can expose a `DebugLensConfigEditor` to flip
-  between remote values and device-local overrides, editing typed values
-  (`bool` / `int` / `double` / `String`) in place. Invalid input can't be saved.
+- **Remote config** — share your fetched values and DebugLens gives them their
+  own screen: flip between the remote values and device-local overrides, and
+  edit them in place. See *Remote config* below.
 - **Search, sort & share** — free-text over titles and fields, A–Z or original
   order, and a share that exports exactly the rows on screen.
 - **Live** — re-pulls on the refresh action, on app resume, and whenever the
@@ -299,49 +299,59 @@ class AnalyticsInspector extends DebugLensService {
 DebugLens.registerService(AnalyticsInspector());
 ```
 
-For an editable service (Remote Config and friends), also extend
-`DebugLensConfigEditor` and return it from `editor`:
+### Remote config
+
+Override any config value on the device and keep working against it — feature
+flags, experiment buckets, copy, timeouts. DebugLens owns all of it: which keys
+are overridden, the source/custom switch, persistence, reset. You share what you
+fetched, and read back through it.
+
+Keep it to the one file that already wraps your provider:
 
 ```dart
-class MyRemoteConfig extends DebugLensConfigEditor {
-  @override
-  String get sourceLabel => 'Firebase'; // names the non-override side
+class RemoteConfigService {
+  RemoteConfigService._();
+  static final instance = RemoteConfigService._();
 
-  @override
-  bool get overrideEnabled => _customMode;
+  late final FirebaseRemoteConfig _firebase;
 
-  /// Pass live values — DebugLens infers the type (bool / int / double /
-  /// String) from each one, so you never name it.
-  @override
-  List<DebugLensConfigEntry> get entries => [
-    for (final p in _params)
-      DebugLensConfigEntry(
-        key: p.key,
-        value: _effective(p.key),
-        sourceValue: p.remoteValue,
-        overridden: _overrides.containsKey(p.key),
-      ),
-  ];
+  Future<void> initialize() async {
+    _firebase = FirebaseRemoteConfig.instance;
+    await _firebase.fetchAndActivate();
 
-  @override
-  Future<void> setOverrideEnabled(bool enabled) async { /* persist */ }
+    /// Share the fetched values. `getAll()` hands back `RemoteConfigValue`
+    /// wrappers — unwrap them, since DebugLens has no Firebase dependency.
+    await DebugLens.instance.setRemoteConfigData({
+      for (final e in _firebase.getAll().entries) e.key: e.value.asString(),
+    }, sourceLabel: 'Firebase');
+  }
 
-  @override
-  Future<void> setValue(String key, String value) async { /* persist */ }
+  Object? getKey(String key) => DebugLens.instance.getKey(key);
+  String getString(String key) => DebugLens.instance.getString(key);
+  bool getBool(String key) => DebugLens.instance.getBool(key);
+  int getInt(String key) => DebugLens.instance.getInt(key);
+  double getDouble(String key) => DebugLens.instance.getDouble(key);
 }
 ```
 
-Already holding your config as a map? Skip the loop:
+Feature code keeps calling `RemoteConfigService.instance.getInt('key')` and never
+learns which side won — so DebugLens stays out of your read paths, and dropping
+it leaves you serving the fetched values.
 
-```dart
-@override
-List<DebugLensConfigEntry> get entries => DebugLensConfigEntry.fromMap(
-  _effectiveValues,                      // Map<String, Object?>
-  sourceValues: _remoteValues,           // optional
-  overridden: _overrides.keys.toSet(),   // optional
-);
-```
+**Await `setRemoteConfigData`.** It loads the overrides saved on a previous run;
+without the await, reads race that load and a cold start serves source values.
 
-> `requiresRestart` (default `true`) makes the inspector confirm before
-> switching source, so cancelling leaves the current mode untouched. Values
-> handed to `setValue` are already validated against the inferred type.
+**Edits apply on the next app start**, which is what the panel's restart dialog
+and per-edit toast tell the user. Reads answer from a snapshot taken when you
+registered, so flipping the switch and editing a value land at the same moment.
+
+**Types come from the values you share.** Pass real `bool` / `int` / `double` and
+each row gets a type chip, a matching keyboard, and edit validation. Firebase
+stores everything as text, so `asString()` gives you `String` rows throughout —
+map the keys you care about to real types if you want the typed editors.
+
+> `getKey` returns the raw value, or `null` for a key you never registered, for
+> anything the four typed getters don't cover — a JSON parameter you want to
+> decode yourself, say. The typed getters accept a real value *or* its string
+> form, so `getInt` reads `'30'` as `30`.
+

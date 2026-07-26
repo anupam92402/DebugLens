@@ -175,6 +175,7 @@ class DebugStrings {
   static const String serviceResetTooltip = 'Reset to source values';
   static const String serviceResetToast = 'Reset to source values';
   static const String serviceResetLabel = 'Reset';
+  static const String serviceConfigName = 'Remote Config';
   static const String serviceSourceRemote = 'Remote';
   static const String serviceSourceCustom = 'Custom';
   static String serviceSourceRemoteTooltip(String label) => 'Use $label values';

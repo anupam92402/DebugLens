@@ -249,22 +249,29 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 ### Services
 
 Surfaces whatever backends and SDKs your app talks to — Firebase Analytics,
-Crashlytics, Performance, Remote Config, LaunchDarkly, your own API client — as
-a list of services, each with its own screen. Vendor-neutral and pull-based: you
-implement a small adapter, DebugLens calls it on demand and keeps no copy, so
-the package depends on none of these SDKs.
+Performance, LaunchDarkly, your own API client — as a list of services, each
+with its own screen. Vendor-neutral: you implement a small adapter, DebugLens
+calls it on demand and keeps no copy, so the package depends on none of these
+SDKs.
+
+Two services are built in and **pushed** to rather than pulled from, because
+neither source can be read back — see *Remote config* and *Crash reports* below.
 
 - **Records** — each service renders as expandable rows (an analytics event, a
   trace, a crash report): primary label, optional subtitle, fields as JSON.
 - **Remote config** — share your fetched values and DebugLens gives them their
   own screen: flip between the remote values and device-local overrides, and
-  edit them in place. See *Remote config* below.
-- **Search, sort & share** — free-text over titles and fields, A–Z or original
-  order, and a share that exports exactly the rows on screen.
-- **Live** — re-pulls on the refresh action, on app resume, and whenever the
-  service signals a change, so a screen left open keeps up.
-- **Safe by default** — fields listed in `sensitiveKeys` are masked behind an
-  eye toggle and always redacted from shared log files.
+  edit them in place.
+- **Crash reports** — hand over each error as you report it upstream and
+  DebugLens keeps it, so you can read your crashes on the device that produced
+  them.
+- **Search, sort & share** — free-text over titles and fields, newest or oldest
+  first (A–Z for config keys), and a share that exports exactly the rows on
+  screen.
+- **Live** — re-pulls on app resume and whenever the service signals a change
+  through `changes`, so a screen left open keeps up without a refresh button.
+- **Values are shown as given** — DebugLens does no masking, and a shared log
+  file carries exactly what is on screen. Keep secrets out of `values`.
 
 **Usage** — extend `DebugLensService` (don't implement it: only `name` is
 required) and register it once at startup:
@@ -290,8 +297,7 @@ class AnalyticsInspector extends DebugLensService {
       DebugLensServiceGroup(
         title: e.name,
         subtitle: e.time.toIso8601String(),
-        values: {'screen': e.screen, 'token': e.token},
-        sensitiveKeys: const {'token'}, // masked + never shared
+        values: {'screen': e.screen, 'category': e.category},
       ),
   ];
 }
@@ -354,4 +360,83 @@ map the keys you care about to real types if you want the typed editors.
 > anything the four typed getters don't cover — a JSON parameter you want to
 > decode yourself, say. The typed getters accept a real value *or* its string
 > form, so `getInt` reads `'30'` as `30`.
+
+### Crash reports
+
+Read the errors your app reports upstream on the device that produced them — no
+console attached, no Crashlytics dashboard, no waiting for the batch to upload.
+
+Crash reporters are write-only, so this one is **pushed**: you hand DebugLens the
+same payload you send upstream and it keeps the events for the session (in
+memory, newest-first, ring-buffered to the latest 100). Nothing is uploaded by
+DebugLens itself, and it imports no reporter SDK — Crashlytics, Sentry and
+Bugsnag all wire up the same way.
+
+- **Records** — one row per report, titled with the error and marked
+  `fatal` / `non-fatal` alongside the time. Expands to the reason, your custom
+  data, any attached context lines, and the stack trace.
+- **Search, sort & share** — free-text over every field, newest or oldest first,
+  and a share that exports exactly the rows on screen.
+- **Live** — the open screen picks up errors recorded behind it; clear the list
+  from the AppBar.
+
+Keep it to the one file that already wraps your reporter:
+
+```dart
+class CrashReporter {
+  CrashReporter._();
+  static final instance = CrashReporter._();
+
+  late final FirebaseCrashlytics _crashlytics;
+
+  Future<void> initialize() async {
+    _crashlytics = FirebaseCrashlytics.instance;
+
+    /// Puts the service on the Services screen from startup, so an empty list
+    /// reads as "nothing has failed yet" instead of the screen being absent.
+    DebugLens.instance.initCrashReporting();
+  }
+
+  Future<void> recordError({
+    required Object error,
+    StackTrace? stackTrace,
+    bool fatal = false,
+    String? reason,
+    Map<String, Object?>? customData,
+    Iterable<Object> information = const [],
+  }) async {
+    await _crashlytics.recordError(
+      error,
+      stackTrace,
+      reason: reason,
+      fatal: fatal,
+      information: information,
+    );
+
+    /// The same payload, kept on the device.
+    DebugLens.instance.recordCrash(
+      DebugLensCrashEvent(
+        error: error,
+        stackTrace: stackTrace,
+        fatal: fatal,
+        reason: reason,
+        customData: customData ?? const {},
+        information: information,
+      ),
+    );
+  }
+}
+```
+
+Feature code keeps calling `CrashReporter.instance.recordError(...)` and never
+learns DebugLens is there — so dropping the package leaves your reporting intact.
+
+**`initCrashReporting` is optional.** The first `recordCrash` registers the
+service if you skip it, but then it only shows up once something has already
+failed. Pass `name:` to label it something other than `Crashlytics`.
+
+> `customData` is copied and `information` stringified when the event is
+> constructed, so later mutation of your map never rewrites a recorded report.
+> `time` defaults to now — pass it only when replaying a crash caught on a
+> previous run.
 

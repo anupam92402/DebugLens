@@ -11,8 +11,6 @@ import '../domain/service_group.dart';
 ///
 /// Callers pass the **visible** rows — already searched and sorted — so the
 /// exported file matches the screen, and no extra `load()` is triggered.
-/// Values marked sensitive are always redacted: a shared file leaves the
-/// device, so revealing a secret on screen never puts it in the export.
 class ServiceLogShare {
   ServiceLogShare._();
 
@@ -56,7 +54,7 @@ class ServiceLogShare {
       b
         ..writeln()
         ..writeln(g.subtitle == null ? g.title : '${g.title}  (${g.subtitle})');
-      for (final e in g.maskedValues.entries) {
+      for (final e in g.values.entries) {
         b.writeln('  ${e.key}: ${e.value}');
       }
     }

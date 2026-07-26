@@ -3,16 +3,20 @@ import 'package:flutter/foundation.dart';
 
 import 'mock_firebase.dart';
 
-/// Registers the three read-only mock Firebase services with the DebugLens
-/// Services inspector. Remote Config isn't here — `DebugLens.registerConfig`
-/// registers that one itself, from `MockRemoteConfig.fetchAndActivate`. Idempotent (DebugLens dedupes by name), so it is safe to call
-/// from `setupLocator`.
+/// Registers the two read-only mock Firebase services with the DebugLens
+/// Services inspector. Idempotent (DebugLens dedupes by name), so it is safe to
+/// call from `setupLocator`.
+///
+/// Only the *pull-based* services are here. The two push-based ones register
+/// themselves from their own wrappers: Remote Config from
+/// `MockRemoteConfig.initialize` via `DebugLens.instance.setRemoteConfigData`,
+/// and Crashlytics from `MockCrashlytics.initialize` via
+/// `DebugLens.instance.initCrashReporting`.
 ///
 /// Firebase is just this app's choice — `DebugLensService` is vendor-neutral.
 void registerFirebaseInspectors() {
   DebugLens.registerService(_AnalyticsInspector());
   DebugLens.registerService(_PerformanceInspector());
-  DebugLens.registerService(_CrashlyticsInspector());
 }
 
 String _hms(DateTime t) {
@@ -78,53 +82,6 @@ class _PerformanceInspector extends DebugLensService {
             ...t.attributes,
             for (final m in t.metrics.entries) m.key: '${m.value}',
           },
-        ),
-    ];
-  }
-}
-
-/// Crashlytics — one record per recorded error, then breadcrumbs. The install
-/// id is marked sensitive, so DebugLens masks it until revealed and always
-/// redacts it from shared log files.
-class _CrashlyticsInspector extends DebugLensService {
-  @override
-  String get name => 'Crashlytics';
-
-  @override
-  bool get canClear => true;
-
-  @override
-  Listenable get changes => MockFirebase.crashlytics.revision;
-
-  @override
-  Future<void> clear() async => MockFirebase.crashlytics.clear();
-
-  @override
-  Future<List<DebugLensServiceGroup>> load() async {
-    final c = MockFirebase.crashlytics;
-    return [
-      DebugLensServiceGroup(
-        title: 'Session',
-        subtitle: 'installation',
-        values: {
-          if (c.userIdentifier != null) 'userId': c.userIdentifier!,
-          'installId': c.installId,
-        },
-        sensitiveKeys: const {'installId'},
-      ),
-      for (final r in c.reports)
-        DebugLensServiceGroup(
-          title: r.message,
-          subtitle: '${r.fatal ? 'fatal' : 'non-fatal'} · ${_hms(r.time)}',
-          values: {
-            if (r.reason != null) 'reason': r.reason!,
-            if (r.stack != null) 'stack': r.stack!,
-          },
-        ),
-      for (final b in c.breadcrumbs)
-        DebugLensServiceGroup(
-          title: b.message,
-          subtitle: 'breadcrumb · ${_hms(b.time)}',
         ),
     ];
   }

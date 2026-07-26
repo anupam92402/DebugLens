@@ -14,17 +14,14 @@ import '../../../../shared/theme/debug_colors.dart';
 /// badge, the record's primary label + optional subtitle, expanding to its
 /// fields in a monospace box (like the Network body) with a single copy.
 ///
-/// Fields the host marked sensitive stay masked unless [revealSensitive].
 class ServiceEntryTile extends StatelessWidget {
   final int number;
   final DebugLensServiceGroup group;
-  final bool revealSensitive;
 
   const ServiceEntryTile({
     super.key,
     required this.number,
     required this.group,
-    this.revealSensitive = false,
   });
 
   /// The record as one JSON object. Fields are nested under `fields` rather
@@ -33,7 +30,7 @@ class ServiceEntryTile extends StatelessWidget {
   Map<String, Object?> get _record => {
     'name': group.title,
     if (group.subtitle != null) 'subtitle': group.subtitle,
-    'fields': revealSensitive ? group.values : group.maskedValues,
+    'fields': group.values,
   };
 
   void _copy(BuildContext context) {

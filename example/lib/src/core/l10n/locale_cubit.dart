@@ -18,7 +18,6 @@ class LocaleCubit extends Cubit<AppLanguage> {
         category: 'settings',
       )
       ..setUserProperty('locale', lang.name);
-    MockFirebase.crashlytics.setCustomKey('language', lang.name);
     log.i('Language switched to ${lang.name}', name: 'locale');
     emit(lang);
   }

@@ -30,6 +30,11 @@ class DebugConstants {
   static const String trueValue = 'true';
   static const String falseValue = 'false';
 
+  /// Cap on retained crash reports (see `DebugCrashStore`) — ring-buffered,
+  /// newest-first, so a long session doesn't grow unbounded on an app that is
+  /// recording non-fatals steadily.
+  static const int maxCrashEvents = 100;
+
   // SharedPreferences keys DebugLens persists its own state under.
 
   /// Access role for the panel (see `DebugRoleController`).

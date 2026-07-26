@@ -5,7 +5,9 @@ import 'src/features/storage/data/debug_database_source.dart';
 import 'src/shared/debug_constants.dart';
 import 'src/shared/debug_strings.dart';
 import 'src/features/services/data/debug_config_store.dart';
+import 'src/features/services/data/debug_crash_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
+import 'src/features/services/domain/crash_event.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
@@ -26,6 +28,8 @@ export 'src/features/services/data/debug_service_source.dart'
     show DebugLensService;
 export 'src/features/services/domain/service_group.dart'
     show DebugLensServiceGroup;
+export 'src/features/services/domain/crash_event.dart'
+    show DebugLensCrashEvent;
 export 'src/features/logs/data/debug_lens_logger.dart'
     show DebugLensLogger, DebugLogObserver;
 export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;
@@ -171,6 +175,35 @@ class DebugLens {
     final value = getKey(key);
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  /// Whether the crash service has been put on the Services screen yet, so
+  /// [recordCrash] can register it lazily without clobbering a custom [name]
+  /// that [initCrashReporting] already set.
+  static bool _crashReportingStarted = false;
+
+  /// Adds the crash-report service to the Services screen under [name]. Call it
+  /// from your crash reporter's own `initialize()`, so the screen is there from
+  /// startup and an empty list reads as "nothing has gone wrong yet".
+  ///
+  /// Optional — [recordCrash] registers it on first use if you skip this — but
+  /// then the service only appears once something has already failed.
+  void initCrashReporting({String name = DebugStrings.serviceCrashName}) {
+    _crashReportingStarted = true;
+    DebugLensServices.register(DebugCrashService(name: name));
+  }
+
+  /// Records a crash or non-fatal on the Services screen's crash service.
+  ///
+  /// Call it from your `FirebaseCrashlytics.recordError` wrapper (or Sentry's,
+  /// or your own) with the same payload you send upstream — DebugLens stamps
+  /// the time, keeps the event for this session, and uploads nothing.
+  ///
+  /// Crash reporters are write-only, which is why this is pushed rather than
+  /// pulled like the other services.
+  void recordCrash(DebugLensCrashEvent event) {
+    if (!_crashReportingStarted) initCrashReporting();
+    DebugCrashStore.instance.record(event);
   }
 
   /// Records a push/local notification on the Notifications screen. Call from

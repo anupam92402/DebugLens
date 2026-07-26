@@ -16,12 +16,12 @@ import '../widgets/service_error_state.dart';
 /// Shows one registered service. Read-only services render a flat,
 /// navigation-style list of expandable record rows; a service exposing a
 /// [DebugLensConfigEditor] (e.g. Remote Config) renders typed, editable rows
-/// with a source toggle. Rows can be searched, sorted A–Z, copied, shared and
-/// cleared.
+/// with a source toggle. Rows can be searched, copied, shared and cleared, and
+/// sorted — newest/oldest for records, A–Z for config keys.
 ///
-/// Read-only data is re-pulled on demand (refresh action), when the app
-/// resumes, and whenever the service signals through `DebugLensService.changes`
-/// — so a screen left open keeps up with records arriving behind it.
+/// Read-only data is re-pulled when the app resumes and whenever the service
+/// signals through `DebugLensService.changes` — so a screen left open keeps up
+/// with records arriving behind it without a manual refresh.
 class ServiceDetailScreen extends StatefulWidget {
   final DebugLensService service;
 
@@ -41,15 +41,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   /// Filter/sort state as notifiers so only the list rebuilds, not the screen.
   final ValueNotifier<String> _query = ValueNotifier<String>('');
 
-  /// Sort A–Z. Defaults on for editable configs (keys read best alphabetically)
-  /// and off for read-only records (which keep their natural, recent-first
-  /// order until toggled).
-  late final ValueNotifier<bool> _sortAlpha = ValueNotifier<bool>(
-    widget.service.editor != null,
-  );
+  /// Sort A–Z, for the editable path only — config keys read best
+  /// alphabetically. Records use [_newestFirst] instead.
+  final ValueNotifier<bool> _sortAlpha = ValueNotifier<bool>(true);
 
-  /// Whether host-flagged sensitive values are currently unmasked.
-  final ValueNotifier<bool> _revealSensitive = ValueNotifier<bool>(false);
+  /// Record order for the read-only path, matching the Navigation events tab:
+  /// newest at the top by default, tap to flip.
+  final ValueNotifier<bool> _newestFirst = ValueNotifier<bool>(true);
 
   /// Bumped whenever the editor's own state moves — a value overridden, the
   /// source switched, overrides reset. The three regions that read the editor
@@ -82,7 +80,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     WidgetsBinding.instance.removeObserver(this);
     _query.dispose();
     _sortAlpha.dispose();
-    _revealSensitive.dispose();
+    _newestFirst.dispose();
     _editorRevision.dispose();
     super.dispose();
   }
@@ -136,30 +134,34 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
 
   String get _q => _query.value.trim().toLowerCase();
 
-  List<DebugLensServiceGroup> get _visibleGroups {
+  /// Filters the groups, then numbers them by position (oldest = 1) so badges
+  /// stay contiguous whatever the search hides and stay with their record
+  /// across a sort flip. Returns (group, number) pairs in the chosen order.
+  ///
+  /// Services hand their groups over newest-first, so this walks them reversed
+  /// to number from the oldest and flips back at the end — the same shape as
+  /// the Navigation events tab, which reads an oldest-first store.
+  List<_NumberedGroup> get _visibleGroups {
     final q = _q;
-    final visible = q.isEmpty
-        ? _groups.toList()
-        : _groups.where((g) {
-            if (g.title.toLowerCase().contains(q)) return true;
-            if ((g.subtitle ?? '').toLowerCase().contains(q)) return true;
-            // Search what is actually on screen — a masked secret must not be
-            // findable by its hidden value.
-            final searchable = _revealSensitive.value
-                ? g.values
-                : g.maskedValues;
-            return searchable.entries.any(
+    Iterable<DebugLensServiceGroup> out = _groups.reversed;
+    if (q.isNotEmpty) {
+      out = out.where(
+        (g) =>
+            g.title.toLowerCase().contains(q) ||
+            (g.subtitle ?? '').toLowerCase().contains(q) ||
+            g.values.entries.any(
               (e) =>
                   e.key.toLowerCase().contains(q) ||
                   e.value.toLowerCase().contains(q),
-            );
-          }).toList();
-    if (_sortAlpha.value) {
-      visible.sort(
-        (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+            ),
       );
     }
-    return visible;
+    final filtered = out.toList();
+    final numbered = [
+      for (var i = 0; i < filtered.length; i++)
+        _NumberedGroup(filtered[i], i + 1),
+    ];
+    return _newestFirst.value ? numbered.reversed.toList() : numbered;
   }
 
   List<DebugLensConfigEntry> get _visibleEntries {
@@ -195,7 +197,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
             groups: _groups,
             origin: origin,
           )
-        : ServiceLogShare.shareGroups(name, _visibleGroups, origin: origin);
+        : ServiceLogShare.shareGroups(name, [
+            for (final n in _visibleGroups) n.group,
+          ], origin: origin);
   }
 
   Future<void> _clear() async {
@@ -266,13 +270,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       appBar: AppBar(
         title: Text(widget.service.name, style: monoStyle(size: 15)),
         actions: [
-          // Read-only data is pulled; give it an explicit re-pull too.
-          if (editor == null)
-            IconButton(
-              tooltip: DebugStrings.serviceRefreshTooltip,
-              icon: const Icon(Icons.refresh),
-              onPressed: _refresh,
-            ),
           IconButton(
             tooltip: DebugStrings.serviceShareTooltip,
             icon: const Icon(Icons.share),
@@ -338,8 +335,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     );
   }
 
-  /// Search + sort, plus the reveal toggle when the data holds secrets.
-  Widget _searchSortBar({bool canReveal = false}) {
+  /// Search plus [sortControl] — A–Z for config keys, newest/oldest for
+  /// records. The two modes sort different things, so each brings its own.
+  Widget _searchSortBar(Widget sortControl) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       child: Row(
@@ -350,42 +348,39 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
               onChanged: (v) => _query.value = v,
             ),
           ),
-          if (canReveal)
-            ValueListenableBuilder<bool>(
-              valueListenable: _revealSensitive,
-              builder: (_, reveal, _) => IconButton(
-                tooltip: reveal
-                    ? DebugStrings.serviceHideSensitive
-                    : DebugStrings.serviceShowSensitive,
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  reveal ? Icons.visibility_off : Icons.visibility,
-                  size: 18,
-                  color: DebugColors.textMuted,
-                ),
-                onPressed: () => _revealSensitive.value = !reveal,
-              ),
-            ),
-          ValueListenableBuilder<bool>(
-            valueListenable: _sortAlpha,
-            builder: (_, alpha, _) => SortToggle(
-              newestFirst: alpha,
-              onToggle: () => _sortAlpha.value = !alpha,
-              newestTooltip: DebugStrings.serviceSortAlpha,
-              oldestTooltip: DebugStrings.serviceSortOriginal,
-            ),
-          ),
+          sortControl,
         ],
       ),
     );
   }
+
+  /// A–Z vs the order the editor lists its keys in.
+  Widget _alphaToggle() => ValueListenableBuilder<bool>(
+    valueListenable: _sortAlpha,
+    builder: (_, alpha, _) => SortToggle(
+      newestFirst: alpha,
+      onToggle: () => _sortAlpha.value = !alpha,
+      newestTooltip: DebugStrings.serviceSortAlpha,
+      oldestTooltip: DebugStrings.serviceSortOriginal,
+    ),
+  );
+
+  /// Newest/oldest over records — the Navigation events tab's control, with
+  /// `SortToggle`'s default tooltips.
+  Widget _orderToggle() => ValueListenableBuilder<bool>(
+    valueListenable: _newestFirst,
+    builder: (_, newest, _) => SortToggle(
+      newestFirst: newest,
+      onToggle: () => _newestFirst.value = !newest,
+    ),
+  );
 
   // --- Editable (e.g. Remote Config) ----------------------------------------
 
   Widget _buildEditor(DebugLensConfigEditor editor) {
     return Column(
       children: [
-        _searchSortBar(),
+        _searchSortBar(_alphaToggle()),
         // Anything `load()` returned — e.g. last fetch time / status. Height-
         // capped and scrollable so a chatty service can't squeeze out the rows.
         if (_groups.isNotEmpty)
@@ -402,11 +397,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
                       child: Column(
                         children: [
                           for (final e in g.values.entries)
-                            KvRow(
-                              label: e.key,
-                              value: e.value,
-                              sensitive: g.isSensitive(e.key),
-                            ),
+                            KvRow(label: e.key, value: e.value),
                         ],
                       ),
                     ),
@@ -444,17 +435,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
         message: DebugStrings.serviceEmpty,
       );
     }
-    final canReveal = _groups.any((g) => g.hasSensitive);
     return Column(
       children: [
-        _searchSortBar(canReveal: canReveal),
+        _searchSortBar(_orderToggle()),
         Expanded(
           child: ListenableBuilder(
-            listenable: Listenable.merge([
-              _query,
-              _sortAlpha,
-              _revealSensitive,
-            ]),
+            listenable: Listenable.merge([_query, _newestFirst]),
             builder: (context, _) => _buildList(),
           ),
         ),
@@ -474,11 +460,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       itemCount: visible.length,
       separatorBuilder: (_, _) =>
           const Divider(height: 1, color: DebugColors.border),
-      itemBuilder: (_, i) => ServiceEntryTile(
-        number: i + 1,
-        group: visible[i],
-        revealSensitive: _revealSensitive.value,
-      ),
+      itemBuilder: (_, i) =>
+          ServiceEntryTile(number: visible[i].number, group: visible[i].group),
     );
   }
+}
+
+/// A [DebugLensServiceGroup] paired with its 1-based position in the visible
+/// list, so the badge numbers stay contiguous under a filter and follow their
+/// record across a sort flip. Mirrors `NumberedNavEvent`; private because the
+/// service screen is the only place that numbers groups.
+class _NumberedGroup {
+  const _NumberedGroup(this.group, this.number);
+
+  final DebugLensServiceGroup group;
+  final int number;
 }

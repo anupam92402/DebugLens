@@ -46,9 +46,10 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
           : (e.message ?? 'Request failed');
       // Report the failed call as a mock-Firebase non-fatal.
       MockFirebase.crashlytics.recordError(
-        e,
-        stack,
+        error: e,
+        stackTrace: stack,
         reason: 'API ${action.name} failed ($detail)',
+        customData: {'endpoint': action.name, 'detail': detail},
       );
       log.e(
         'API ${action.name} failed · $detail',

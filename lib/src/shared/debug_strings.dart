@@ -162,7 +162,6 @@ class DebugStrings {
   static const String servicesTitle = 'Services';
   static const String servicesEmpty = 'No services registered';
   static const String serviceEmpty = 'No data';
-  static const String serviceRefreshTooltip = 'Refresh';
   static const String serviceShareTooltip = 'Share';
   static String serviceShareSubject(String name) => 'DebugLens $name';
   static const String serviceSearchHint = 'Search';
@@ -170,8 +169,6 @@ class DebugStrings {
   static const String serviceSortOriginal = 'Original order (tap for A–Z)';
   static const String serviceClearTooltip = 'Clear data';
   static const String serviceClearedToast = 'Cleared';
-  static const String serviceShowSensitive = 'Reveal sensitive values';
-  static const String serviceHideSensitive = 'Hide sensitive values';
   static const String serviceResetTooltip = 'Reset to source values';
   static const String serviceResetToast = 'Reset to source values';
   static const String serviceResetLabel = 'Reset';
@@ -192,6 +189,15 @@ class DebugStrings {
   static String serviceInvalidValue(String type) => 'Enter a valid $type';
   static const String commonRetry = 'Retry';
   static String serviceLoadFailed(Object? error) => 'Failed to load\n$error';
+
+  // --- Services · crash reports ---------------------------------------------
+  static const String serviceCrashName = 'Crashlytics';
+  static const String crashFatal = 'fatal';
+  static const String crashNonFatal = 'non-fatal';
+  static const String crashErrorLabel = 'error';
+  static const String crashReasonLabel = 'reason';
+  static const String crashInfoLabel = 'information';
+  static const String crashStackLabel = 'stack';
 
   // --- Common (continued) ---------------------------------------------------
   static const String commonCopy = 'Copy';

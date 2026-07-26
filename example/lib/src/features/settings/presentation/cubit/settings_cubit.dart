@@ -40,7 +40,6 @@ class SettingsCubit extends Cubit<SettingsState> {
       screenName: 'SettingsScreen',
       category: 'settings',
     );
-    MockFirebase.crashlytics.setCustomKey('dark_mode', value);
     log.i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
     emit(state.copyWith(darkMode: value));
   }

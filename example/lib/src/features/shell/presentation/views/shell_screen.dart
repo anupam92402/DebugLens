@@ -36,12 +36,9 @@ class _ShellScreenState extends State<ShellScreen> {
       _tabNavigator(index)?.popUntil((route) => route.isFirst);
     } else {
       cubit.select(index);
-      // Mock Firebase: log the screen view + a crash breadcrumb for the tab.
+      // Mock Firebase: log the screen view for the tab.
       final tab = index == 0 ? 'home' : 'apis';
       MockFirebase.analytics.logScreenView(tab);
-      MockFirebase.crashlytics
-        ..log('Navigated to $tab tab')
-        ..setCustomKey('current_tab', tab);
     }
   }
 

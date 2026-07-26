@@ -149,35 +149,50 @@ class _NotificationsCard extends StatelessWidget {
   }
 }
 
-/// Records a mock-Firebase Crashlytics non-fatal, so the Crashlytics inspector
-/// has a recorded error to show without needing a real failure.
+/// Records mock-Firebase Crashlytics reports, so the crash inspector has both
+/// severities to show without needing a real failure.
 class _DiagnosticsCard extends StatelessWidget {
   const _DiagnosticsCard();
+
+  /// Throws and catches on the spot, so the report carries a real stack trace.
+  void _record(BuildContext context, {required bool fatal}) {
+    final label = fatal ? 'fatal' : 'non-fatal';
+    try {
+      throw StateError('Simulated $label from Settings');
+    } catch (e, stack) {
+      MockFirebase.crashlytics.recordError(
+        error: e,
+        stackTrace: stack,
+        fatal: fatal,
+        reason: 'User tapped "Simulate $label error"',
+      );
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('Recorded a $label report')));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.bug_report_outlined),
-        title: const Text('Simulate non-fatal error'),
-        subtitle: const Text('Records a Crashlytics non-fatal report'),
-        trailing: const Icon(Icons.warning_amber_rounded),
-        onTap: () {
-          try {
-            throw StateError('Simulated non-fatal from Settings');
-          } catch (e, stack) {
-            MockFirebase.crashlytics.recordError(
-              e,
-              stack,
-              reason: 'User tapped "Simulate non-fatal error"',
-            );
-          }
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('Recorded a non-fatal report')),
-            );
-        },
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined),
+            title: const Text('Simulate non-fatal error'),
+            subtitle: const Text('Records a Crashlytics non-fatal report'),
+            trailing: const Icon(Icons.warning_amber_rounded),
+            onTap: () => _record(context, fatal: false),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.dangerous_outlined),
+            title: const Text('Simulate fatal error'),
+            subtitle: const Text('Records a Crashlytics fatal report'),
+            trailing: const Icon(Icons.error_outline),
+            onTap: () => _record(context, fatal: true),
+          ),
+        ],
       ),
     );
   }

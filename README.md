@@ -248,14 +248,14 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 ### Services
 
-Surfaces whatever backends and SDKs your app talks to — Firebase Analytics,
-Performance, LaunchDarkly, your own API client — as a list of services, each
-with its own screen. Vendor-neutral: you implement a small adapter, DebugLens
-calls it on demand and keeps no copy, so the package depends on none of these
-SDKs.
+Surfaces whatever backends and SDKs your app talks to — Firebase Performance,
+LaunchDarkly, your own API client — as a list of services, each with its own
+screen. Vendor-neutral: you implement a small adapter, DebugLens calls it on
+demand and keeps no copy, so the package depends on none of these SDKs.
 
-Two services are built in and **pushed** to rather than pulled from, because
-neither source can be read back — see *Remote config* and *Crash reports* below.
+Three services are built in and **pushed** to rather than pulled from, because
+none of the three sources can be read back — see *Remote config*, *Crash
+reports* and *Analytics* below.
 
 - **Records** — each service renders as expandable rows (an analytics event, a
   trace, a crash report): primary label, optional subtitle, fields as JSON.
@@ -265,6 +265,8 @@ neither source can be read back — see *Remote config* and *Crash reports* belo
 - **Crash reports** — hand over each error as you report it upstream and
   DebugLens keeps it, so you can read your crashes on the device that produced
   them.
+- **Analytics** — same deal for the events you log: name, time, and whatever
+  parameters you sent.
 - **Search, sort & share** — free-text over titles and fields, newest or oldest
   first (A–Z for config keys), and a share that exports exactly the rows on
   screen.
@@ -277,33 +279,36 @@ neither source can be read back — see *Remote config* and *Crash reports* belo
 required) and register it once at startup:
 
 ```dart
-class AnalyticsInspector extends DebugLensService {
+class PerformanceInspector extends DebugLensService {
   @override
-  String get name => 'Analytics';
+  String get name => 'Performance';
 
   @override
   bool get canClear => true;
 
   @override
-  Future<void> clear() async => myAnalytics.clearBuffer();
+  Future<void> clear() async => myPerformance.clearTraces();
 
-  /// Optional: re-pull the open screen as new events arrive.
+  /// Optional: re-pull the open screen as new traces finish.
   @override
-  Listenable get changes => myAnalytics.revision;
+  Listenable get changes => myPerformance.revision;
 
   @override
   Future<List<DebugLensServiceGroup>> load() async => [
-    for (final e in myAnalytics.events)
+    for (final t in myPerformance.traces)
       DebugLensServiceGroup(
-        title: e.name,
-        subtitle: e.time.toIso8601String(),
-        values: {'screen': e.screen, 'category': e.category},
+        title: t.name,
+        subtitle: '${t.duration.inMilliseconds} ms',
+        values: {'screen': t.screen, ...t.attributes},
       ),
   ];
 }
 
-DebugLens.registerService(AnalyticsInspector());
+DebugLens.registerService(PerformanceInspector());
 ```
+
+Reach for this when your source *can* be read back. If it can't — an SDK you can
+only write to — push instead, the way the three built-ins below do.
 
 ### Remote config
 
@@ -439,4 +444,67 @@ failed. Pass `name:` to label it something other than `Crashlytics`.
 > constructed, so later mutation of your map never rewrites a recorded report.
 > `time` defaults to now — pass it only when replaying a crash caught on a
 > previous run.
+
+### Analytics
+
+Watch the events your app sends as it sends them, on the device sending them —
+no console filter, no waiting for a dashboard to catch up.
+
+Analytics SDKs are write-only too, so this one is **pushed** like crash reports:
+you hand DebugLens the same payload you send upstream and it keeps the events
+for the session (in memory, newest-first, ring-buffered to the latest 100).
+DebugLens uploads nothing and imports no analytics SDK — Firebase, Amplitude and
+Segment all wire up the same way.
+
+- **Records** — one row per event: the event name, the time under it, and
+  whatever parameters you sent behind the expand.
+- **Search, sort & share** — free-text over names and parameters, newest or
+  oldest first, and a share that exports exactly the rows on screen.
+- **Live** — the open screen picks up events logged behind it; clear the list
+  from the AppBar.
+
+Keep it to the one file that already wraps your SDK:
+
+```dart
+class Analytics {
+  Analytics._();
+  static final instance = Analytics._();
+
+  late final FirebaseAnalytics _analytics;
+
+  Future<void> initialize() async {
+    _analytics = FirebaseAnalytics.instance;
+
+    /// Puts the service on the Services screen from startup, instead of having
+    /// it appear with the first event.
+    DebugLens.instance.initAnalytics();
+  }
+
+  Future<void> logEvent(
+    String name, {
+    Map<String, Object?> parameters = const {},
+  }) async {
+    await _analytics.logEvent(
+      name: name,
+      // Firebase rejects null values; DebugLens renders them as a dash.
+      parameters: {
+        for (final e in parameters.entries)
+          if (e.value != null) e.key: e.value!,
+      },
+    );
+
+    /// The same payload, kept on the device.
+    DebugLens.instance.recordAnalyticsEvent(name, parameters: parameters);
+  }
+}
+```
+
+**The name is the row title; everything else goes in `parameters`** — screen
+names, user ids, experiment buckets, whatever the event carries. DebugLens
+stringifies the values for display and reads none of them, so there is no schema
+to satisfy and no wrapper type to construct.
+
+**`initAnalytics` is optional.** The first `recordAnalyticsEvent` registers the
+service if you skip it, but then it only shows up once an event has been logged.
+Pass `name:` to label it something other than `Analytics`.
 

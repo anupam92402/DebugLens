@@ -1,79 +1,35 @@
-import 'package:flutter/foundation.dart';
+import 'package:debug_lens/debug_lens.dart';
 
-/// One logged analytics event. Mirrors a `FirebaseAnalytics.logEvent` call, but
-/// modelled as a small DTO of the fields real events carry: name, action,
-/// screen, category and a timestamp.
-@immutable
-class MockAnalyticsEvent {
-  final String name;
-  final String? action;
-  final String? screenName;
-  final String? category;
-  final DateTime time;
-
-  const MockAnalyticsEvent({
-    required this.name,
-    required this.time,
-    this.action,
-    this.screenName,
-    this.category,
-  });
-}
-
-/// In-memory stand-in for `FirebaseAnalytics`. Buffers logged events, user
-/// properties and the user id so the DebugLens Firebase inspector can render
-/// them. Pure Dart — no native/Firebase dependency.
+/// In-memory stand-in for `FirebaseAnalytics`.
+///
+/// Write-only and stateless, like the real thing: each logged event is pushed
+/// straight into DebugLens, which owns the list the inspector renders — so this
+/// app implements no `load()` for it at all.
+///
+/// A real wrapper looks the same, with one extra line in [logEvent]:
+/// `FirebaseAnalytics.instance.logEvent(...)` alongside the DebugLens push.
 class MockAnalytics {
   MockAnalytics._();
+
   static final MockAnalytics instance = MockAnalytics._();
 
-  static const int _maxEvents = 100;
+  /// Puts the analytics service on the DebugLens Services screen up front, so
+  /// it is there from startup instead of appearing with the first event.
+  void initialize() => DebugLens.instance.initAnalytics();
 
-  /// Newest-first, ring-buffered to the latest [_maxEvents].
-  final List<MockAnalyticsEvent> events = [];
-  final Map<String, String> userProperties = {};
-  String? userId;
+  /// Logs a custom event. [name] is the row title; [parameters] carries
+  /// everything else and shows up when the row is expanded.
+  void logEvent(String name, {Map<String, Object?> parameters = const {}}) =>
+      DebugLens.instance.recordAnalyticsEvent(name, parameters: parameters);
 
-  /// Bumped whenever [events] changes. Handed to DebugLens as the service's
-  /// `changes` signal so an open inspector re-pulls as events arrive.
-  final ValueNotifier<int> revision = ValueNotifier<int>(0);
-
-  /// Logs a custom event with its structured fields.
-  void logEvent(
-    String name, {
-    String? action,
-    String? screenName,
-    String? category,
-  }) {
-    events.insert(
-      0,
-      MockAnalyticsEvent(
-        name: name,
-        action: action,
-        screenName: screenName,
-        category: category,
-        time: DateTime.now(),
-      ),
-    );
-    if (events.length > _maxEvents) events.removeLast();
-    revision.value++;
-  }
-
-  /// Convenience for the standard `screen_view` event.
-  void logScreenView(String screenName) => logEvent(
+  /// Convenience for the standard `screen_view` event. Takes the same map as
+  /// [logEvent], merged over the screen name so a caller can add its own
+  /// fields.
+  void logScreenView(
+    String screenName, {
+    Map<String, Object?> parameters = const {},
+  }) => logEvent(
     'screen_view',
-    action: 'view',
-    screenName: screenName,
-    category: 'navigation',
+    parameters: {'screen': screenName, ...parameters},
   );
-
-  void setUserProperty(String name, String value) =>
-      userProperties[name] = value;
-
-  void setUserId(String id) => userId = id;
-
-  void clear() {
-    events.clear();
-    revision.value++;
-  }
 }

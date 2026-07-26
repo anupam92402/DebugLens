@@ -11,7 +11,6 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/service_config_edit_dialog.dart';
 import '../widgets/service_config_view.dart';
 import '../widgets/service_entry_tile.dart';
-import '../widgets/service_error_state.dart';
 
 /// Shows one registered service. Read-only services render a flat,
 /// navigation-style list of expandable record rows; a service exposing a
@@ -35,7 +34,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     with WidgetsBindingObserver {
   // Loaded read-only data (editable services use the editor instead).
   List<DebugLensServiceGroup> _groups = const [];
-  Object? _loadError;
   bool _loading = false;
 
   /// Filter/sort state as notifiers so only the list rebuilds, not the screen.
@@ -101,30 +99,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     _fetch();
   }
 
-  /// Retry after a failure: show the spinner, since there is nothing to keep.
-  void _retry() {
-    setState(() {
-      _loading = true;
-      _loadError = null;
-    });
-    _fetch();
-  }
-
+  /// Reads the service, leaving the rows untouched if it throws. There is no
+  /// error state: the built-in services read an in-memory list and can't fail,
+  /// and a host adapter that does surfaces as an empty list rather than a
+  /// dead-end screen with a retry that would only re-run the same call.
   Future<void> _fetch() async {
     try {
       final groups = await widget.service.load();
       if (!mounted) return;
       setState(() {
         _groups = groups;
-        _loadError = null;
         _loading = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _loadError = e;
-        _loading = false;
-      });
+      setState(() => _loading = false);
     }
   }
 
@@ -425,9 +414,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   Widget _buildReadOnly() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
-    }
-    if (_loadError != null) {
-      return ServiceErrorState(error: _loadError, onRetry: _retry);
     }
     if (_groups.isEmpty) {
       return const EmptyState(

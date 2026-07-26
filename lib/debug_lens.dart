@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'src/features/storage/data/debug_database_source.dart';
 import 'src/shared/debug_constants.dart';
 import 'src/shared/debug_strings.dart';
+import 'src/features/services/data/debug_analytics_store.dart';
 import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_crash_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
+import 'src/features/services/domain/analytics_event.dart';
 import 'src/features/services/domain/crash_event.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
@@ -204,6 +206,37 @@ class DebugLens {
   void recordCrash(DebugLensCrashEvent event) {
     if (!_crashReportingStarted) initCrashReporting();
     DebugCrashStore.instance.record(event);
+  }
+
+  /// Whether the analytics service has been put on the Services screen yet —
+  /// see [_crashReportingStarted].
+  static bool _analyticsStarted = false;
+
+  /// Adds the analytics service to the Services screen under [name]. Call it
+  /// from your analytics wrapper's own `initialize()`, so the screen is there
+  /// from startup rather than appearing with the first event.
+  void initAnalytics({String name = DebugStrings.serviceAnalyticsName}) {
+    _analyticsStarted = true;
+    DebugLensServices.register(DebugAnalyticsService(name: name));
+  }
+
+  /// Records an analytics event on the Services screen's analytics service.
+  ///
+  /// Call it from your `FirebaseAnalytics.logEvent` wrapper (or Amplitude's, or
+  /// Segment's) with the same payload you send upstream. [name] is the row
+  /// title; [parameters] are the fields shown when the row is expanded — put
+  /// everything else in there, DebugLens reads none of it. Nothing is uploaded.
+  ///
+  /// Analytics SDKs are write-only, which is why this is pushed rather than
+  /// pulled like the adapter-based services.
+  void recordAnalyticsEvent(
+    String name, {
+    Map<String, Object?> parameters = const {},
+  }) {
+    if (!_analyticsStarted) initAnalytics();
+    DebugAnalyticsStore.instance.record(
+      DebugLensAnalyticsEvent(name: name, parameters: parameters),
+    );
   }
 
   /// Records a push/local notification on the Notifications screen. Call from

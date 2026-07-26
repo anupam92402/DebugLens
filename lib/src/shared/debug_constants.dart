@@ -35,6 +35,10 @@ class DebugConstants {
   /// recording non-fatals steadily.
   static const int maxCrashEvents = 100;
 
+  /// Cap on retained analytics events (see `DebugAnalyticsStore`) — as above,
+  /// and hit sooner, since a chatty app logs one on every screen.
+  static const int maxAnalyticsEvents = 100;
+
   // SharedPreferences keys DebugLens persists its own state under.
 
   /// Access role for the panel (see `DebugRoleController`).

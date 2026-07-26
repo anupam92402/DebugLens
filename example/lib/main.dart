@@ -71,8 +71,11 @@ Future<void> _bootstrap() async {
   startup.stop();
   MockFirebase.analytics.logEvent(
     'app_open',
-    action: 'launch',
-    category: 'lifecycle',
+    parameters: {
+      'action': 'launch',
+      'category': 'lifecycle',
+      'startup_ms': startup.elapsedMilliseconds,
+    },
   );
   log.i('Startup finished in ${startup.elapsedMilliseconds}ms', name: 'app');
 

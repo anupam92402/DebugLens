@@ -36,9 +36,11 @@ class SettingsCubit extends Cubit<SettingsState> {
   void toggleDarkMode(bool value) {
     MockFirebase.analytics.logEvent(
       'theme_changed',
-      action: value ? 'enable' : 'disable',
-      screenName: 'SettingsScreen',
-      category: 'settings',
+      parameters: {
+        'action': value ? 'enable' : 'disable',
+        'screen': 'SettingsScreen',
+        'category': 'settings',
+      },
     );
     log.i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
     emit(state.copyWith(darkMode: value));
@@ -47,9 +49,11 @@ class SettingsCubit extends Cubit<SettingsState> {
   void togglePush(bool value) {
     MockFirebase.analytics.logEvent(
       'push_toggled',
-      action: value ? 'enable' : 'disable',
-      screenName: 'SettingsScreen',
-      category: 'settings',
+      parameters: {
+        'action': value ? 'enable' : 'disable',
+        'screen': 'SettingsScreen',
+        'category': 'settings',
+      },
     );
     log.i('Push ${value ? 'enabled' : 'disabled'}', name: 'settings');
     emit(state.copyWith(pushEnabled: value));
@@ -58,9 +62,11 @@ class SettingsCubit extends Cubit<SettingsState> {
   void toggleAnalytics(bool value) {
     MockFirebase.analytics.logEvent(
       'analytics_toggled',
-      action: value ? 'enable' : 'disable',
-      screenName: 'SettingsScreen',
-      category: 'settings',
+      parameters: {
+        'action': value ? 'enable' : 'disable',
+        'screen': 'SettingsScreen',
+        'category': 'settings',
+      },
     );
     log.i('Analytics ${value ? 'enabled' : 'disabled'}', name: 'settings');
     emit(state.copyWith(analyticsEnabled: value));

@@ -28,9 +28,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       _repository.fetchActivities,
     );
     // Record which A/B layout bucket this session landed in.
-    MockFirebase.analytics.setUserProperty(
-      'home_experiment',
-      MockFirebase.remoteConfig.getString('home_layout_experiment'),
+    MockFirebase.analytics.logEvent(
+      'home_loaded',
+      parameters: {
+        'experiment': MockFirebase.remoteConfig.getString(
+          'home_layout_experiment',
+        ),
+        'count': activities.length,
+      },
     );
     log.d('Loaded ${activities.length} activities', name: 'home');
     emit(state.copyWith(status: HomeStatus.ready, activities: activities));
@@ -45,9 +50,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
     MockFirebase.analytics.logEvent(
       'activity_added',
-      action: 'add',
-      screenName: 'HomeScreen',
-      category: event.category.name,
+      parameters: {
+        'action': 'add',
+        'screen': 'HomeScreen',
+        'category': event.category.name,
+      },
     );
     log.i('Activity added · ${activity.title}', name: 'home');
     emit(state.copyWith(activities: [activity, ...state.activities]));
@@ -63,9 +70,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ];
     MockFirebase.analytics.logEvent(
       'activity_toggled',
-      action: 'toggle',
-      screenName: 'HomeScreen',
-      category: 'activity',
+      parameters: {
+        'action': 'toggle',
+        'screen': 'HomeScreen',
+        'category': 'activity',
+      },
     );
     emit(state.copyWith(activities: activities));
   }

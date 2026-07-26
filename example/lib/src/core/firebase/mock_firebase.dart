@@ -17,15 +17,15 @@ class MockFirebase {
 
   static bool _configured = false;
 
-  /// One-time setup mirroring app-level Firebase init: starts crash reporting
-  /// and identifies the user. No seeded data — the services fill up from the
-  /// app's real usage (screen views, traces, recorded errors, config reads).
-  /// Idempotent.
+  /// One-time setup mirroring app-level Firebase init: starts the push-based
+  /// services so their screens exist from startup. No seeded data — they fill
+  /// up from the app's real usage (screen views, traces, recorded errors,
+  /// config reads). Idempotent.
   static void configure() {
     if (_configured) return;
     _configured = true;
+    analytics.initialize();
     crashlytics.initialize();
-    analytics.setUserId('demo-user-42');
   }
 
   /// Simulates Firebase startup: fetch + activate Remote Config (applying any
@@ -35,8 +35,7 @@ class MockFirebase {
     await performance.trace('remote_config_fetch', remoteConfig.initialize);
     analytics.logEvent(
       'remote_config_activated',
-      action: 'fetch',
-      category: 'config',
+      parameters: {'action': 'fetch', 'category': 'config'},
     );
   }
 }

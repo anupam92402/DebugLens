@@ -187,11 +187,10 @@ class DebugStrings {
   static const String serviceOk = 'OK';
   static String serviceEditTitle(String key) => 'Edit $key';
   static String serviceInvalidValue(String type) => 'Enter a valid $type';
-  static const String commonRetry = 'Retry';
-  static String serviceLoadFailed(Object? error) => 'Failed to load\n$error';
 
-  // --- Services · crash reports ---------------------------------------------
+  // --- Services · pushed services -------------------------------------------
   static const String serviceCrashName = 'Crashlytics';
+  static const String serviceAnalyticsName = 'Analytics';
   static const String crashFatal = 'fatal';
   static const String crashNonFatal = 'non-fatal';
   static const String crashErrorLabel = 'error';

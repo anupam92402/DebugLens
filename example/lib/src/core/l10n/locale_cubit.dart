@@ -10,14 +10,14 @@ class LocaleCubit extends Cubit<AppLanguage> {
   LocaleCubit() : super(AppLanguage.en);
 
   void setLanguage(AppLanguage lang) {
-    MockFirebase.analytics
-      ..logEvent(
-        'language_changed',
-        action: lang.name,
-        screenName: 'SettingsScreen',
-        category: 'settings',
-      )
-      ..setUserProperty('locale', lang.name);
+    MockFirebase.analytics.logEvent(
+      'language_changed',
+      parameters: {
+        'locale': lang.name,
+        'screen': 'SettingsScreen',
+        'category': 'settings',
+      },
+    );
     log.i('Language switched to ${lang.name}', name: 'locale');
     emit(lang);
   }

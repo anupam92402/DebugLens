@@ -7,9 +7,8 @@ import 'json_raw_view.dart';
 import 'text_styles.dart';
 
 /// Composite that lets the user toggle between an expandable object tree
-/// (`tree`) and pretty-printed JSON text (`raw`) — mirrors the dual-mode
-/// viewer in we_logger's chucker, but built on our own widgets.
-///
+/// (`tree`) and pretty-printed JSON text (`raw`)
+
 /// The view mode can be left uncontrolled (manages its own state from
 /// [initialMode]) or controlled by passing [mode] + [onModeChanged]. When a
 /// [search] is supplied, matches are highlighted in whichever mode is active.

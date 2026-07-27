@@ -132,17 +132,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
     _syncStack();
   }
 
-  /// Gesture callbacks aren't recorded; overridden for completeness.
-  @override
-  void didStartUserGesture(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  ) {
-    super.didStartUserGesture(route, previousRoute);
-  }
-
-  @override
-  void didStopUserGesture() {
-    super.didStopUserGesture();
-  }
+  // `didStartUserGesture` / `didStopUserGesture` are deliberately not
+  // overridden: a swipe-back that completes already arrives as `didPop`, and
+  // one that is abandoned isn't a navigation at all.
 }

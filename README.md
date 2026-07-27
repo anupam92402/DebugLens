@@ -1,237 +1,147 @@
-## Inspectors
+# DebugLens
 
-### Navigation
+An in-app debugging overlay for Flutter. A draggable bubble opens a panel that
+shows what your app is actually doing — network calls, logs, bloc transitions,
+navigation, storage, device facts and your backend SDKs — on the device, with no
+console attached and no laptop in the room.
 
-Records every route transition (push, pop, replace, remove) across your app's
-navigators into a live timeline, and keeps a snapshot of the current route
-stack. Dialogs and bottom sheets are captured too, classified by kind.
+It is built for the people who don't have your IDE open: QA on a test build, a
+teammate reproducing a bug, you on a phone that isn't plugged in. Every
+inspector is wired to your own app through a small seam, so DebugLens depends on
+none of your vendors and drops out cleanly when you remove it.
 
-- **Events + Stack tabs** — chronological feed (route name, kind, source
-  navigator, time) and the live stack per navigator.
-- **Nested navigators** — tab bars / inner navigators via labelled observers.
-- **Filter & search** — by route kind, free-text on route name, sort newest/oldest.
-- **Route arguments** — inspect and copy as JSON.
-- **Share** — export the capture as a log file.
+## Install
 
-**Usage** — attach the observer to your `MaterialApp`:
+```yaml
+dependencies:
+  debug_lens: ^1.0.0
+```
+
+## Setup
+
+Wrap your app and attach the navigator observer. Everything else is opt-in, one
+inspector at a time.
 
 ```dart
 MaterialApp(
   navigatorObservers: [DebugLens.navigatorObserver],
-  builder: (context, child) => DebugLens.wrap(child!),
+  builder: (context, child) => DebugLens.wrap(child ?? const SizedBox.shrink()),
 );
 ```
 
-For a nested navigator (e.g. a bottom-nav tab), give it its own labelled
-observer and detach it when disposed:
+Implementation: [debug_lens.dart](lib/debug_lens.dart) · Example:
+[app.dart](example/lib/src/app.dart)
 
-```dart
-final observer = DebugLens.newNavigatorObserver(label: 'home-tab');
+---
 
-Navigator(observers: [observer], /* ... */);
-
-// in dispose():
-observer.detach();
-```
-
-> Tip: set `RouteSettings(name: ...)` on your routes so they show readable
-> names instead of the route's runtime type.
+## Inspectors
 
 ### Network
 
-Captures every HTTP transaction on an instrumented Dio into a live list —
-method, URL, status, timing, sizes, headers, and request/response bodies —
-plus a session-long per-endpoint call history. Session-only (kept in memory,
-ring-buffered to the latest 250; nothing is written to disk).
-
-- **List / detail** — searchable, status-filterable, sortable list; a detail
-  view with Overview / Request / Response tabs.
-- **History** — every endpoint called this session with its call counts,
-  broken down by outcome. Survives clearing the log.
-- **Connectivity** — AppBar indicator of the current transport (wifi / mobile
-  / offline). Reports transport, not internet reachability.
-- **Copy & share** — swipe a row (→ cURL, ← cURL + response); the detail
-  screen shares the cURL or an Overview/Request/Response text dump.
-- **Safe by default** — `Authorization` / `Cookie` headers are redacted;
-  request/response bodies can be turned off.
-
-**Usage** — add the interceptor to each Dio you want to observe:
+Captures every Dio request and response — headers, bodies, status, duration —
+and keeps a per-endpoint call history for the session. A connectivity indicator
+in the AppBar shows the device's current transport.
 
 ```dart
-final dio = Dio()..interceptors.add(DebugLensDioInterceptor());
+dio.interceptors.add(DebugLensDioInterceptor());
 ```
 
-Tune capture with settings:
-
-```dart
-DebugLensDioInterceptor(
-  settings: const DebugLensDioInterceptorSettings(
-    logToLogger: true,          // mirror into the Logs inspector
-    captureRequestBody: true,
-    captureResponseBody: true,
-    redactSensitiveHeaders: true,
-  ),
-);
-```
+Implementation:
+[debug_lens_dio_interceptor.dart](lib/src/features/network/data/debug_lens_dio_interceptor.dart)
+· Example:
+[api_service.dart](example/lib/src/features/network_demo/data/api_service.dart)
 
 ### Logs
 
-One feed for everything the app says: your own `.i` / `.d` / `.e` calls plus the
-events DebugLens's own observers mirror in. Session-only (in memory, oldest
-dropped first). Search and filter by level, tap a row for the message / error /
-stack detail.
-
-**Usage** — log from anywhere; nothing to register:
+A level-tagged log feed you write to instead of `print`. Each source can be
+muted from the panel, so a chatty origin stops filling the feed without a code
+change.
 
 ```dart
-DebugLensLogger.instance.i('Login succeeded', name: 'auth');
-DebugLensLogger.instance.d('Fetched ${posts.length} posts', name: 'api');
-DebugLensLogger.instance.e('Charge failed', name: 'payment', error: e, stackTrace: s);
+final log = DebugLensLogger.instance..printToConsole = kDebugMode;
+
+log.i('Signed in', name: 'auth');
+log.e('Upload failed', name: 'media', error: e, stackTrace: s);
 ```
 
-`name` is the `[tag]` shown on the row and what search matches on.
-
-Whether records also reach the terminal is yours to set — DebugLens doesn't
-assume a build mode. Turn it off when you already have a logger printing, and
-the record still shows in the feed with no duplicate line:
-
-```dart
-DebugLensLogger.instance.printToConsole = kDebugMode; // or false
-```
-
-**Buffer size** — 1000 records by default; lowering it trims immediately:
-
-```dart
-DebugLensLogger.instance.maxHistory = 5000;
-```
-
-**Crashes** — DebugLens doesn't hook Flutter's error channels for you; point
-them at the logger so framework and uncaught async errors land in the feed:
-
-```dart
-FlutterError.onError = (details) {
-  DebugLensLogger.instance.e(
-    details.exceptionAsString(),
-    name: 'flutter',
-    error: details.exception,
-    stackTrace: details.stack,
-  );
-  FlutterError.presentError(details);
-};
-
-PlatformDispatcher.instance.onError = (error, stack) {
-  DebugLensLogger.instance.e('Uncaught error', error: error, stackTrace: stack);
-  return false;
-};
-```
-
-> Silence a noisy DebugLens source (Network, Bloc, Navigation) with its
-> switch in the capture sheet — the first AppBar action; rows already
-> captured stay. Share exports the buffer as a log file.
+Implementation:
+[debug_lens_logger.dart](lib/src/features/logs/data/debug_lens_logger.dart) ·
+Example: [app_log.dart](example/lib/src/core/logging/app_log.dart)
 
 ### Bloc
 
-Records every Bloc/Cubit lifecycle event (create, event, change, transition,
-error, close) into a live feed with expandable per-event detail. Session-only
-(in memory, ring-buffered to the latest 200).
-
-- **Feed** — chronological rows with an action chip, bloc name and summary;
-  expand for current/next state, event payload, and error + stack trace.
-- **Filter & search** — by action kind, free-text on bloc name, sort
-  newest/oldest.
-- **Logs mirror** — each event also lands in the Logs inspector tagged
-  `bloc.<RuntimeType>`.
-- **Share** — export the feed as a log file.
-
-**Usage** — set the observer once at startup:
+Records every bloc and cubit lifecycle event — created, event received, state
+transition, error, closed. One line, and every bloc in the app is covered.
 
 ```dart
-void main() {
-  Bloc.observer = DebugLensBlocObserver();
-  runApp(const MyApp());
-}
+Bloc.observer = DebugLensBlocObserver();
 ```
 
-> Pass `DebugLensBlocObserver(showLogs: false)` to keep the observer installed
-> but stop it recording (e.g. in release builds).
+Implementation:
+[debug_lens_bloc_observer.dart](lib/src/features/bloc/data/debug_lens_bloc_observer.dart)
+· Example: [main.dart](example/lib/main.dart)
+
+### Navigation
+
+A log of every route push, pop and replace, plus a live view of the navigator
+stack. Nested navigators get their own labelled stack.
+
+```dart
+// Root navigator — see Setup above.
+navigatorObservers: [DebugLens.navigatorObserver],
+
+// A nested navigator, e.g. one tab of a shell.
+final observer = DebugLens.newNavigatorObserver(label: 'home');
+```
+
+Implementation:
+[debug_lens_navigator_observer.dart](lib/src/features/navigation/data/debug_lens_navigator_observer.dart)
+· Example:
+[tab_navigator.dart](example/lib/src/features/shell/presentation/widgets/tab_navigator.dart)
 
 ### Storage
 
-Inspects the app's persistent state — SharedPreferences and databases — over
-two tabs. Pull-based: the host registers read-only sources and DebugLens reads
-them on demand, keeping no copy and never importing your storage packages.
-
-- **Prefs** — searchable by key or value, with a colour-coded type chip
-  (`bool` / `int` / `double` / `String` / `List`). Encrypted keys are flagged
-  `*` and their values hidden by default (eye toggle to reveal). Copy/share
-  per row, tap for detail.
-- **Databases** — browse each registered database → its tables → rows in a
-  `DataTable` with row search and tap-to-sort columns.
-- **Refresh** — re-pull on demand and automatically on app resume.
-
-**Usage** — register the sources once (e.g. after storage init). DebugLens
-gets a snapshot; your app keeps using its own storage packages directly:
+Shows the app's SharedPreferences and its database tables. Both are read on
+demand through an adapter you supply, so DebugLens never holds a copy and never
+imports your storage package.
 
 ```dart
-// SharedPreferences — map your live prefs to DebugLensPrefEntry.
 DebugLens.sharedPrefsSource = () => [
   for (final key in prefs.getKeys())
     DebugLensPrefEntry(key: key, value: '${prefs.get(key)}'),
 ];
 
-// Databases — implement DebugLensDatabase over your DB (drift/sqflite/…).
-DebugLens.registerDatabase(myDatabaseAdapter);
+DebugLens.registerDatabase(MyDriftAdapter(db));
 ```
+
+Implementation:
+[debug_shared_prefs_source.dart](lib/src/features/storage/data/debug_shared_prefs_source.dart),
+[debug_database_source.dart](lib/src/features/storage/data/debug_database_source.dart)
+· Example: [prefs_bridge.dart](example/lib/src/core/storage/prefs_bridge.dart),
+[drift_debug_lens_adapter.dart](example/lib/src/core/storage/drift_debug_lens_adapter.dart)
 
 ### Locale
 
-Inspects the app's active localized strings, grouped into collapsible category
-dropdowns. Pull-based and read-only: the host registers a source returning the
-**current** locale's strings; DebugLens shows that one, keeping no copy.
-
-- **Grouped view** — strings grouped by top-level category (`{category: {key:
-  value}}`); flat maps are shown as-is.
-- **Search & sort** — free-text on category/key/value, and A→Z / Z→A category
-  order.
-- **Paginated** — a batch of categories per page, so a large locale stays
-  responsive.
-- **Refresh & share** — re-pulls on app resume; shares the current (filtered)
-  view as a log file.
-
-**Usage** — register the source once (e.g. after the lang data loads); return
-the active locale's map + label. Switching language just re-pulls it:
+Renders the app's active string map so a missing or wrong translation is visible
+on the device. Read live on every build, so switching language updates it.
 
 ```dart
 DebugLens.localeSource = () => DebugLensLocaleData(
-  entries: currentLangMap, // nested {category: {key: value}} or flat {key: value}
+  entries: currentLangMap,
   label: 'English',
 );
 ```
 
-### Notifications & Deep-links
+Implementation:
+[debug_locale_source.dart](lib/src/features/locale/data/debug_locale_source.dart)
+· Example: [service_locator.dart](example/lib/src/core/di/service_locator.dart)
 
-Records the notifications your app shows/handles and the deep-links it opens,
-over two tabs. Push-based: the host reports each event through a one-line call;
-DebugLens generates the id and timestamp. Session-only (in memory, newest-first,
-ring-buffered to the latest 200 each).
+### Notifications & deep-links
 
-- **Notifications** — title, body, source, and `received` / `tapped` kind, with
-  the payload as expandable JSON.
-- **Deep-links** — the URI broken into scheme / host / path, with query
-  parameters as JSON.
-- **Search & sort** — free-text (title/body/source, or URI), toggled between
-  recent-first and A–Z. Tab labels show live counts.
-- **Copy, share & clear** — copy a row, share the active tab as a log file, or
-  clear it from the AppBar.
-- **Safe by default** — the payload is deep-copied on record, so later mutations
-  of your map never alter the logged entry and non-JSON values are stringified.
-
-**Usage** — report events from your notification / deep-link handlers. Call
-`recordNotification` both when a notification is shown and when it's tapped
-(`tapped: true`):
+Two tabs: the notifications your app shows or handles with their raw payloads,
+and the deep-links it opens, broken into scheme, host, path and query.
 
 ```dart
-// On show (and again on tap with tapped: true).
 DebugLens.recordNotification(
   title: message.title,
   body: message.body,
@@ -239,341 +149,212 @@ DebugLens.recordNotification(
   source: 'FCM',
 );
 
-// From your app-links / deep-link handler.
 DebugLens.recordDeeplink(uri.toString(), source: 'os');
 ```
 
-> Clear programmatically with `DebugLens.clearNotifications()` /
-> `DebugLens.clearDeeplinks()`.
+Implementation:
+[notification_entry.dart](lib/src/features/notifications/domain/notification_entry.dart)
+· Example:
+[notification_service.dart](example/lib/src/core/notifications/notification_service.dart)
 
 ### Services
 
-Surfaces whatever backends and SDKs your app talks to as a list of services,
-each with its own screen. Vendor-neutral throughout: DebugLens depends on none
-of these SDKs and imports none of them.
-
-There are two ways in. **Push** for a source you can only write to — a crash
-reporter, an analytics or performance SDK, a config fetch — where you hand
-DebugLens the payload as you send it upstream. Four of those are built in; see
-*Remote config*, *Crash reports*, *Analytics* and *Performance* below. **Pull**
-for a source you can read back — your own API client, a feature-flag cache, an
-in-memory queue — where you write a small adapter and DebugLens calls it on
-demand, keeping no copy.
-
-- **Records** — each service renders as expandable rows (an analytics event, a
-  trace, a crash report): primary label, optional subtitle, fields as JSON.
-- **Remote config** — share your fetched values and DebugLens gives them their
-  own screen: flip between the remote values and device-local overrides, and
-  edit them in place.
-- **Crash reports** — hand over each error as you report it upstream and
-  DebugLens keeps it, so you can read your crashes on the device that produced
-  them.
-- **Analytics** — same deal for the events you log: name, time, and whatever
-  parameters you sent.
-- **Performance** — and for finished traces: name, duration, and the metrics and
-  attributes you put on them.
-- **Search, sort & share** — free-text over titles and fields, newest or oldest
-  first (A–Z for config keys), and a share that exports exactly the rows on
-  screen.
-- **Live** — re-pulls on app resume and whenever the service signals a change
-  through `changes`, so a screen left open keeps up without a refresh button.
-- **Values are shown as given** — DebugLens does no masking, and a shared log
-  file carries exactly what is on screen. Keep secrets out of `values`.
-
-**Usage (pull)** — extend `DebugLensService` (don't implement it: only `name` is
-required) and register it once at startup:
+Anything else your app talks to, as its own screen. Write an adapter when the
+source can be read back; push into one of the four built-ins below when it
+can't.
 
 ```dart
-class ApiCacheInspector extends DebugLensService {
+class CacheInspector extends DebugLensService {
   @override
   String get name => 'API cache';
 
   @override
-  bool get canClear => true;
-
-  @override
-  Future<void> clear() async => myCache.evictAll();
-
-  /// Optional: re-pull the open screen as the cache changes.
-  @override
-  Listenable get changes => myCache.revision;
-
-  @override
   Future<List<DebugLensServiceGroup>> load() async => [
-    for (final entry in myCache.entries)
-      DebugLensServiceGroup(
-        title: entry.key,
-        subtitle: 'expires ${entry.expiry}',
-        values: {'size': '${entry.bytes} B', ...entry.headers},
-      ),
+    for (final e in myCache.entries)
+      DebugLensServiceGroup(title: e.key, values: {'size': '${e.bytes} B'}),
   ];
 }
 
-DebugLens.registerService(ApiCacheInspector());
+DebugLens.registerService(CacheInspector());
 ```
 
-`load()` is called on demand, so return live data rather than a snapshot you keep
-in sync yourself. If your source *can't* be read back, push instead — the four
-built-ins below show the shape.
+Implementation:
+[debug_service_source.dart](lib/src/features/services/data/debug_service_source.dart)
+· Example:
+[mock_firebase.dart](example/lib/src/core/firebase/mock_firebase.dart)
 
 ### Remote config
 
-Override any config value on the device and keep working against it — feature
-flags, experiment buckets, copy, timeouts. DebugLens owns all of it: which keys
-are overridden, the source/custom switch, persistence, reset. You share what you
-fetched, and read back through it.
-
-Keep it to the one file that already wraps your provider:
+Share the values you fetched and override any of them on the device. DebugLens
+owns the override storage and the source/custom switch; overrides apply on the
+next app start.
 
 ```dart
-class RemoteConfigService {
-  RemoteConfigService._();
-  static final instance = RemoteConfigService._();
+await DebugLens.instance.setRemoteConfigData({
+  for (final e in firebase.getAll().entries) e.key: e.value.asString(),
+}, sourceLabel: 'Firebase');
 
-  late final FirebaseRemoteConfig _firebase;
-
-  Future<void> initialize() async {
-    _firebase = FirebaseRemoteConfig.instance;
-    await _firebase.fetchAndActivate();
-
-    /// Share the fetched values. `getAll()` hands back `RemoteConfigValue`
-    /// wrappers — unwrap them, since DebugLens has no Firebase dependency.
-    await DebugLens.instance.setRemoteConfigData({
-      for (final e in _firebase.getAll().entries) e.key: e.value.asString(),
-    }, sourceLabel: 'Firebase');
-  }
-
-  Object? getKey(String key) => DebugLens.instance.getKey(key);
-  String getString(String key) => DebugLens.instance.getString(key);
-  bool getBool(String key) => DebugLens.instance.getBool(key);
-  int getInt(String key) => DebugLens.instance.getInt(key);
-  double getDouble(String key) => DebugLens.instance.getDouble(key);
-}
+final timeout = DebugLens.instance.getInt('api_timeout_seconds');
 ```
 
-Feature code keeps calling `RemoteConfigService.instance.getInt('key')` and never
-learns which side won — so DebugLens stays out of your read paths, and dropping
-it leaves you serving the fetched values.
-
-**Await `setRemoteConfigData`.** It loads the overrides saved on a previous run;
-without the await, reads race that load and a cold start serves source values.
-
-**Edits apply on the next app start**, which is what the panel's restart dialog
-and per-edit toast tell the user. Reads answer from a snapshot taken when you
-registered, so flipping the switch and editing a value land at the same moment.
-
-**Types come from the values you share.** Pass real `bool` / `int` / `double` and
-each row gets a type chip, a matching keyboard, and edit validation. Firebase
-stores everything as text, so `asString()` gives you `String` rows throughout —
-map the keys you care about to real types if you want the typed editors.
-
-> `getKey` returns the raw value, or `null` for a key you never registered, for
-> anything the four typed getters don't cover — a JSON parameter you want to
-> decode yourself, say. The typed getters accept a real value *or* its string
-> form, so `getInt` reads `'30'` as `30`.
+Implementation:
+[debug_config_store.dart](lib/src/features/services/data/debug_config_store.dart)
+· Example:
+[mock_remote_config.dart](example/lib/src/core/firebase/mock_remote_config.dart)
 
 ### Crash reports
 
-Read the errors your app reports upstream on the device that produced them — no
-console attached, no Crashlytics dashboard, no waiting for the batch to upload.
-
-Crash reporters are write-only, so this one is **pushed**: you hand DebugLens the
-same payload you send upstream and it keeps the events for the session (in
-memory, newest-first, ring-buffered to the latest 100). Nothing is uploaded by
-DebugLens itself, and it imports no reporter SDK — Crashlytics, Sentry and
-Bugsnag all wire up the same way.
-
-- **Records** — one row per report, titled with the error and marked
-  `fatal` / `non-fatal` alongside the time. Expands to the reason, your custom
-  data, any attached context lines, and the stack trace.
-- **Search, sort & share** — free-text over every field, newest or oldest first,
-  and a share that exports exactly the rows on screen.
-- **Live** — the open screen picks up errors recorded behind it; clear the list
-  from the AppBar.
-
-Keep it to the one file that already wraps your reporter:
+Crash reporters are write-only, so hand DebugLens the same payload you send
+upstream. The report stays on the device that produced it, stack trace included.
 
 ```dart
-class CrashReporter {
-  CrashReporter._();
-  static final instance = CrashReporter._();
+DebugLens.instance.initCrashReporting();
 
-  late final FirebaseCrashlytics _crashlytics;
-
-  Future<void> initialize() async {
-    _crashlytics = FirebaseCrashlytics.instance;
-
-    /// Puts the service on the Services screen from startup, so an empty list
-    /// reads as "nothing has failed yet" instead of the screen being absent.
-    DebugLens.instance.initCrashReporting();
-  }
-
-  Future<void> recordError({
-    required Object error,
-    StackTrace? stackTrace,
-    bool fatal = false,
-    String? reason,
-    Map<String, Object?>? customData,
-    Iterable<Object> information = const [],
-  }) async {
-    await _crashlytics.recordError(
-      error,
-      stackTrace,
-      reason: reason,
-      fatal: fatal,
-      information: information,
-    );
-
-    /// The same payload, kept on the device.
-    DebugLens.instance.recordCrash(
-      DebugLensCrashEvent(
-        error: error,
-        stackTrace: stackTrace,
-        fatal: fatal,
-        reason: reason,
-        customData: customData ?? const {},
-        information: information,
-      ),
-    );
-  }
-}
+DebugLens.instance.recordCrash(
+  DebugLensCrashEvent(error: error, stackTrace: stack, fatal: false),
+);
 ```
 
-Feature code keeps calling `CrashReporter.instance.recordError(...)` and never
-learns DebugLens is there — so dropping the package leaves your reporting intact.
-
-**`initCrashReporting` is optional.** The first `recordCrash` registers the
-service if you skip it, but then it only shows up once something has already
-failed. Pass `name:` to label it something other than `Crashlytics`.
-
-> `customData` is copied and `information` stringified when the event is
-> constructed, so later mutation of your map never rewrites a recorded report.
-> `time` defaults to now — pass it only when replaying a crash caught on a
-> previous run.
+Implementation:
+[debug_crash_store.dart](lib/src/features/services/data/debug_crash_store.dart)
+· Example:
+[mock_crashlytics.dart](example/lib/src/core/firebase/mock_crashlytics.dart)
 
 ### Analytics
 
-Watch the events your app sends as it sends them, on the device sending them —
-no console filter, no waiting for a dashboard to catch up.
-
-Analytics SDKs are write-only too, so this one is **pushed** like crash reports:
-you hand DebugLens the same payload you send upstream and it keeps the events
-for the session (in memory, newest-first, ring-buffered to the latest 100).
-DebugLens uploads nothing and imports no analytics SDK — Firebase, Amplitude and
-Segment all wire up the same way.
-
-- **Records** — one row per event: the event name, the time under it, and
-  whatever parameters you sent behind the expand.
-- **Search, sort & share** — free-text over names and parameters, newest or
-  oldest first, and a share that exports exactly the rows on screen.
-- **Live** — the open screen picks up events logged behind it; clear the list
-  from the AppBar.
-
-Keep it to the one file that already wraps your SDK:
+The events you log, as you log them. The name is the row; everything else goes
+in the parameter map and shows when the row is expanded.
 
 ```dart
-class Analytics {
-  Analytics._();
-  static final instance = Analytics._();
+DebugLens.instance.initAnalytics();
 
-  late final FirebaseAnalytics _analytics;
-
-  Future<void> initialize() async {
-    _analytics = FirebaseAnalytics.instance;
-
-    /// Puts the service on the Services screen from startup, instead of having
-    /// it appear with the first event.
-    DebugLens.instance.initAnalytics();
-  }
-
-  Future<void> logEvent(
-    String name, {
-    Map<String, Object?> parameters = const {},
-  }) async {
-    await _analytics.logEvent(
-      name: name,
-      // Firebase rejects null values; DebugLens renders them as a dash.
-      parameters: {
-        for (final e in parameters.entries)
-          if (e.value != null) e.key: e.value!,
-      },
-    );
-
-    /// The same payload, kept on the device.
-    DebugLens.instance.recordAnalyticsEvent(name, parameters: parameters);
-  }
-}
+DebugLens.instance.recordAnalyticsEvent(
+  'add_to_cart',
+  parameters: {'sku': sku, 'price': price},
+);
 ```
 
-**The name is the row title; everything else goes in `parameters`** — screen
-names, user ids, experiment buckets, whatever the event carries. DebugLens
-stringifies the values for display and reads none of them, so there is no schema
-to satisfy and no wrapper type to construct.
-
-**`initAnalytics` is optional.** The first `recordAnalyticsEvent` registers the
-service if you skip it, but then it only shows up once an event has been logged.
-Pass `name:` to label it something other than `Analytics`.
+Implementation:
+[debug_analytics_store.dart](lib/src/features/services/data/debug_analytics_store.dart)
+· Example: [mock_analytics.dart](example/lib/src/core/firebase/mock_analytics.dart)
 
 ### Performance
 
-See what your app actually spent its time on — startup, page loads, individual
-network calls — on the device, in the same session, without a dashboard round
-trip.
-
-Pushed like the two above, with one difference: **you keep owning the running
-trace.** The stopwatch and the metrics and attributes accumulating on it stay in
-your wrapper, and you push once when the trace stops, so DebugLens only ever
-holds finished traces (in memory, newest-first, ring-buffered to the latest 100).
-
-- **Records** — one row per finished trace: the name, then duration and time
-  under it, expanding to the metrics and attributes you attached. The duration
-  isn't repeated as a field, since it's already on the row.
-- **Search, sort & share** — free-text over names and attributes, newest or
-  oldest first, and a share that exports exactly the rows on screen.
-- **Live** — the open screen picks up traces that finish behind it; clear the
-  list from the AppBar.
-
-Keep it to the one file that already wraps your SDK — the push belongs in `stop`,
-next to the Firebase trace it mirrors:
+Finished traces with their durations. You keep the running trace — the stopwatch
+and its attributes — and push once when it stops.
 
 ```dart
-class PerfTrace {
-  PerfTrace(this.name) : _firebase = FirebasePerformance.instance.newTrace(name);
+DebugLens.instance.initPerformance();
 
-  final String name;
-  final Trace _firebase;
-  final Map<String, Object?> _data = {};
-  final Stopwatch _sw = Stopwatch();
-
-  Future<void> start() async {
-    _sw.start();
-    await _firebase.start();
-  }
-
-  void putAttribute(String key, String value) {
-    _data[key] = value;
-    _firebase.putAttribute(key, value);
-  }
-
-  void setMetric(String key, int value) {
-    _data[key] = value;
-    _firebase.setMetric(key, value);
-  }
-
-  Future<void> stop() async {
-    _sw.stop();
-    await _firebase.stop();
-
-    /// The finished trace, kept on the device.
-    DebugLens.instance.recordTrace(name, _sw.elapsed, attributes: _data);
-  }
-}
+DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);
 ```
 
-`recordTrace` takes metrics and attributes as one `attributes` map — DebugLens
-draws no distinction between them, so merge them however your wrapper holds them.
+Implementation:
+[debug_trace_store.dart](lib/src/features/services/data/debug_trace_store.dart)
+· Example:
+[mock_performance.dart](example/lib/src/core/firebase/mock_performance.dart)
 
-**`initPerformance` is optional.** The first `recordTrace` registers the service
-if you skip it, but then it only shows up once a trace has finished. Pass `name:`
-to label it something other than `Performance`.
+### Device & app
 
+Model, manufacturer, OS, screen metrics and the active network transport,
+gathered once per run. No wiring — it reads the platform directly.
+
+Implementation:
+[device_info_source.dart](lib/src/features/device/data/device_info_source.dart)
+
+### App version
+
+Override the version string your app reports, so you can reproduce
+version-gated behaviour without a rebuild. Applies on the next app start.
+
+```dart
+await DebugLens.instance.setAppVersion(packageInfo.version);
+
+// Read it back wherever the app shows or reports its version.
+Text(DebugLens.instance.appVersion);
+```
+
+Implementation:
+[app_version_store.dart](lib/src/features/settings/data/app_version_store.dart)
+· Example: [main.dart](example/lib/main.dart)
+
+### Custom error screen
+
+Replaces Flutter's red error box with a readable one showing the exception and
+stack trace, each copyable straight into a share sheet. You install it, so your
+own error handling stays in charge.
+
+```dart
+ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
+```
+
+Implementation:
+[custom_error_screen.dart](lib/src/features/error/presentation/views/custom_error_screen.dart)
+· Example: [main.dart](example/lib/main.dart)
+
+### Health check
+
+Start a window from Settings, reproduce the problem, stop it, and get a report
+of every crash and error log in between. No wiring — it reads the feeds above.
+
+Implementation:
+[health_check_store.dart](lib/src/features/health/data/health_check_store.dart)
+
+### Roles
+
+Developer mode sees every screen; tester mode sees only what a developer has
+granted. Long-press the dashboard title to switch. No wiring — configure it from
+Settings.
+
+Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome at
+[github.com/anupam92402/DebugLens](https://github.com/anupam92402/DebugLens).
+
+### Before you open a PR
+
+* **Open an issue first** for anything beyond a bug fix. A new inspector or a
+  change to a public API is worth agreeing on before it is written.
+* **Branch from `master`** and keep the branch to one concern. A PR that fixes a
+  bug and renames three files is two PRs.
+* **`flutter analyze` must be clean** and `dart format .` must leave no diff.
+  Both run on the package and on `example/`.
+* **Try it in the example app.** `cd example && flutter run`. If your change has
+  no visible effect there, say in the PR how you verified it.
+
+### What a good PR looks like
+
+* **A title that says what changed**, not which files moved — "cap analytics
+  events at the configured limit", not "update store".
+* **A description that explains why**, and how you tested it. Screenshots for
+  anything visual; the panel is a UI.
+* **No new dependency** without a note on why the existing ones don't cover it.
+  DebugLens stays vendor-neutral: it must not import Firebase, Sentry, or any
+  other SDK a host might swap out.
+* **Comments that explain the reasoning**, not the syntax. Match the density of
+  the file you are editing.
+* **A CHANGELOG entry** under an `## Unreleased` heading for anything a user
+  would notice.
+
+### Conventions worth knowing
+
+* User-facing copy lives in
+  [debug_strings.dart](lib/src/shared/debug_strings.dart); non-display constants
+  and preference keys live in
+  [debug_constants.dart](lib/src/shared/debug_constants.dart).
+* Features follow `data/`, `domain/`, `presentation/views/`,
+  `presentation/widgets/`. Screens go in `views/`, everything else in
+  `widgets/`.
+* Reuse the shared widget kit in
+  [shared/widgets](lib/src/shared/widgets) before adding a new widget — most
+  layouts already have one.
+* The panel keeps no copy of data it can ask the host for. If your inspector can
+  read live, give it a source rather than a store.
+
+## License
+
+[MIT](LICENSE)

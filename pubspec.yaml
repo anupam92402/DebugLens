@@ -1,7 +1,20 @@
 name: debug_lens
-description: "DebugLens - in-app debugging overlay (UI scaffold)"
-version: 0.0.1
-homepage:
+description: >-
+  An in-app debugging overlay for Flutter: inspect network calls, logs, bloc
+  events, navigation, storage, device info.
+version: 1.0.0
+homepage: https://github.com/anupam92402/DebugLens
+repository: https://github.com/anupam92402/DebugLens
+issue_tracker: https://github.com/anupam92402/DebugLens/issues
+topics:
+  - debugging
+  - devtool
+  - inspector
+  - logging
+
+platforms:
+  android:
+  ios:
 
 environment:
   sdk: ^3.9.0

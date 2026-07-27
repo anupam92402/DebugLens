@@ -113,7 +113,7 @@ class _JsonNodeState extends State<JsonNode> {
           onTap: () => setState(() => _expanded = !_expanded),
           borderRadius: BorderRadius.circular(4),
           child: keyActive
-              ? KeyedSubtree(key: search!.activeKey, child: header)
+              ? KeyedSubtree(key: search.activeKey, child: header)
               : header,
         ),
         if (expanded)
@@ -188,7 +188,7 @@ class _JsonNodeState extends State<JsonNode> {
     );
 
     final isActive = keyActive || valueActive;
-    return isActive ? KeyedSubtree(key: search!.activeKey, child: row) : row;
+    return isActive ? KeyedSubtree(key: search.activeKey, child: row) : row;
   }
 
   /// Colors mirror common JSON syntax-highlighting conventions so types are

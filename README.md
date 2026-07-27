@@ -10,6 +10,16 @@ teammate reproducing a bug, you on a phone that isn't plugged in. Every
 inspector is wired to your own app through a small seam, so DebugLens depends on
 none of your vendors and drops out cleanly when you remove it.
 
+## Screenshots
+
+| Dashboard | Network | Logs |
+| :-: | :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs.png" width="240"> |
+
+| Remote config | Settings |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/remote_config.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings.png" width="240"> |
+
 ## Install
 
 ```yaml

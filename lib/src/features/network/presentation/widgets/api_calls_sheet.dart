@@ -5,6 +5,7 @@ import '../../domain/api_call_stat.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/theme/debug_theme.dart';
+import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/glass.dart';
 import 'api_call_row.dart';
@@ -25,10 +26,8 @@ class ApiCallsSheet extends StatelessWidget {
 
   /// Opens the sheet over [context]'s navigator.
   static Future<void> show(BuildContext context, ApiCallStat stat) =>
-      showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
+      showDebugBottomSheet<void>(
+        context,
         builder: (_) => ApiCallsSheet(stat: stat),
       );
 

@@ -8,6 +8,12 @@ import '../features/network/domain/network_entry.dart';
 import '../features/notifications/domain/notification_entry.dart';
 import '../features/notifications/domain/deeplink_entry.dart';
 import '../features/navigation/domain/nav_event.dart';
+import '../features/logs/data/debug_lens_logger.dart';
+import '../features/services/data/debug_analytics_store.dart';
+import '../features/services/data/debug_crash_store.dart';
+import '../features/services/data/debug_trace_store.dart';
+import '../features/settings/data/debug_limits_store.dart';
+import '../features/settings/domain/debug_limit.dart';
 
 /// Holds all captured debug data in memory.
 ///
@@ -23,9 +29,9 @@ class DebugStore extends ChangeNotifier {
 
   final List<NetworkEntry> network = <NetworkEntry>[];
 
-  /// Cap on retained network entries — ring-buffered like nav/bloc so a long
-  /// session doesn't grow unbounded (each entry can hold full bodies).
-  static const int _maxNetworkEntries = 250;
+  /// Caps come from `DebugLimits`, which is editable from Settings and falls
+  /// back to the shipped defaults before it has loaded.
+  static int _cap(DebugLimit limit) => DebugLimits.instance.of(limit);
 
   /// Session-scoped call counts per endpoint (method + path), surfaced on the
   /// Network → History screen. Independent of [network]: [clearNetwork] does
@@ -45,26 +51,19 @@ class DebugStore extends ChangeNotifier {
   /// `DebugLens.recordNotification`; no seed data.
   final List<NotificationEntry> notifications = <NotificationEntry>[];
 
-  /// Cap on retained notifications — ring-buffered so a long session doesn't
-  /// grow unbounded. Newest-first, so the oldest is trimmed from the end.
-  static const int _maxNotifications = 200;
-
   /// Captured deep-links, newest-first. Populated live via
   /// `DebugLens.recordDeeplink`; no seed data.
   final List<DeeplinkEntry> deeplinks = <DeeplinkEntry>[];
 
-  /// Cap on retained deep-links — ring-buffered, newest-first (see above).
-  static const int _maxDeeplinks = 200;
   final List<NavEvent> navEvents =
       []; // populated live by the navigator observer
 
   /// Captured BlocObserver lifecycle events (populated by
   /// `DebugLensBlocObserver`). Bottom = oldest, top = newest. Trimmed to
-  /// [_maxBlocEvents] entries; the [BlocEvent.sequence] keeps stable IDs
+  /// the Bloc limit; the [BlocEvent.sequence] keeps stable IDs
   /// even after trimming.
   final List<BlocEvent> blocEvents = [];
   int _blocSeq = 0;
-  static const int _maxBlocEvents = 200;
 
   /// Live navigator stacks keyed by navigator label (bottom → top), kept by the
   /// observer(s) for the Stack tab. Supports nested navigators.
@@ -87,7 +86,6 @@ class DebugStore extends ChangeNotifier {
   // without DebugLens keeping a copy. See `debug_locale_source.dart`.
 
   int _navSeq = 0;
-  static const int _maxNavEvents = 500;
 
   /// Records a navigation transition (used by `DebugLensNavigatorObserver` and
   /// any manual logging). Events are appended in arrival order; [NavEvent.sequence]
@@ -113,7 +111,7 @@ class DebugStore extends ChangeNotifier {
         navigator: navigator,
       ),
     );
-    if (navEvents.length > _maxNavEvents) navEvents.removeAt(0);
+    if (navEvents.length > _cap(DebugLimit.navigation)) navEvents.removeAt(0);
     notifyListeners();
   }
 
@@ -152,7 +150,7 @@ class DebugStore extends ChangeNotifier {
   /// register a request as pending the moment it goes out.
   void recordNetwork(NetworkEntry entry) {
     network.add(entry);
-    if (network.length > _maxNetworkEntries) network.removeAt(0);
+    if (network.length > _cap(DebugLimit.network)) network.removeAt(0);
     _recordHistory(entry);
     notifyListeners();
   }
@@ -272,7 +270,7 @@ class DebugStore extends ChangeNotifier {
         stackTrace: stackTrace,
       ),
     );
-    if (blocEvents.length > _maxBlocEvents) blocEvents.removeAt(0);
+    if (blocEvents.length > _cap(DebugLimit.bloc)) blocEvents.removeAt(0);
     notifyListeners();
   }
 
@@ -296,19 +294,21 @@ class DebugStore extends ChangeNotifier {
 
   /// Records a push/local notification (called from `DebugLens.recordNotification`).
   /// Inserted newest-first; the ring buffer trims the oldest past
-  /// [_maxNotifications].
+  /// the notifications limit.
   void recordNotification(NotificationEntry entry) {
     notifications.insert(0, entry);
-    if (notifications.length > _maxNotifications) notifications.removeLast();
+    if (notifications.length > _cap(DebugLimit.notifications)) {
+      notifications.removeLast();
+    }
     notifyListeners();
   }
 
   /// Records a captured deep-link (called from `DebugLens.recordDeeplink`).
   /// Inserted newest-first; the ring buffer trims the oldest past
-  /// [_maxDeeplinks].
+  /// the deep-links limit.
   void recordDeeplink(DeeplinkEntry entry) {
     deeplinks.insert(0, entry);
-    if (deeplinks.length > _maxDeeplinks) deeplinks.removeLast();
+    if (deeplinks.length > _cap(DebugLimit.deeplinks)) deeplinks.removeLast();
     notifyListeners();
   }
 
@@ -324,8 +324,16 @@ class DebugStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Wipes every captured feed — not just the ones this store owns.
+  ///
+  /// The logger and the three pushed service stores keep their own buffers, so
+  /// "clear all data" has to reach into them too; leaving them out made the
+  /// Settings action quietly partial. The live navigator stacks are the one
+  /// exception: they describe where the app is right now, not what it did.
   void clearAll() {
     network.clear();
+    _apiStats.clear();
+    _entryStatus.clear();
     blocEvents.clear();
     _blocSeq = 0;
     notifications.clear();
@@ -333,5 +341,11 @@ class DebugStore extends ChangeNotifier {
     navEvents.clear();
     _navSeq = 0;
     notifyListeners();
+
+    // Each notifies its own listeners.
+    DebugLensLogger.instance.clear();
+    DebugCrashStore.instance.clear();
+    DebugAnalyticsStore.instance.clear();
+    DebugTraceStore.instance.clear();
   }
 }

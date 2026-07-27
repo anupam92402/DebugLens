@@ -1,3 +1,4 @@
+import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -105,11 +106,13 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Card(
+              Card(
                 child: ListTile(
-                  leading: Icon(Icons.info_outline_rounded),
-                  title: Text('Version'),
-                  trailing: Text('1.0.0+1'),
+                  leading: const Icon(Icons.info_outline_rounded),
+                  title: const Text('Version'),
+                  // Read through DebugLens rather than hardcoded, so a version
+                  // overridden in the panel shows here after a restart.
+                  trailing: Text(DebugLens.instance.appVersion),
                 ),
               ),
             ],
@@ -149,8 +152,8 @@ class _NotificationsCard extends StatelessWidget {
   }
 }
 
-/// Records mock-Firebase Crashlytics reports, so the crash inspector has both
-/// severities to show without needing a real failure.
+/// Ways to make the app misbehave on purpose: two Crashlytics severities for
+/// the crash inspector, and a real build failure for the error screen.
 class _DiagnosticsCard extends StatelessWidget {
   const _DiagnosticsCard();
 
@@ -192,9 +195,49 @@ class _DiagnosticsCard extends StatelessWidget {
             trailing: const Icon(Icons.error_outline),
             onTap: () => _record(context, fatal: true),
           ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.broken_image_outlined),
+            title: const Text('Simulate build error'),
+            subtitle: const Text(
+              "Throws while building, to show DebugLens's "
+              'error screen',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const _BrokenScreen()),
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+/// Hosts [_BrokenBody] under a normal AppBar.
+///
+/// The throw is deliberately one level down rather than here: `ErrorWidget`
+/// replaces only the widget that failed, so keeping the Scaffold intact leaves
+/// a back button and shows the error screen where a real broken widget would
+/// appear — inside the page, not instead of it.
+class _BrokenScreen extends StatelessWidget {
+  const _BrokenScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Simulated build error')),
+      body: const _BrokenBody(),
+    );
+  }
+}
+
+class _BrokenBody extends StatelessWidget {
+  const _BrokenBody();
+
+  @override
+  Widget build(BuildContext context) {
+    throw StateError('Simulated build failure from Settings');
   }
 }
 

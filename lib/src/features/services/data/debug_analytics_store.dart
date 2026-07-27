@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/debug_constants.dart';
+import '../../settings/data/debug_limits_store.dart';
+import '../../settings/domain/debug_limit.dart';
 import '../../../shared/util/clock_format.dart';
 import '../domain/analytics_event.dart';
 import '../domain/service_group.dart';
@@ -11,7 +13,7 @@ import 'debug_service_source.dart';
 /// Analytics SDKs are write-only — you can't ask Firebase what you logged — so
 /// like the crash store this one keeps what the host hands over through
 /// `DebugLens.instance.recordAnalyticsEvent`. Newest-first, ring-buffered at
-/// [DebugConstants.maxAnalyticsEvents].
+/// the Analytics limit, which is editable from Settings.
 class DebugAnalyticsStore {
   DebugAnalyticsStore._();
 
@@ -29,7 +31,7 @@ class DebugAnalyticsStore {
 
   void record(DebugLensAnalyticsEvent event) {
     _events.insert(0, event);
-    if (_events.length > DebugConstants.maxAnalyticsEvents) {
+    if (_events.length > DebugLimits.instance.of(DebugLimit.analytics)) {
       _events.removeLast();
     }
     revision.value++;

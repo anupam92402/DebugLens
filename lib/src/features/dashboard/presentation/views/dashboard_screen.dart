@@ -8,7 +8,6 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/matrix_rain.dart';
 import '../../data/dash_order_store.dart';
 import '../../domain/dash_item.dart';
-import '../widgets/developer_password_dialog.dart';
 import '../widgets/reorderable_dash_grid.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -57,22 +56,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ),
   ];
 
-  /// The declared order until the saved one loads — a frame or two, and
-  /// identical when nothing has been rearranged yet.
-  List<DashItem> _ordered = _items;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadOrder();
-  }
-
-  Future<void> _loadOrder() async {
-    final ordered = await DashOrderStore.ordered(_items);
-    if (!mounted) return;
-    setState(() => _ordered = ordered);
-  }
-
   /// Applied immediately and persisted in the background — the write is a
   /// preference, not something the grid should wait on.
   ///
@@ -81,30 +64,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// occupied, so tiles the current role can't see keep their positions and
   /// rearranging in one role never rewrites the other's order.
   void _onReorder(List<DashItem> visible) {
+    final ordered = DashOrderStore.instance.ordered(_items);
     final routes = {for (final item in visible) item.route};
     final slots = <int>[
-      for (var i = 0; i < _ordered.length; i++)
-        if (routes.contains(_ordered[i].route)) i,
+      for (var i = 0; i < ordered.length; i++)
+        if (routes.contains(ordered[i].route)) i,
     ];
-    final next = [..._ordered];
+    final next = [...ordered];
     for (var i = 0; i < slots.length; i++) {
       next[slots[i]] = visible[i];
     }
-    setState(() => _ordered = next);
-    DashOrderStore.save(next);
+    DashOrderStore.instance.save(next);
   }
 
   Future<void> _toggleRole(BuildContext context) async {
     final roleController = context.read<DebugRoleController>();
-    // Switching INTO developer requires the password; leaving it is free.
-    if (!roleController.isDeveloper) {
-      final unlocked = await showDialog<bool>(
-        context: context,
-        builder: (_) => const DeveloperPasswordDialog(),
-      );
-      if (unlocked != true) return;
-    }
-    if (!context.mounted) return;
+
+    // The tester role can be switched off from Settings. When it is, there is
+    // nowhere to step down to — so bail before the rain rather than playing a
+    // transition that lands back where it started.
+    if (!roleController.canToggle) return;
 
     // Curtain first: the rain covers the screen, the role flips behind it, and
     // the rain fades out onto the new dashboard. Toggling first would show the
@@ -126,11 +105,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDeveloper = context.watch<DebugRoleController>().isDeveloper;
-    // Testers can only open Network; developers see everything.
-    final items = isDeveloper
-        ? _ordered
-        : _ordered.where((i) => i.route == DebugRoutes.network).toList();
+    final role = context.watch<DebugRoleController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -148,7 +123,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       // Long-press a tile to drag it somewhere else; the order is remembered.
-      body: ReorderableDashGrid(items: items, onReorder: _onReorder),
+      // Listening to the store keeps this in step with a reset from Settings,
+      // which happens with this screen still mounted underneath.
+      body: ListenableBuilder(
+        listenable: DashOrderStore.instance,
+        builder: (context, _) {
+          final ordered = DashOrderStore.instance.ordered(_items);
+          // Developers see everything; testers see only what they've been
+          // granted (configured from Settings → Tester access).
+          final items = role.isDeveloper
+              ? ordered
+              : ordered.where((i) => role.canOpen(i.route)).toList();
+          return ReorderableDashGrid(items: items, onReorder: _onReorder);
+        },
+      ),
     );
   }
 }

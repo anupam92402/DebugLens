@@ -4,6 +4,7 @@ import '../../data/debug_lens_logger.dart';
 import '../../domain/log_origin.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/glass.dart';
 import 'log_capture_switch.dart';
@@ -18,9 +19,8 @@ class LogCaptureSheet extends StatelessWidget {
   const LogCaptureSheet({super.key});
 
   /// Opens the sheet over [context]'s navigator.
-  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: Colors.transparent,
+  static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
+    context,
     builder: (_) => const LogCaptureSheet(),
   );
 

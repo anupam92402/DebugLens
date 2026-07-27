@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/debug_constants.dart';
+import '../../settings/data/debug_limits_store.dart';
+import '../../settings/domain/debug_limit.dart';
 import '../../../shared/debug_strings.dart';
 import '../../../shared/util/clock_format.dart';
 import '../domain/service_group.dart';
@@ -12,7 +14,7 @@ import 'debug_service_source.dart';
 /// Performance SDKs are write-only — you can't ask Firebase what it timed — so
 /// like the crash and analytics stores this one keeps what the host hands over
 /// through `DebugLens.instance.recordTrace`. Newest-first, ring-buffered at
-/// [DebugConstants.maxTraceEvents].
+/// the Traces limit, which is editable from Settings.
 class DebugTraceStore {
   DebugTraceStore._();
 
@@ -30,7 +32,9 @@ class DebugTraceStore {
 
   void record(DebugLensTraceEvent event) {
     _events.insert(0, event);
-    if (_events.length > DebugConstants.maxTraceEvents) _events.removeLast();
+    if (_events.length > DebugLimits.instance.of(DebugLimit.traces)) {
+      _events.removeLast();
+    }
     revision.value++;
   }
 

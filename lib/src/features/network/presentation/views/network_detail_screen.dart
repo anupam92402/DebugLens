@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../domain/network_entry.dart';
 import '../../data/network_serializer.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/util/copy_share.dart';
 import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
@@ -30,22 +30,13 @@ class NetworkDetailScreen extends StatelessWidget {
   }
 
   /// Clipboard + open the system share sheet — the AppBar's copy+share actions.
-  Future<void> _copyAndShare(
-    BuildContext context,
-    String text,
-    String label,
-  ) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    if (!context.mounted) return;
-    DebugToast.show(
-      context,
-      DebugStrings.commonCopiedShare(label),
-      duration: const Duration(milliseconds: 1200),
-    );
-    await SharePlus.instance.share(
-      ShareParams(text: text, subject: '${entry.methodLabel} ${entry.path}'),
-    );
-  }
+  Future<void> _copyAndShare(BuildContext context, String text, String label) =>
+      copyAndShare(
+        context,
+        text,
+        label: label,
+        subject: '${entry.methodLabel} ${entry.path}',
+      );
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,7 @@ import 'debug_constants.dart';
 ///
 /// One flat, feature-prefixed namespace (e.g. [networkTitle], [logsEmpty]).
 /// Copy that needs runtime values is exposed as a static method
-/// (e.g. [settingsMaxItems]). Technical strings — map/JSON keys, route names,
+/// (e.g. [commonCopyField]). Technical strings — map/JSON keys, route names,
 /// log tags, and pure-composition interpolations (`'$a $b'`) — are
 /// intentionally NOT centralised here.
 class DebugStrings {
@@ -28,34 +28,105 @@ class DebugStrings {
   static const String dashboardServices = 'Services';
   static const String dashboardLocale = 'Locale';
   static const String dashboardSettings = 'Settings';
-  static const String dashboardDeveloperAccess = 'Developer access';
-  static const String dashboardPasswordHint = 'Enter password';
-  static const String dashboardPasswordError = 'Incorrect password';
-  static const String dashboardUnlock = 'Unlock';
   static const String roleDeveloper = 'DEVELOPER';
   static const String roleTester = 'TESTER';
 
   // --- Settings -------------------------------------------------------------
   static const String settingsTitle = 'Settings';
-  static const String settingsCapture = 'Capture';
-  static const String settingsCaptureNetwork = 'Network';
-  static const String settingsCaptureLogs = 'Logs';
-  static const String settingsCaptureNotifications = 'Notifications';
-  static const String settingsCaptureNavigation = 'Navigation';
-  static const String settingsCaptureStorage = 'Storage';
-  static const String settingsCaptureCrashes = 'Crashes';
-  static const String settingsCaptureAnalytics = 'Analytics';
-  static const String settingsPrivacy = 'Privacy';
-  static const String settingsRedactHeaders = 'Redact sensitive headers';
-  static const String settingsRedactSubtitle =
-      'Mask Authorization, cookies, tokens';
+  static const String settingsAccess = 'Access';
+  static const String settingsMode = 'Mode';
+  static const String settingsModeTitle = 'Panel mode';
+  static const String settingsModeDeveloperHint =
+      'Master access — every screen and setting';
+  static const String settingsModeTesterHint =
+      'Allow stepping down to the granted screens. Long-press the dashboard '
+      'title to actually switch.';
+  static const String settingsTesterAccess = 'Tester access';
+  static const String settingsTesterDisabledToast = 'Please enable tester mode';
+  static const String settingsTesterAccessHint =
+      'Screens a tester may open. Ignored in developer mode.';
+
+  static String settingsTesterAccessCount(int n) =>
+      n == 1 ? '1 screen' : '$n screens';
   static const String settingsBuffer = 'Buffer';
+  static const String settingsLimits = 'Log limits';
+
+  static String settingsLimitsHint(int min, int max) =>
+      'Records kept per feed, $min–$max';
+
+  static String settingsLimitsCount(int n) =>
+      n == 0 ? 'Defaults' : '$n changed';
+
+  static String settingsLimitTitle(String label) => '$label limit';
+
+  static String settingsLimitDefault(int n) => 'Default: $n';
+  static const String settingsApp = 'App';
+  static const String settingsAppVersion = 'App version';
+  static const String appVersionOriginal = 'Original';
+  static const String appVersionInvalid = 'Enter a version';
+  static const String appVersionPending = 'next start';
+  static const String settingsErrorScreen = 'Custom error screen';
+  static const String settingsErrorScreenSetup = 'Setup';
+  static const String settingsHealthCheck = 'Health check';
+  static const String settingsHealthStart = 'Start';
+  static const String settingsHealthStop = 'Stop';
+
+  static String settingsHealthTracking(String at) =>
+      'Report tracking started at $at';
+  static const String settingsHealthStartedToast =
+      'Health check started — tap again to stop';
+  static const String settingsHealthPrevious = 'Previous reports';
+
+  static String settingsHealthPreviousCount(int n) =>
+      n == 1 ? '1 report' : '$n reports';
   static const String settingsData = 'Data';
+  static const String settingsResetDashboard = 'Reset dashboard order';
+  static const String settingsResetDashboardToast = 'Dashboard order reset';
+  static const String settingsResetDashboardCustom = 'Rearranged';
+  static const String settingsResetDashboardDefault = 'Default';
   static const String settingsClearAll = 'Clear all data';
   static const String settingsClearedToast = 'All in-memory data cleared';
-  static const String settingsAbout = 'About';
-  static const String settingsAboutValue = 'DebugLens · UI scaffold · v0.0.1';
-  static String settingsMaxItems(int n) => 'Max items per type: $n';
+
+  // --- Health check ---------------------------------------------------------
+  static const String healthTitle = 'Health check';
+
+  static String healthNumber(int n) => '#$n';
+
+  static String healthTitleNumbered(int n) => 'Health check #$n';
+  static const String healthShareTooltip = 'Share report';
+  static const String healthShareSubject = 'DebugLens health check';
+  static const String healthClean = 'Nothing failed in this window';
+  static const String healthKindCrash = 'CRASH';
+  static const String healthKindLog = 'LOG';
+  static const String healthPreviousTitle = 'Previous reports';
+
+  static String healthWindow(String from, String to, String duration) =>
+      '$from → $to  ($duration)';
+
+  static String healthCrashCount(int n) => '$n ${n == 1 ? 'crash' : 'crashes'}';
+
+  static String healthLogCount(int n) => '$n error ${n == 1 ? 'log' : 'logs'}';
+
+  // --- Error screen ---------------------------------------------------------
+  static const String errorScreenSetupTitle = 'Custom error screen';
+  static const String errorScreenSetupBody =
+      'Replaces Flutter\'s red error box with a readable one that shows the '
+      'exception and stack trace, each copyable straight into a share sheet. '
+      'DebugLens supplies the widget; install it yourself so your own error '
+      'handling stays in charge.';
+  static const String errorScreenSetupHeader = 'SETUP';
+  static const String errorScreenSetupCopyLabel = 'Snippet';
+  static const String errorScreenSetupSnippet =
+      'ErrorWidget.builder = (details) => CustomErrorScreen(details: details);';
+
+  static const String errorScreenTitle = 'Something went wrong';
+  static const String errorScreenSubtitle =
+      'A widget failed to build. Copy either block to share it.';
+  static const String errorScreenErrorHeader = 'ERROR';
+  static const String errorScreenNoStack = 'No stack trace';
+  static const String errorScreenErrorLabel = 'Error';
+  static const String errorScreenStackLabel = 'Stack trace';
+  static const String errorScreenShareSubject = 'DebugLens error';
 
   // --- Device ---------------------------------------------------------------
   static const String deviceTitle = 'Device & App';
@@ -70,7 +141,9 @@ class DebugStrings {
   static const String commonUnknown = 'unknown';
   static const String commonErrorHeader = 'ERROR';
   static const String commonStackHeader = 'STACK';
+
   static String commonCopyField(String label) => 'Copy $label';
+
   static String commonFieldCopied(String label) => '"$label" copied';
 
   // --- Notifications --------------------------------------------------------
@@ -112,6 +185,7 @@ class DebugStrings {
   static const String blocSummaryCreated = 'created';
   static const String blocSummaryClosed = 'closed';
   static const String blocSummaryError = 'error';
+
   static String blocSummaryEvent(String? event) =>
       'event · ${event ?? DebugConstants.emptyValue}';
   static const String blocLabelBloc = 'bloc';
@@ -156,6 +230,7 @@ class DebugStrings {
   static const String localeSortDesc = 'Z → A';
   static const String localePrevPage = 'Previous page';
   static const String localeNextPage = 'Next page';
+
   static String localePageLabel(int page, int total) => 'Page $page / $total';
 
   // --- Services -------------------------------------------------------------
@@ -163,6 +238,7 @@ class DebugStrings {
   static const String servicesEmpty = 'No services registered';
   static const String serviceEmpty = 'No data';
   static const String serviceShareTooltip = 'Share';
+
   static String serviceShareSubject(String name) => 'DebugLens $name';
   static const String serviceSearchHint = 'Search';
   static const String serviceSortAlpha = 'Sorted A–Z (tap for original)';
@@ -175,6 +251,7 @@ class DebugStrings {
   static const String serviceConfigName = 'Remote Config';
   static const String serviceSourceRemote = 'Remote';
   static const String serviceSourceCustom = 'Custom';
+
   static String serviceSourceRemoteTooltip(String label) => 'Use $label values';
   static const String serviceSourceCustomTooltip = 'Use device overrides';
   static const String serviceSourceValueLabel = 'Source value';
@@ -185,13 +262,16 @@ class DebugStrings {
       'The change will be applied on the next app restart.';
   static const String serviceSave = 'Save';
   static const String serviceOk = 'OK';
+
   static String serviceEditTitle(String key) => 'Edit $key';
+
   static String serviceInvalidValue(String type) => 'Enter a valid $type';
 
   // --- Services · pushed services -------------------------------------------
   static const String serviceCrashName = 'Crashlytics';
   static const String serviceAnalyticsName = 'Analytics';
   static const String servicePerformanceName = 'Performance';
+
   static String traceDuration(int ms) => '$ms ms';
   static const String crashFatal = 'fatal';
   static const String crashNonFatal = 'non-fatal';
@@ -203,6 +283,7 @@ class DebugStrings {
   // --- Common (continued) ---------------------------------------------------
   static const String commonCopy = 'Copy';
   static const String commonNoMatches = 'No matches';
+
   static String commonCopiedShare(String label) =>
       '$label copied — opening share…';
 
@@ -229,10 +310,14 @@ class DebugStrings {
   static const String storageEncrypted = 'ENCRYPTED';
   static const String storageKeyTitle = 'Key';
   static const String storageValueTitle = 'Value';
+
   static String storageRefreshed(String which) => '$which refreshed';
+
   static String storageRowCount(int n) => '$n row${n == 1 ? '' : 's'}';
+
   static String storageTablesLoadFailed(Object? error) =>
       'Failed to read tables\n$error';
+
   static String storageTableLoadFailed(Object? error) =>
       'Failed to read table\n$error';
 
@@ -264,7 +349,9 @@ class DebugStrings {
   static const String logsOriginBlocHint = 'Bloc observer';
   static const String logsOriginNavigationHint = 'Navigator observer';
   static const String logsExportTitle = 'DebugLens log export';
+
   static String logsExportGenerated(String at) => 'Generated: $at';
+
   static String logsExportCount(int n) => 'Records: $n';
   static const String logsExportError = 'error';
   static const String logsExportStack = 'stack';
@@ -309,6 +396,7 @@ class DebugStrings {
       'cURL + response copied — opening share…';
   static const String networkCallsTitle = 'Calls';
   static const String networkFirstCall = 'first call';
+
   static String networkCallsTrimmed(int shown, int total) =>
       'latest $shown of $total';
   static const String networkCall = 'call';
@@ -347,9 +435,13 @@ class DebugStrings {
   static const String networkLabelRespSize = 'Resp size';
   static const String networkQueryParams = 'Query parameters';
   static const String networkNone = 'none';
+
   static String networkOk(int n) => 'OK $n';
+
   static String networkErr(int n) => 'ERR $n';
+
   static String networkPend(int n) => 'PEND $n';
+
   static String networkSearchBody(String label) =>
       'Search ${label.toLowerCase()}';
 

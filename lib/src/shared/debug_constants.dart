@@ -30,18 +30,6 @@ class DebugConstants {
   static const String trueValue = 'true';
   static const String falseValue = 'false';
 
-  /// Cap on retained crash reports (see `DebugCrashStore`) — ring-buffered,
-  /// newest-first, so a long session doesn't grow unbounded on an app that is
-  /// recording non-fatals steadily.
-  static const int maxCrashEvents = 100;
-
-  /// Cap on retained analytics events (see `DebugAnalyticsStore`) — as above,
-  /// and hit sooner, since a chatty app logs one on every screen.
-  static const int maxAnalyticsEvents = 100;
-
-  /// Cap on retained performance traces (see `DebugTraceStore`) — as above.
-  static const int maxTraceEvents = 100;
-
   // SharedPreferences keys DebugLens persists its own state under.
 
   /// Access role for the panel (see `DebugRoleController`).
@@ -52,6 +40,26 @@ class DebugConstants {
 
   /// The dashboard's tile order, as a JSON list of route names.
   static const String dashboardOrderPrefsKey = 'debug_lens_dashboard_order';
+
+  /// Routes a tester may open, as a JSON list of route names.
+  static const String testerRoutesPrefsKey = 'debug_lens_tester_routes';
+
+  /// Whether the tester role is available at all (`'true'` / `'false'`).
+  static const String testerEnabledPrefsKey = 'debug_lens_tester_enabled';
+
+  /// Device-local app-version override. Absent when none is set.
+  static const String appVersionPrefsKey = 'debug_lens_app_version';
+
+  /// Per-feature retention limits, as a JSON `limit name -> int` map.
+  static const String limitsPrefsKey = 'debug_lens_limits';
+
+  /// Cap on health-check reports kept for the session. They hold stack traces,
+  /// and nobody scrolls back past a handful.
+  static const int maxHealthReports = 20;
+
+  /// Share of the screen height a modal bottom sheet may take. Past this a
+  /// long list scrolls inside the sheet instead of pushing it off the top.
+  static const double bottomSheetMaxHeightFraction = 0.6;
 
   /// Whether the Services config editor is in device-override ("custom") mode.
   static const String configCustomPrefsKey = 'debug_lens_config_custom';

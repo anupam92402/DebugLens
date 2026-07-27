@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../shared/debug_constants.dart';
+import '../../settings/data/debug_limits_store.dart';
+import '../../settings/domain/debug_limit.dart';
 import '../../../shared/debug_strings.dart';
 import '../../../shared/util/clock_format.dart';
 import '../domain/crash_event.dart';
@@ -12,7 +14,7 @@ import 'debug_service_source.dart';
 /// Crash reporters are write-only — you can't ask Crashlytics what it recorded
 /// — so unlike the other services this one keeps the events the host hands over
 /// through `DebugLens.instance.recordCrash`. Newest-first, ring-buffered at
-/// [DebugConstants.maxCrashEvents].
+/// the Crashes limit, which is editable from Settings.
 class DebugCrashStore {
   DebugCrashStore._();
 
@@ -30,7 +32,9 @@ class DebugCrashStore {
 
   void record(DebugLensCrashEvent event) {
     _events.insert(0, event);
-    if (_events.length > DebugConstants.maxCrashEvents) _events.removeLast();
+    if (_events.length > DebugLimits.instance.of(DebugLimit.crashes)) {
+      _events.removeLast();
+    }
     revision.value++;
   }
 

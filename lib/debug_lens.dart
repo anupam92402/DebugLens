@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import 'src/features/storage/data/debug_database_source.dart';
 import 'src/shared/debug_constants.dart';
 import 'src/shared/debug_strings.dart';
+import 'src/features/dashboard/data/dash_order_store.dart';
 import 'src/features/services/data/debug_analytics_store.dart';
+import 'src/features/settings/data/app_version_store.dart';
+import 'src/features/settings/data/debug_limits_store.dart';
 import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_crash_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
@@ -33,6 +36,8 @@ export 'src/features/services/data/debug_service_source.dart'
 export 'src/features/services/domain/service_group.dart'
     show DebugLensServiceGroup;
 export 'src/features/services/domain/crash_event.dart' show DebugLensCrashEvent;
+export 'src/features/error/presentation/views/custom_error_screen.dart'
+    show CustomErrorScreen;
 export 'src/features/logs/data/debug_lens_logger.dart'
     show DebugLensLogger, DebugLogObserver;
 export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;
@@ -277,6 +282,23 @@ class DebugLens {
     );
   }
 
+  /// Hands DebugLens the app's real version so the panel can show it and, if
+  /// a tester overrides it, serve the override back through [appVersion].
+  ///
+  /// **Await it**, once, during startup — it loads the override saved on a
+  /// previous run, and [appVersion] is only meaningful afterwards. Pass
+  /// whatever shape you use: `1.0.0`, `1.0.0+42`, `1.0.0-rc.1`.
+  Future<void> setAppVersion(String version) =>
+      AppVersionStore.instance.load(version);
+
+  /// The version in force this session — the override when one applies,
+  /// otherwise what you registered. Read it wherever the app shows or reports
+  /// its version, and DebugLens stays out of the path when nothing is
+  /// overridden.
+  ///
+  /// Edits apply on the next app start, so this is stable for the session.
+  String get appVersion => AppVersionStore.instance.version;
+
   /// Records a push/local notification on the Notifications screen. Call from
   /// your notification handler on both display and tap ([tapped] `true` for a
   /// tap). DebugLens generates the id and timestamp. [payload] is the raw data
@@ -336,6 +358,8 @@ class DebugLens {
     /// Restoring the Logs capture switches reads SharedPreferences, which needs
     /// the binding — safe here, since [wrap] runs once the tree is up.
     DebugLensLogger.instance.restoreCaptureSettings();
+    DebugLimits.instance.restore();
+    DashOrderStore.instance.restore();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DebugLensController()),

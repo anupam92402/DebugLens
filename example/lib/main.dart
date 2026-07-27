@@ -32,6 +32,11 @@ Future<void> _bootstrap() async {
     return false;
   };
 
+  /// Swap Flutter's red error box for DebugLens's readable, shareable one.
+  /// Also the host's call — DebugLens supplies the widget and the Settings
+  /// switch that decides whether it renders, but never installs the builder.
+  ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
+
   /// Console echo is the host's call — DebugLens no longer assumes. This app
   /// wants it in debug builds only.
   DebugLensLogger.instance.printToConsole = kDebugMode;
@@ -46,6 +51,11 @@ Future<void> _bootstrap() async {
 
     /// Mock Firebase init: seed realistic data + identify the user.
     MockFirebase.configure();
+
+    /// Hand the app's real version (from pubspec) to DebugLens, and read it
+    /// back through `DebugLens.instance.appVersion` wherever the app shows it —
+    /// so an override set in the panel takes effect on the next start.
+    await DebugLens.instance.setAppVersion('1.0.0+1');
 
     /// Real app storage (SharedPreferences + Drift), bridged to DebugLens.
     await setupStorage();

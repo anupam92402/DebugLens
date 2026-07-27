@@ -1,89 +1,168 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/debug_role.dart';
+import '../../../dashboard/data/dash_order_store.dart';
+import '../../../health/data/health_check_store.dart';
+import '../../../health/presentation/widgets/health_reports_sheet.dart';
 import '../../../../core/debug_store.dart';
+import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shell/debug_routes.dart';
+import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/theme/debug_colors.dart';
+import '../../data/app_version_store.dart';
+import '../../data/debug_limits_store.dart';
+import '../../domain/debug_limit.dart';
+import '../widgets/app_version_dialog.dart';
+import '../widgets/error_screen_dialog.dart';
+import '../widgets/limits_sheet.dart';
+import '../widgets/role_sheet.dart';
+import '../widgets/tester_access_sheet.dart';
 
-/// UI-only settings. Toggles are local state for now; they will be wired to
-/// capture behavior when each feature is implemented.
-class SettingsScreen extends StatefulWidget {
+/// Panel settings: the access role, what a tester may open, how much of each
+/// feed is retained, and the one destructive action.
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  final Map<String, bool> _capture = {
-    DebugStrings.settingsCaptureNetwork: true,
-    DebugStrings.settingsCaptureLogs: true,
-    DebugStrings.settingsCaptureNotifications: true,
-    DebugStrings.settingsCaptureNavigation: true,
-    DebugStrings.settingsCaptureStorage: true,
-    DebugStrings.settingsCaptureCrashes: true,
-    DebugStrings.settingsCaptureAnalytics: true,
-  };
-  bool _redactHeaders = true;
-  double _maxItems = 500;
-
-  @override
   Widget build(BuildContext context) {
+    final role = context.watch<DebugRoleController>();
     return Scaffold(
       appBar: AppBar(title: const Text(DebugStrings.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 6),
         children: [
           SectionCard(
-            title: DebugStrings.settingsCapture,
+            title: DebugStrings.settingsAccess,
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                for (final key in _capture.keys)
-                  SwitchListTile(
-                    dense: true,
-                    title: Text(key, style: monoStyle(size: 13)),
-                    value: _capture[key]!,
-                    onChanged: (v) => setState(() => _capture[key] = v),
+                _tile(
+                  icon: Icons.badge_outlined,
+                  title: DebugStrings.settingsMode,
+                  value: role.isDeveloper
+                      ? DebugStrings.roleDeveloper
+                      : DebugStrings.roleTester,
+                  onTap: () => RoleSheet.show(context),
+                ),
+                // Developer-only. The screen stays mounted after stepping down
+                // to tester, and granting access is not a tester's call.
+                if (role.isDeveloper) ...[
+                  const Divider(height: 1, color: DebugColors.border),
+                  _tile(
+                    icon: Icons.lock_open_outlined,
+                    title: DebugStrings.settingsTesterAccess,
+                    value: DebugStrings.settingsTesterAccessCount(
+                      role.testerRoutes.length,
+                    ),
+                    // Dimmed rather than hidden when the role is switched off:
+                    // the grants still exist and come back with it, so the row
+                    // says why it can't be opened instead of vanishing.
+                    enabled: role.testerEnabled,
+                    onTap: role.testerEnabled
+                        ? () => TesterAccessSheet.show(context)
+                        : () => DebugToast.show(
+                            context,
+                            DebugStrings.settingsTesterDisabledToast,
+                          ),
                   ),
+                ],
               ],
             ),
           ),
           SectionCard(
-            title: DebugStrings.settingsPrivacy,
+            title: DebugStrings.settingsBuffer,
             padding: EdgeInsets.zero,
-            child: SwitchListTile(
-              dense: true,
-              title: Text(
-                DebugStrings.settingsRedactHeaders,
-                style: monoStyle(size: 13),
+            child: ListenableBuilder(
+              listenable: DebugLimits.instance,
+              builder: (context, _) => _tile(
+                icon: Icons.data_usage,
+                title: DebugStrings.settingsLimits,
+                value: DebugStrings.settingsLimitsCount(
+                  DebugLimit.values.where(DebugLimits.instance.isCustom).length,
+                ),
+                onTap: () => LimitsSheet.show(context),
               ),
-              subtitle: Text(
-                DebugStrings.settingsRedactSubtitle,
-                style: monoStyle(size: 11, color: DebugColors.textMuted),
-              ),
-              value: _redactHeaders,
-              onChanged: (v) => setState(() => _redactHeaders = v),
             ),
           ),
           SectionCard(
-            title: DebugStrings.settingsBuffer,
+            title: DebugStrings.settingsApp,
+            padding: EdgeInsets.zero,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  DebugStrings.settingsMaxItems(_maxItems.round()),
-                  style: monoStyle(size: 13),
+                ListenableBuilder(
+                  listenable: AppVersionStore.instance,
+                  builder: (context, _) {
+                    final store = AppVersionStore.instance;
+                    return _tile(
+                      icon: Icons.info_outline,
+                      title: DebugStrings.settingsAppVersion,
+                      // The version in force now — an edit shows in the
+                      // subtitle until a restart makes it the real one.
+                      value: store.version.isEmpty
+                          ? DebugConstants.emptyValue
+                          : store.version,
+                      subtitle: store.awaitingRestart
+                          ? '${store.pending} · '
+                                '${DebugStrings.appVersionPending}'
+                          : null,
+                      onTap: () => showAppVersionDialog(context),
+                    );
+                  },
                 ),
-                Slider(
-                  min: 100,
-                  max: 2000,
-                  divisions: 19,
-                  value: _maxItems,
-                  label: '${_maxItems.round()}',
-                  onChanged: (v) => setState(() => _maxItems = v),
+                const Divider(height: 1, color: DebugColors.border),
+                // Documents the hook rather than toggling it — installing
+                // `ErrorWidget.builder` is the host's call, not the panel's.
+                _tile(
+                  icon: Icons.report_gmailerrorred_outlined,
+                  title: DebugStrings.settingsErrorScreen,
+                  value: DebugStrings.settingsErrorScreenSetup,
+                  onTap: () => showErrorScreenDialog(context),
+                ),
+                const Divider(height: 1, color: DebugColors.border),
+                // Two taps: the first opens a window, the second closes it and
+                // shows what failed inside. Running state is on the row itself
+                // — a check is easy to forget you started.
+                ListenableBuilder(
+                  listenable: HealthCheckStore.instance,
+                  builder: (context, _) {
+                    final health = HealthCheckStore.instance;
+                    final startedAt = health.startedAt;
+                    return Column(
+                      children: [
+                        _tile(
+                          icon: startedAt == null
+                              ? Icons.monitor_heart_outlined
+                              : Icons.stop_circle_outlined,
+                          title: DebugStrings.settingsHealthCheck,
+                          // The value says what a tap does; the subtitle says
+                          // what state it is in.
+                          value: startedAt == null
+                              ? DebugStrings.settingsHealthStart
+                              : DebugStrings.settingsHealthStop,
+                          subtitle: startedAt == null
+                              ? null
+                              : DebugStrings.settingsHealthTracking(
+                                  ClockFormat.clock(startedAt),
+                                ),
+                          onTap: () => _toggleHealthCheck(context),
+                        ),
+                        if (health.hasReports) ...[
+                          const Divider(height: 1, color: DebugColors.border),
+                          _tile(
+                            icon: Icons.history,
+                            title: DebugStrings.settingsHealthPrevious,
+                            value: DebugStrings.settingsHealthPreviousCount(
+                              health.reports.length,
+                            ),
+                            onTap: () => HealthReportsSheet.show(context),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -91,30 +170,112 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SectionCard(
             title: DebugStrings.settingsData,
             padding: EdgeInsets.zero,
-            child: ListTile(
-              leading: const Icon(
-                Icons.delete_outline,
-                color: DebugColors.error,
-              ),
-              title: Text(
-                DebugStrings.settingsClearAll,
-                style: monoStyle(size: 13, color: DebugColors.error),
-              ),
-              onTap: () {
-                context.read<DebugStore>().clearAll();
-                DebugToast.show(context, DebugStrings.settingsClearedToast);
-              },
-            ),
-          ),
-          SectionCard(
-            title: DebugStrings.settingsAbout,
-            child: Text(
-              DebugStrings.settingsAboutValue,
-              style: monoStyle(size: 12, color: DebugColors.textMuted),
+            child: Column(
+              children: [
+                // Dimmed until there is an arrangement to forget.
+                ListenableBuilder(
+                  listenable: DashOrderStore.instance,
+                  builder: (context, _) {
+                    final isCustom = DashOrderStore.instance.isCustom;
+                    return _tile(
+                      icon: Icons.grid_view_outlined,
+                      title: DebugStrings.settingsResetDashboard,
+                      value: isCustom
+                          ? DebugStrings.settingsResetDashboardCustom
+                          : DebugStrings.settingsResetDashboardDefault,
+                      enabled: isCustom,
+                      onTap: isCustom
+                          ? () {
+                              DashOrderStore.instance.reset();
+                              DebugToast.show(
+                                context,
+                                DebugStrings.settingsResetDashboardToast,
+                              );
+                            }
+                          : null,
+                    );
+                  },
+                ),
+                const Divider(height: 1, color: DebugColors.border),
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: DebugColors.error,
+                  ),
+                  title: Text(
+                    DebugStrings.settingsClearAll,
+                    style: monoStyle(size: 13, color: DebugColors.error),
+                  ),
+                  onTap: () {
+                    context.read<DebugStore>().clearAll();
+                    DebugToast.show(context, DebugStrings.settingsClearedToast);
+                  },
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// First tap opens the window, second closes it and pushes the report.
+  ///
+  /// The report is passed as a route argument rather than held in the store:
+  /// it is a finished value, and keeping it around would leave the tile in a
+  /// third "stopped, unread" state nobody asked for.
+  void _toggleHealthCheck(BuildContext context) {
+    final health = HealthCheckStore.instance;
+    if (!health.isRunning) {
+      health.start();
+      DebugToast.show(context, DebugStrings.settingsHealthStartedToast);
+      return;
+    }
+    final report = health.stop();
+    if (report == null) return;
+    Navigator.of(
+      context,
+    ).pushNamed(DebugRoutes.healthReport, arguments: report);
+  }
+
+  /// Navigation-style row: what it is on the left, its current value on the
+  /// right, opening a sheet on tap.
+  ///
+  /// [onTap] is optional — a row with nothing behind it yet renders without the
+  /// chevron rather than pointing at a destination that doesn't exist.
+  ///
+  /// [enabled] dims the row and drops the chevron while still firing [onTap],
+  /// so a disabled row can explain itself instead of swallowing the tap. Note
+  /// this is not `ListTile.enabled`, which would block the tap outright.
+  Widget _tile({
+    required IconData icon,
+    required String title,
+    required String value,
+    String? subtitle,
+    VoidCallback? onTap,
+    bool enabled = true,
+  }) {
+    final tone = enabled ? DebugColors.textPrimary : DebugColors.textMuted;
+    return ListTile(
+      leading: Icon(icon, size: 20, color: tone),
+      title: Text(title, style: monoStyle(size: 13, color: tone)),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle,
+              style: monoStyle(size: 11, color: DebugColors.textMuted),
+            ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(value, style: monoStyle(size: 12, color: DebugColors.textMuted)),
+          if (enabled && onTap != null) ...[
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, size: 18),
+          ],
+        ],
+      ),
+      onTap: onTap,
     );
   }
 }

@@ -30,4 +30,5 @@ class DebugRoutes {
   static const serviceDetail = 'debug_lens/services/detail';
   static const locale = 'debug_lens/locale';
   static const settings = 'debug_lens/settings';
+  static const healthReport = 'debug_lens/settings/health';
 }

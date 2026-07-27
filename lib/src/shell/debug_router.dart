@@ -16,6 +16,8 @@ import '../features/network/presentation/views/network_detail_screen.dart';
 import '../features/network/presentation/views/network_history_screen.dart';
 import '../features/network/presentation/views/network_list_screen.dart';
 import '../features/notifications/presentation/views/notifications_screen.dart';
+import '../features/health/domain/health_report.dart';
+import '../features/health/presentation/views/health_report_screen.dart';
 import '../features/settings/presentation/views/settings_screen.dart';
 import '../features/storage/presentation/views/storage_screen.dart';
 import '../features/storage/presentation/views/table_data_screen.dart';
@@ -64,6 +66,8 @@ class DebugRouter {
         page = const LocaleScreen();
       case DebugRoutes.settings:
         page = const SettingsScreen();
+      case DebugRoutes.healthReport:
+        page = HealthReportScreen(report: args as HealthReport);
       case DebugRoutes.dashboard:
       default:
         page = const DashboardScreen();

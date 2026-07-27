@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../data/debug_shared_prefs_source.dart';
 import '../../domain/pref_entry.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/util/copy_share.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../widgets/database_tab.dart';
 import '../widgets/prefs_tab.dart';
@@ -71,17 +70,8 @@ class _StorageScreenState extends State<StorageScreen>
     return [...entries]..sort((a, b) => a.key.compareTo(b.key));
   }
 
-  /// Copies [text] to the clipboard and opens the system share sheet.
-  Future<void> _copyShare(String text, String label) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    if (!mounted) return;
-    DebugToast.show(
-      context,
-      DebugStrings.commonCopiedShare(label),
-      duration: const Duration(milliseconds: 1200),
-    );
-    await SharePlus.instance.share(ShareParams(text: text, subject: label));
-  }
+  Future<void> _copyShare(String text, String label) =>
+      copyAndShare(context, text, label: label);
 
   @override
   Widget build(BuildContext context) {

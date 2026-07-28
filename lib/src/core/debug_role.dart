@@ -17,7 +17,14 @@ enum DebugRole { tester, developer }
 /// and reset only when app data is cleared. Default is [DebugRole.tester] with
 /// Network as the single granted route.
 class DebugRoleController extends ChangeNotifier {
-  DebugRole _role = DebugRole.tester;
+  /// Role a fresh install starts in — set through `DebugLens.initialRole`.
+  ///
+  /// Only consulted when nothing has been persisted yet. Once the role has been
+  /// switched on a device, the saved value wins on every later launch, so
+  /// changing this never overrides a choice someone already made.
+  static DebugRole initial = DebugRole.tester;
+
+  DebugRole _role = initial;
 
   /// Routes a tester may open. Developers ignore this entirely.
   Set<String> _testerRoutes = {DebugRoutes.network};
@@ -52,9 +59,14 @@ class DebugRoleController extends ChangeNotifier {
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (prefs.getString(DebugConstants.rolePrefsKey) ==
-          DebugRole.developer.name) {
-        _role = DebugRole.developer;
+      final savedRole = prefs.getString(DebugConstants.rolePrefsKey);
+      // Applied in both directions: with [initial] set to developer, a saved
+      // tester choice has to demote, or switching down wouldn't survive a
+      // relaunch.
+      if (savedRole != null) {
+        _role = savedRole == DebugRole.developer.name
+            ? DebugRole.developer
+            : DebugRole.tester;
       }
       _testerEnabled =
           prefs.getString(DebugConstants.testerEnabledPrefsKey) !=

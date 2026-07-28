@@ -6,6 +6,9 @@ First public release. DebugLens is an in-app debugging overlay: a draggable
 bubble opens a panel that inspects what your app is doing, on the device, with
 no console attached.
 
+* **`DebugLens.debugLensEnabled`** — one switch for the whole package. Off means `wrap`
+  returns your app untouched, every capture path no-ops, and no override is
+  applied. Defaults to on; gating release builds is the host's call.
 * **Network** — every Dio request and response with headers, bodies, timings and
   status, plus per-endpoint call history and a live connectivity indicator.
 * **Logs** — a level-tagged log feed with per-source capture switches, so you can
@@ -36,6 +39,9 @@ no console attached.
   shareable report of every crash and error log in between.
 * **Roles** — a developer mode that sees everything and a tester mode limited to
   the screens you grant, switched from a chip beside the dashboard title.
+  `DebugLens.initialRole` picks which one a fresh install starts in.
+* **First-run walkthrough** — a three-step tour of the dashboard, the role chip
+  and getting back to the app, shown once per install.
 * **Settings** — reorder the dashboard, restyle and reposition the bubble, set
   per-feed retention limits, override the app version, and clear all captured
   data.

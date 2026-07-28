@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../storage/data/debug_shared_prefs_source.dart';
 import '../../../shared/debug_constants.dart';
 import '../../../shared/debug_strings.dart';
+import '../../../core/debug_lens_config.dart';
 import '../domain/log_origin.dart';
 import '../domain/log_record.dart';
 
@@ -236,6 +237,9 @@ class DebugLensLogger extends ChangeNotifier {
   }
 
   void _append(DebugLogRecord record) {
+    // Console output is `printToConsole`'s business — this only skips keeping
+    // the record, so the logger stays a usable facade when DebugLens is off.
+    if (!DebugLensConfig.enabled) return;
     _history.add(record);
     _trimToLimit();
     notifyListeners();

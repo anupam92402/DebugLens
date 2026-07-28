@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'debug_lens_config.dart';
 import '../features/network/domain/api_call_stat.dart';
 import '../features/bloc/domain/bloc_event.dart';
 import '../features/network/domain/network_entry.dart';
@@ -99,6 +100,7 @@ class DebugStore extends ChangeNotifier {
     NavRouteKind kind = NavRouteKind.page,
   }) {
     _navSeq++;
+    if (!DebugLensConfig.enabled) return;
     navEvents.add(
       NavEvent(
         sequence: _navSeq,
@@ -119,6 +121,7 @@ class DebugStore extends ChangeNotifier {
   /// list removes that navigator. Not cleared by [clearAll] — it reflects the
   /// app's current routes, not history.
   void setNavStack(String navigator, List<String> routes) {
+    if (!DebugLensConfig.enabled) return;
     if (routes.isEmpty) {
       navStacks.remove(navigator);
     } else {
@@ -130,6 +133,7 @@ class DebugStore extends ChangeNotifier {
   /// Drops a navigator's stack snapshot — call when a nested navigator is
   /// disposed (see `DebugLensNavigatorObserver.detach`).
   void removeNavStack(String navigator) {
+    if (!DebugLensConfig.enabled) return;
     if (navStacks.remove(navigator) != null) notifyListeners();
   }
 
@@ -149,6 +153,7 @@ class DebugStore extends ChangeNotifier {
   /// Appends a new network entry. Used by `DebugLensDioInterceptor` to
   /// register a request as pending the moment it goes out.
   void recordNetwork(NetworkEntry entry) {
+    if (!DebugLensConfig.enabled) return;
     network.add(entry);
     if (network.length > _cap(DebugLimit.network)) network.removeAt(0);
     _recordHistory(entry);
@@ -158,6 +163,7 @@ class DebugStore extends ChangeNotifier {
   /// Replaces the entry with id [entry.id] (typically a pending request being
   /// completed with a response or an error). No-op if no matching id exists.
   void updateNetwork(NetworkEntry entry) {
+    if (!DebugLensConfig.enabled) return;
     final idx = network.indexWhere((e) => e.id == entry.id);
     if (idx == -1) {
       network.add(entry);
@@ -171,6 +177,7 @@ class DebugStore extends ChangeNotifier {
   /// Marks a still-pending entry (by [id]) as errored — used by the
   /// interceptor to close out abandoned requests that never completed.
   void markNetworkError(String id, String message) {
+    if (!DebugLensConfig.enabled) return;
     final idx = network.indexWhere((e) => e.id == id);
     if (idx == -1 || !network[idx].isPending) return;
     network[idx] = network[idx].copyWith(error: message);
@@ -257,6 +264,7 @@ class DebugStore extends ChangeNotifier {
     String? stackTrace,
   }) {
     _blocSeq++;
+    if (!DebugLensConfig.enabled) return;
     blocEvents.add(
       BlocEvent(
         sequence: _blocSeq,
@@ -296,6 +304,7 @@ class DebugStore extends ChangeNotifier {
   /// Inserted newest-first; the ring buffer trims the oldest past
   /// the notifications limit.
   void recordNotification(NotificationEntry entry) {
+    if (!DebugLensConfig.enabled) return;
     notifications.insert(0, entry);
     if (notifications.length > _cap(DebugLimit.notifications)) {
       notifications.removeLast();
@@ -307,6 +316,7 @@ class DebugStore extends ChangeNotifier {
   /// Inserted newest-first; the ring buffer trims the oldest past
   /// the deep-links limit.
   void recordDeeplink(DeeplinkEntry entry) {
+    if (!DebugLensConfig.enabled) return;
     deeplinks.insert(0, entry);
     if (deeplinks.length > _cap(DebugLimit.deeplinks)) deeplinks.removeLast();
     notifyListeners();

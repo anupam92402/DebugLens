@@ -42,6 +42,31 @@ MaterialApp(
 Implementation: [debug_lens.dart](lib/debug_lens.dart) · Example:
 [app.dart](example/lib/src/app.dart)
 
+### Shipping it
+
+`DebugLens.debugLensEnabled` is the one switch that decides whether any of this runs. It
+defaults to **true**; turning it off for the builds you don't want it in is your
+call:
+
+```dart
+void main() {
+  DebugLens.debugLensEnabled = !kReleaseMode;   // or: flavor != Flavor.production
+  runApp(const MyApp());
+}
+```
+
+With it off, `wrap` returns your app untouched and **every capture path becomes a
+no-op** — nothing is stored, nothing is persisted, and neither the remote-config
+nor the app-version override is applied, so your own values are what your code
+reads. The interceptor, observers and `record*` calls can stay exactly where they
+are; they simply stop writing.
+
+Set it in `main`, before `wrap` first builds.
+
+> The package deliberately doesn't infer this from the build mode. A QA build is
+> usually a release build, and that is exactly when a tester needs the panel —
+> so guessing would take the decision away from you.
+
 ---
 
 ## Inspectors
@@ -313,8 +338,18 @@ Implementation:
 ### Roles
 
 Developer mode sees every screen; tester mode sees only what a developer has
-granted. Tap the role chip beside the dashboard title to switch. No wiring —
-configure the grants from Settings.
+granted. Tap the role chip beside the dashboard title to switch, and configure
+the grants from Settings.
+
+A fresh install starts as a tester. Set the other default before `wrap` builds
+if you'd rather open on the full panel:
+
+```dart
+DebugLens.initialRole = DebugRole.developer;
+```
+
+It seeds the first launch only — once the role has been switched on a device,
+that choice wins.
 
 Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 

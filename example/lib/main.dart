@@ -37,6 +37,15 @@ Future<void> _bootstrap() async {
   /// switch that decides whether it renders, but never installs the builder.
   ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 
+  /// The one switch that decides whether DebugLens runs at all. This demo keeps
+  /// it on in every mode so a release build can be inspected too; a real app
+  /// would usually write `!kReleaseMode` or gate it on a flavor.
+  DebugLens.debugLensEnabled = true;
+
+  /// This demo opens straight into the full panel. A real app might leave the
+  /// default (tester) so a QA build only exposes what it has been granted.
+  DebugLens.initialRole = DebugRole.developer;
+
   /// Console echo is the host's call — DebugLens no longer assumes. This app
   /// wants it in debug builds only.
   DebugLensLogger.instance.printToConsole = kDebugMode;

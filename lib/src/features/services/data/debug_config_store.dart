@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../core/debug_lens_config.dart';
 import '../../../shared/debug_constants.dart';
 import '../../../shared/debug_strings.dart';
 import '../../storage/data/debug_shared_prefs_source.dart';
@@ -54,6 +55,16 @@ class DebugConfigStore extends DebugLensConfigEditor {
       ..clear()
       ..addAll(values);
     _sourceLabel = sourceLabel;
+
+    // Disabled means overriding nothing: a device that pinned a value must go
+    // back to serving the host's, or a panel-less build would keep using an
+    // override with no way to see or reset it.
+    if (!DebugLensConfig.enabled) {
+      _customEnabled = false;
+      _overrides.clear();
+      _activated.clear();
+      return;
+    }
 
     _customEnabled =
         await DebugLensSharedPrefs.getBool(

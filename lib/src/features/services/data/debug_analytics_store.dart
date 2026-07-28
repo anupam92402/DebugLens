@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/debug_lens_config.dart';
 import '../../../shared/debug_constants.dart';
 import '../../settings/data/debug_limits_store.dart';
 import '../../settings/domain/debug_limit.dart';
@@ -30,6 +31,7 @@ class DebugAnalyticsStore {
   final ValueNotifier<int> revision = ValueNotifier<int>(0);
 
   void record(DebugLensAnalyticsEvent event) {
+    if (!DebugLensConfig.enabled) return;
     _events.insert(0, event);
     if (_events.length > DebugLimits.instance.of(DebugLimit.analytics)) {
       _events.removeLast();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/debug_lens_config.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/util/copy_share.dart';
@@ -26,6 +27,10 @@ class CustomErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Disabled: fall back to the framework's own error box rather than showing
+    // a DebugLens screen in a build that has no DebugLens.
+    if (!DebugLensConfig.enabled) return ErrorWidget(details.exception);
+
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Material(

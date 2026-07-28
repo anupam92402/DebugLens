@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/debug_lens_config.dart';
 import '../../../shared/debug_constants.dart';
 import '../../storage/data/debug_shared_prefs_source.dart';
 
@@ -51,6 +52,14 @@ class AppVersionStore extends ChangeNotifier {
   /// serves. Call once at startup, awaited.
   Future<void> load(String version) async {
     _source = version;
+    // As with remote config: disabled means the host's own version is what
+    // `version` reports, whatever is saved.
+    if (!DebugLensConfig.enabled) {
+      _override = '';
+      _activated = '';
+      notifyListeners();
+      return;
+    }
     _override =
         await DebugLensSharedPrefs.getString(
           DebugConstants.appVersionPrefsKey,

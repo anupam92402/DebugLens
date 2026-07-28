@@ -20,6 +20,7 @@ import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
 import 'src/features/locale/data/debug_locale_source.dart';
+import 'src/core/debug_lens_config.dart';
 import 'src/core/debug_role.dart';
 import 'src/features/storage/data/debug_shared_prefs_source.dart';
 import 'src/core/debug_store.dart';
@@ -58,6 +59,7 @@ export 'src/features/network/data/debug_lens_dio_interceptor.dart'
     show DebugLensDioInterceptor, DebugLensDioInterceptorSettings;
 export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
     show DebugLensNavigatorObserver;
+export 'src/core/debug_role.dart' show DebugRole;
 
 /// Public entry point for the DebugLens in-app debugging overlay.
 class DebugLens {
@@ -71,6 +73,44 @@ class DebugLens {
   /// it shows a readable label (instead of `PageRouteBuilder`) on the
   /// Navigation screen.
   static const String panelRouteName = DebugRoutes.panelRouteName;
+
+  /// Master switch for everything DebugLens does. Defaults to **true**.
+  ///
+  /// With it off, [wrap] returns your app untouched and every capture path is a
+  /// no-op: nothing is stored, nothing is persisted, and neither the remote
+  /// config nor the app-version override is applied — so your own values are
+  /// what your code reads. The interceptor, observers and `record*` calls can
+  /// stay exactly where they are.
+  ///
+  /// **Deciding when to ship it is yours.** The package deliberately doesn't
+  /// guess from the build mode, because a QA build is usually a release build
+  /// and that is precisely when a tester needs the panel. The common choice:
+  ///
+  /// ```dart
+  /// DebugLens.debugLensEnabled = !kReleaseMode;              // never in production
+  /// DebugLens.debugLensEnabled = flavor != Flavor.production; // or per flavor
+  /// ```
+  ///
+  /// Set it in `main`, before [wrap] first builds and before any `record*` call
+  /// you want suppressed.
+  static set debugLensEnabled(bool value) => DebugLensConfig.enabled = value;
+
+  static bool get debugLensEnabled => DebugLensConfig.enabled;
+
+  /// The role a fresh install starts in. Defaults to [DebugRole.tester], which
+  /// can open only the screens a developer has granted it.
+  ///
+  /// Set it **before** [wrap] first builds — from `main`, alongside your other
+  /// startup wiring. It seeds the first launch only: once the role has been
+  /// switched on a device the saved choice wins, so flipping this in a later
+  /// release won't undo what a tester picked.
+  ///
+  /// ```dart
+  /// DebugLens.initialRole = DebugRole.developer;
+  /// ```
+  static set initialRole(DebugRole role) => DebugRoleController.initial = role;
+
+  static DebugRole get initialRole => DebugRoleController.initial;
 
   /// Add to your `MaterialApp.navigatorObservers` to capture navigation events.
   static final NavigatorObserver navigatorObserver =
@@ -356,6 +396,11 @@ class DebugLens {
   /// Wraps [child] (use from `MaterialApp.builder`) to provide the DebugLens
   /// state and overlay a draggable bubble. Tapping the bubble opens the panel.
   static Widget wrap(Widget child) {
+    /// Disabled: hand the app straight back. No bubble, no panel, and none of
+    /// the restores below — combined with the guards on every write path,
+    /// DebugLens holds nothing and costs nothing.
+    if (!DebugLensConfig.enabled) return child;
+
     /// Restoring the Logs capture switches reads SharedPreferences, which needs
     /// the binding — safe here, since [wrap] runs once the tree is up.
     DebugLensLogger.instance.restoreCaptureSettings();

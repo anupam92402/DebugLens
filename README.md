@@ -341,15 +341,26 @@ Developer mode sees every screen; tester mode sees only what a developer has
 granted. Tap the role chip beside the dashboard title to switch, and configure
 the grants from Settings.
 
-A fresh install starts as a tester. Set the other default before `wrap` builds
-if you'd rather open on the full panel:
+Both the starting role and what a tester may open can be set from code, so a QA
+build arrives configured instead of needing boxes ticked on the device:
 
 ```dart
-DebugLens.initialRole = DebugRole.developer;
+DebugLens.initialRole = DebugRole.developer;      // default: tester
+DebugLens.initialTesterAccess = {                 // default: {network}
+  DebugScreen.network,
+  DebugScreen.logs,
+  DebugScreen.device,
+};
+DebugLens.initialTesterEnabled = false;           // default: true
 ```
 
-It seeds the first launch only — once the role has been switched on a device,
-that choice wins.
+All three seed the **first launch only**. Once the role has been switched or the
+grants edited from Settings on a device, that choice wins — so changing these in
+a later release never overrides what someone picked. Set them before `wrap`
+first builds.
+
+`DebugScreen` covers every panel screen except Settings, which can't be granted:
+it is where access is configured, so a tester with it could widen their own.
 
 Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 

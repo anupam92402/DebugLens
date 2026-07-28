@@ -46,6 +46,14 @@ Future<void> _bootstrap() async {
   /// default (tester) so a QA build only exposes what it has been granted.
   DebugLens.initialRole = DebugRole.developer;
 
+  /// What a tester gets on a fresh install, without anyone ticking boxes on the
+  /// device. Editable later from Settings, and the edited set then wins.
+  DebugLens.initialTesterAccess = {
+    DebugScreen.network,
+    DebugScreen.logs,
+    DebugScreen.device,
+  };
+
   /// Console echo is the host's call — DebugLens no longer assumes. This app
   /// wants it in debug builds only.
   DebugLensLogger.instance.printToConsole = kDebugMode;

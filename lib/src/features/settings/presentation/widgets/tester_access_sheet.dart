@@ -7,7 +7,7 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/glass.dart';
-import '../../domain/tester_grant.dart';
+import '../../../../core/debug_screen.dart';
 
 /// Bottom sheet for choosing which screens a tester may open.
 ///
@@ -56,7 +56,7 @@ class TesterAccessSheet extends StatelessWidget {
                 shrinkWrap: true,
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
                 children: [
-                  for (final grant in TesterGrant.values)
+                  for (final grant in DebugScreen.values)
                     SwitchListTile(
                       dense: true,
                       secondary: Icon(grant.icon, size: 20),

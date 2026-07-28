@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../shared/debug_constants.dart';
-import '../shell/debug_routes.dart';
+import 'debug_screen.dart';
 
 /// Access role for the DebugLens panel.
 ///
@@ -24,15 +24,26 @@ class DebugRoleController extends ChangeNotifier {
   /// changing this never overrides a choice someone already made.
   static DebugRole initial = DebugRole.tester;
 
+  /// Screens a tester may open on a fresh install — set through
+  /// `DebugLens.initialTesterAccess`. Seeds the first launch only; once the
+  /// grants have been edited on a device the saved set wins.
+  static Set<DebugScreen> initialTesterAccess = {DebugScreen.network};
+
+  /// Whether the tester role is available on a fresh install — set through
+  /// `DebugLens.initialTesterEnabled`. Seeds the first launch only.
+  static bool initialTesterEnabled = true;
+
   DebugRole _role = initial;
 
   /// Routes a tester may open. Developers ignore this entirely.
-  Set<String> _testerRoutes = {DebugRoutes.network};
+  Set<String> _testerRoutes = {
+    for (final screen in initialTesterAccess) screen.route,
+  };
 
   /// Whether the tester role is available at all. Turning it off doesn't change
   /// the current role — it closes the door, so a developer can no longer step
   /// down into it.
-  bool _testerEnabled = true;
+  bool _testerEnabled = initialTesterEnabled;
 
   DebugRole get role => _role;
   bool get isDeveloper => _role == DebugRole.developer;
@@ -68,9 +79,14 @@ class DebugRoleController extends ChangeNotifier {
             ? DebugRole.developer
             : DebugRole.tester;
       }
-      _testerEnabled =
-          prefs.getString(DebugConstants.testerEnabledPrefsKey) !=
-          DebugConstants.falseValue;
+      // Only when something is saved, so `initialTesterEnabled: false` isn't
+      // silently overridden on a device that has never touched the switch.
+      final savedEnabled = prefs.getString(
+        DebugConstants.testerEnabledPrefsKey,
+      );
+      if (savedEnabled != null) {
+        _testerEnabled = savedEnabled == DebugConstants.trueValue;
+      }
       final raw = prefs.getString(DebugConstants.testerRoutesPrefsKey);
       if (raw != null && raw.isNotEmpty) {
         // An empty saved set is honoured: a developer may deliberately have

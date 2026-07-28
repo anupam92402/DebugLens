@@ -22,6 +22,7 @@ import 'src/features/logs/data/debug_lens_logger.dart';
 import 'src/features/locale/data/debug_locale_source.dart';
 import 'src/core/debug_lens_config.dart';
 import 'src/core/debug_role.dart';
+import 'src/core/debug_screen.dart';
 import 'src/features/storage/data/debug_shared_prefs_source.dart';
 import 'src/core/debug_store.dart';
 import 'src/features/notifications/domain/notification_entry.dart';
@@ -60,6 +61,7 @@ export 'src/features/network/data/debug_lens_dio_interceptor.dart'
 export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
     show DebugLensNavigatorObserver;
 export 'src/core/debug_role.dart' show DebugRole;
+export 'src/core/debug_screen.dart' show DebugScreen;
 
 /// Public entry point for the DebugLens in-app debugging overlay.
 class DebugLens {
@@ -111,6 +113,41 @@ class DebugLens {
   static set initialRole(DebugRole role) => DebugRoleController.initial = role;
 
   static DebugRole get initialRole => DebugRoleController.initial;
+
+  /// The screens a tester may open on a fresh install. Defaults to just
+  /// [DebugScreen.network].
+  ///
+  /// Set it **before** [wrap] first builds. Like [initialRole] it seeds the
+  /// first launch only — once the grants have been edited from Settings on a
+  /// device, that set wins.
+  ///
+  /// ```dart
+  /// DebugLens.initialTesterAccess = {
+  ///   DebugScreen.network,
+  ///   DebugScreen.logs,
+  ///   DebugScreen.device,
+  /// };
+  /// ```
+  ///
+  /// Settings itself can't be granted: it is where access is configured, so a
+  /// tester with it could widen their own.
+  static set initialTesterAccess(Set<DebugScreen> screens) =>
+      DebugRoleController.initialTesterAccess = {...screens};
+
+  static Set<DebugScreen> get initialTesterAccess =>
+      DebugRoleController.initialTesterAccess;
+
+  /// Whether the tester role exists at all on a fresh install. Defaults to
+  /// true.
+  ///
+  /// Set it false for a build that should stay in developer mode — the role
+  /// chip then hides itself and there is nothing to step down to. Seeds the
+  /// first launch only, as above.
+  static set initialTesterEnabled(bool value) =>
+      DebugRoleController.initialTesterEnabled = value;
+
+  static bool get initialTesterEnabled =>
+      DebugRoleController.initialTesterEnabled;
 
   /// Add to your `MaterialApp.navigatorObservers` to capture navigation events.
   static final NavigatorObserver navigatorObserver =

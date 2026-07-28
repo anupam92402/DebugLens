@@ -39,7 +39,8 @@ no console attached.
   shareable report of every crash and error log in between.
 * **Roles** — a developer mode that sees everything and a tester mode limited to
   the screens you grant, switched from a chip beside the dashboard title.
-  `DebugLens.initialRole` picks which one a fresh install starts in.
+  `DebugLens.initialRole`, `initialTesterAccess` and `initialTesterEnabled`
+  configure a fresh install from code, so a QA build ships ready.
 * **First-run walkthrough** — a three-step tour of the dashboard, the role chip
   and getting back to the app, shown once per install.
 * **Settings** — reorder the dashboard, restyle and reposition the bubble, set

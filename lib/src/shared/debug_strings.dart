@@ -33,6 +33,24 @@ class DebugStrings {
   static const String roleDeveloper = 'DEVELOPER';
   static const String roleTester = 'TESTER';
 
+  // --- Walkthrough ----------------------------------------------------------
+  static const String walkthroughSkip = 'Skip';
+  static const String walkthroughNext = 'Next';
+  static const String walkthroughDone = 'Got it';
+  static const String walkthroughPickTitle = 'Pick what to inspect';
+  static const String walkthroughPickBody =
+      'Each tile opens a live view of one part of your app — network calls, '
+      'logs, bloc events, navigation, storage and the rest. Tap one to start '
+      'monitoring it.';
+  static const String walkthroughRoleTitle = 'Switch role here';
+  static const String walkthroughRoleBody =
+      'Developer sees every screen. Tester sees only the ones granted to it. '
+      'One tap swaps between them.';
+  static const String walkthroughExploreTitle = 'Now go use your app';
+  static const String walkthroughExploreBody =
+      'Close the panel and use the app as normal. DebugLens keeps recording in '
+      'the background — reopen it any time to see what happened.';
+
   // --- Settings -------------------------------------------------------------
   static const String settingsTitle = 'Settings';
   static const String settingsAccess = 'Access';

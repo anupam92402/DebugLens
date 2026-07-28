@@ -17,10 +17,16 @@ class ReorderableDashGrid extends StatelessWidget {
   /// owns what that means — these may be a filtered view of a longer list.
   final ValueChanged<List<DashItem>> onReorder;
 
+  /// Optional [GlobalKey] per route, so a caller can measure one specific tile
+  /// — the first-run tour points at Settings this way. Returning null for a
+  /// route leaves that tile unkeyed.
+  final GlobalKey? Function(String route)? cardKey;
+
   const ReorderableDashGrid({
     super.key,
     required this.items,
     required this.onReorder,
+    this.cardKey,
   });
 
   static const int _columns = 2;
@@ -57,7 +63,7 @@ class ReorderableDashGrid extends StatelessWidget {
 
   Widget _cell(int index, Size cell) {
     final item = items[index];
-    final card = DashCard(item: item);
+    final card = DashCard(key: cardKey?.call(item.route), item: item);
     return DragTarget<int>(
       key: ValueKey(item.route),
       onWillAcceptWithDetails: (details) => details.data != index,

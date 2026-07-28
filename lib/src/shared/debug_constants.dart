@@ -47,6 +47,9 @@ class DebugConstants {
   /// Whether the tester role is available at all (`'true'` / `'false'`).
   static const String testerEnabledPrefsKey = 'debug_lens_tester_enabled';
 
+  /// Whether the first-run walkthrough has been shown (`'true'`).
+  static const String walkthroughPrefsKey = 'debug_lens_walkthrough';
+
   /// This package's name, needed to resolve its bundled assets from inside a
   /// host app — `Image.asset(path, package: packageName)`.
   static const String packageName = 'debug_lens';

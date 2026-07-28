@@ -10,6 +10,9 @@ import '../../data/dash_order_store.dart';
 import '../../domain/dash_item.dart';
 import '../widgets/reorderable_dash_grid.dart';
 import '../widgets/role_swap_button.dart';
+import '../../../walkthrough/data/walkthrough_store.dart';
+import '../../../walkthrough/domain/walkthrough_step.dart';
+import '../../../walkthrough/presentation/widgets/walkthrough_overlay.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -56,6 +59,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
       DebugRoutes.settings,
     ),
   ];
+
+  /// Coach-mark targets. Global because the tour measures their render boxes
+  /// from outside their own subtrees.
+  final GlobalKey _firstTileKey = GlobalKey();
+  final GlobalKey _roleKey = GlobalKey();
+  final GlobalKey _closeKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // After the first frame, so the targets have been laid out and can be
+    // measured — before that every rect would be null.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowTour());
+  }
+
+  /// Shows the first-run tour once, over the panel's overlay so it can dim the
+  /// AppBar as well as the grid.
+  Future<void> _maybeShowTour() async {
+    if (await WalkthroughStore.instance.hasSeen()) return;
+    if (!mounted) return;
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+
+    // Marked seen on show, not on finish: someone who closes the panel midway
+    // has still seen it, and being walked through twice is worse than missing
+    // the last step.
+    await WalkthroughStore.instance.markSeen();
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => WalkthroughOverlay(
+        steps: [
+          WalkthroughStep(
+            title: DebugStrings.walkthroughPickTitle,
+            body: DebugStrings.walkthroughPickBody,
+            target: _firstTileKey,
+          ),
+          WalkthroughStep(
+            title: DebugStrings.walkthroughRoleTitle,
+            body: DebugStrings.walkthroughRoleBody,
+            target: _roleKey,
+          ),
+          WalkthroughStep(
+            title: DebugStrings.walkthroughExploreTitle,
+            body: DebugStrings.walkthroughExploreBody,
+            target: _closeKey,
+          ),
+        ],
+        onFinish: entry.remove,
+      ),
+    );
+    overlay.insert(entry);
+  }
 
   /// Applied immediately and persisted in the background — the write is a
   /// preference, not something the grid should wait on.
@@ -115,11 +171,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Text(DebugStrings.dashboardTitle),
             const SizedBox(width: 8),
             // Hides itself when the tester role is switched off.
-            RoleSwapButton(onSwap: () => _toggleRole(context)),
+            RoleSwapButton(key: _roleKey, onSwap: () => _toggleRole(context)),
           ],
         ),
         actions: [
           IconButton(
+            key: _closeKey,
             tooltip: DebugStrings.commonClose,
             icon: const Icon(Icons.close),
             onPressed: () => context.read<DebugLensController>().close(),
@@ -138,7 +195,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final items = role.isDeveloper
               ? ordered
               : ordered.where((i) => role.canOpen(i.route)).toList();
-          return ReorderableDashGrid(items: items, onReorder: _onReorder);
+          // The tour measures the first tile, whichever it happens to be after
+          // reordering and role filtering.
+          final firstRoute = items.isEmpty ? null : items.first.route;
+          return ReorderableDashGrid(
+            items: items,
+            onReorder: _onReorder,
+            cardKey: (route) => route == firstRoute ? _firstTileKey : null,
+          );
         },
       ),
     );

@@ -42,7 +42,7 @@ class DebugRoleController extends ChangeNotifier {
   ///
   /// False only when a developer would be stepping down into a tester role that
   /// is switched off. Callers check this *before* starting any switch
-  /// animation, so a long-press that can't land anywhere plays nothing at all.
+  /// animation, and `RoleSwapButton` hides itself entirely when this is false.
   bool get canToggle => !isDeveloper || _testerEnabled;
 
   DebugRoleController() {

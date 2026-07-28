@@ -16,6 +16,7 @@ import '../../data/app_version_store.dart';
 import '../../data/debug_limits_store.dart';
 import '../../domain/debug_limit.dart';
 import '../widgets/app_version_dialog.dart';
+import '../widgets/clear_data_dialog.dart';
 import '../widgets/error_screen_dialog.dart';
 import '../widgets/limits_sheet.dart';
 import '../widgets/role_sheet.dart';
@@ -206,7 +207,9 @@ class SettingsScreen extends StatelessWidget {
                     DebugStrings.settingsClearAll,
                     style: monoStyle(size: 13, color: DebugColors.error),
                   ),
-                  onTap: () {
+                  onTap: () async {
+                    final confirmed = await showClearDataDialog(context);
+                    if (confirmed != true || !context.mounted) return;
                     context.read<DebugStore>().clearAll();
                     DebugToast.show(context, DebugStrings.settingsClearedToast);
                   },

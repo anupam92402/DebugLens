@@ -35,6 +35,6 @@ no console attached.
 * **Health check** — start a window, reproduce a problem, stop it, and get a
   shareable report of every crash and error log in between.
 * **Roles** — a developer mode that sees everything and a tester mode limited to
-  the screens you grant, switched by long-pressing the dashboard title.
+  the screens you grant, switched from a chip beside the dashboard title.
 * **Settings** — reorder the dashboard, set per-feed retention limits, override
   the app version, and clear all captured data.

@@ -28,6 +28,8 @@ class DebugStrings {
   static const String dashboardServices = 'Services';
   static const String dashboardLocale = 'Locale';
   static const String dashboardSettings = 'Settings';
+  static String dashboardRoleSwap(String role) =>
+      'Switch role — currently $role';
   static const String roleDeveloper = 'DEVELOPER';
   static const String roleTester = 'TESTER';
 
@@ -39,8 +41,8 @@ class DebugStrings {
   static const String settingsModeDeveloperHint =
       'Master access — every screen and setting';
   static const String settingsModeTesterHint =
-      'Allow stepping down to the granted screens. Long-press the dashboard '
-      'title to actually switch.';
+      'Allow stepping down to the granted screens. Use the role chip beside '
+      'the dashboard title to actually switch.';
   static const String settingsTesterAccess = 'Tester access';
   static const String settingsTesterDisabledToast = 'Please enable tester mode';
   static const String settingsTesterAccessHint =
@@ -85,6 +87,11 @@ class DebugStrings {
   static const String settingsResetDashboardCustom = 'Rearranged';
   static const String settingsResetDashboardDefault = 'Default';
   static const String settingsClearAll = 'Clear all data';
+  static const String settingsClearAction = 'Clear';
+  static const String settingsClearConfirm =
+      'Wipes every captured feed — network, logs, bloc, navigation, '
+      'notifications, deep-links, crashes, analytics and traces. This cannot '
+      'be undone. Settings and overrides are kept.';
   static const String settingsClearedToast = 'All in-memory data cleared';
 
   // --- Health check ---------------------------------------------------------

@@ -313,8 +313,8 @@ Implementation:
 ### Roles
 
 Developer mode sees every screen; tester mode sees only what a developer has
-granted. Long-press the dashboard title to switch. No wiring — configure it from
-Settings.
+granted. Tap the role chip beside the dashboard title to switch. No wiring —
+configure the grants from Settings.
 
 Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 

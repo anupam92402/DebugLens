@@ -12,8 +12,8 @@ import '../../../../shared/widgets/glass.dart';
 ///
 /// Neither row switches role. Developer is inert — it is what Settings is
 /// opened as. Tester carries a switch for whether the role is *available*: a
-/// developer turning it on stays a developer, and only the long-press on the
-/// dashboard title actually steps down.
+/// developer turning it on stays a developer, and only the role chip beside
+/// the dashboard title actually steps down.
 class RoleSheet extends StatelessWidget {
   const RoleSheet({super.key});
 

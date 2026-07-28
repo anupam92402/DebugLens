@@ -9,6 +9,7 @@ import '../../../../shared/widgets/matrix_rain.dart';
 import '../../data/dash_order_store.dart';
 import '../../domain/dash_item.dart';
 import '../widgets/reorderable_dash_grid.dart';
+import '../widgets/role_swap_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -80,9 +81,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _toggleRole(BuildContext context) async {
     final roleController = context.read<DebugRoleController>();
 
-    // The tester role can be switched off from Settings. When it is, there is
-    // nowhere to step down to — so bail before the rain rather than playing a
-    // transition that lands back where it started.
+    // Belt and braces: `RoleSwapButton` already hides itself when the tester
+    // role is switched off, so this shouldn't be reachable — but bail before
+    // the rain rather than play a transition that lands where it started.
     if (!roleController.canToggle) return;
 
     // Curtain first: the rain covers the screen, the role flips behind it, and
@@ -109,10 +110,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          // Long-press the title to switch role (tester ↔ developer).
-          onLongPress: () => _toggleRole(context),
-          child: const Text(DebugStrings.dashboardTitle),
+        title: Row(
+          children: [
+            const Text(DebugStrings.dashboardTitle),
+            const SizedBox(width: 8),
+            // Hides itself when the tester role is switched off.
+            RoleSwapButton(onSwap: () => _toggleRole(context)),
+          ],
         ),
         actions: [
           IconButton(

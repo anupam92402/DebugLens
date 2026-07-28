@@ -44,11 +44,7 @@ class RoleSwapButton extends StatelessWidget {
                 style: monoStyle(size: 10, color: DebugColors.textMuted),
               ),
               const SizedBox(width: 4),
-              const Icon(
-                Icons.sync,
-                size: 14,
-                color: DebugColors.textMuted,
-              ),
+              const Icon(Icons.sync, size: 14, color: DebugColors.textMuted),
             ],
           ),
         ),

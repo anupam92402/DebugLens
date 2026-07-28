@@ -62,6 +62,12 @@ class DebugStrings {
   static String settingsLimitTitle(String label) => '$label limit';
 
   static String settingsLimitDefault(int n) => 'Default: $n';
+  static const String settingsBubble = 'Bubble';
+  static const String bubbleHint =
+      'The button that opens this panel. Drag it anywhere for a quick nudge; '
+      'it returns to the anchor below on the next launch.';
+  static const String bubbleIconHeader = 'ICON';
+  static const String bubblePositionHeader = 'POSITION';
   static const String settingsApp = 'App';
   static const String settingsAppVersion = 'App version';
   static const String appVersionOriginal = 'Original';

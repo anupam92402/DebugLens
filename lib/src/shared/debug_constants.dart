@@ -47,6 +47,19 @@ class DebugConstants {
   /// Whether the tester role is available at all (`'true'` / `'false'`).
   static const String testerEnabledPrefsKey = 'debug_lens_tester_enabled';
 
+  /// This package's name, needed to resolve its bundled assets from inside a
+  /// host app — `Image.asset(path, package: packageName)`.
+  static const String packageName = 'debug_lens';
+
+  /// Bundled Dash artwork offered as one of the bubble icons.
+  static const String dashAssetPath = 'assets/dash.png';
+
+  /// Icon shown on the panel's bubble (a `BubbleIcon` name).
+  static const String bubbleIconPrefsKey = 'debug_lens_bubble_icon';
+
+  /// Edge anchor the bubble rests at (a `BubbleCorner` name).
+  static const String bubbleCornerPrefsKey = 'debug_lens_bubble_corner';
+
   /// Device-local app-version override. Absent when none is set.
   static const String appVersionPrefsKey = 'debug_lens_app_version';
 

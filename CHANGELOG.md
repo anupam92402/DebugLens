@@ -36,5 +36,6 @@ no console attached.
   shareable report of every crash and error log in between.
 * **Roles** — a developer mode that sees everything and a tester mode limited to
   the screens you grant, switched from a chip beside the dashboard title.
-* **Settings** — reorder the dashboard, set per-feed retention limits, override
-  the app version, and clear all captured data.
+* **Settings** — reorder the dashboard, restyle and reposition the bubble, set
+  per-feed retention limits, override the app version, and clear all captured
+  data.

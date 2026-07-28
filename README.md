@@ -365,6 +365,13 @@ Issues and pull requests are welcome at
 * The panel keeps no copy of data it can ask the host for. If your inspector can
   read live, give it a source rather than a store.
 
+## Credits
+
+The Dash artwork bundled as one of the bubble icons
+(`assets/dash.png`) is part of the Flutter brand assets, © Google, used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Flutter and the
+Flutter logo are trademarks of Google LLC.
+
 ## License
 
 [MIT](LICENSE)

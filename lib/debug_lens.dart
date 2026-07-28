@@ -7,6 +7,7 @@ import 'src/shared/debug_strings.dart';
 import 'src/features/dashboard/data/dash_order_store.dart';
 import 'src/features/services/data/debug_analytics_store.dart';
 import 'src/features/settings/data/app_version_store.dart';
+import 'src/features/settings/data/bubble_store.dart';
 import 'src/features/settings/data/debug_limits_store.dart';
 import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_crash_store.dart';
@@ -360,6 +361,7 @@ class DebugLens {
     DebugLensLogger.instance.restoreCaptureSettings();
     DebugLimits.instance.restore();
     DashOrderStore.instance.restore();
+    BubbleStore.instance.restore();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DebugLensController()),

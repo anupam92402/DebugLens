@@ -13,9 +13,11 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../data/app_version_store.dart';
+import '../../data/bubble_store.dart';
 import '../../data/debug_limits_store.dart';
 import '../../domain/debug_limit.dart';
 import '../widgets/app_version_dialog.dart';
+import '../widgets/bubble_sheet.dart';
 import '../widgets/clear_data_dialog.dart';
 import '../widgets/error_screen_dialog.dart';
 import '../widgets/limits_sheet.dart';
@@ -93,6 +95,25 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
+                ListenableBuilder(
+                  listenable: BubbleStore.instance,
+                  builder: (context, _) {
+                    final bubble = BubbleStore.instance;
+                    return _tile(
+                      icon: Icons.adjust,
+                      // The chosen mark itself, which for the Flutter logo
+                      // isn't an `IconData` at all.
+                      leading: bubble.icon.glyph(
+                        size: 20,
+                        color: DebugColors.textPrimary,
+                      ),
+                      title: DebugStrings.settingsBubble,
+                      value: bubble.corner.label,
+                      onTap: () => BubbleSheet.show(context),
+                    );
+                  },
+                ),
+                const Divider(height: 1, color: DebugColors.border),
                 ListenableBuilder(
                   listenable: AppVersionStore.instance,
                   builder: (context, _) {
@@ -257,10 +278,12 @@ class SettingsScreen extends StatelessWidget {
     String? subtitle,
     VoidCallback? onTap,
     bool enabled = true,
+    Widget? leading,
   }) {
     final tone = enabled ? DebugColors.textPrimary : DebugColors.textMuted;
     return ListTile(
-      leading: Icon(icon, size: 20, color: tone),
+      // [leading] wins when a row's mark isn't a font glyph.
+      leading: leading ?? Icon(icon, size: 20, color: tone),
       title: Text(title, style: monoStyle(size: 13, color: tone)),
       subtitle: subtitle == null
           ? null

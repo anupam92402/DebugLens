@@ -1,5 +1,6 @@
+import 'package:debug_lens/debug_lens.dart';
+
 import 'api_service.dart';
-import '../../../core/logging/app_log.dart';
 import '../domain/post.dart';
 
 /// Maps [ApiService] responses to domain models. The bloc talks only to this,
@@ -18,7 +19,7 @@ class ApiRepository {
     final posts = data
         .map((e) => Post.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
-    log.d('Fetched ${posts.length} posts', name: 'api');
+    debugLog.d('Fetched ${posts.length} posts', name: 'api');
     return posts;
   }
 
@@ -32,14 +33,14 @@ class ApiRepository {
   Future<Post> createPost() async {
     final res = await _service.createPost();
     final post = Post.fromJson(res.data as Map<String, dynamic>);
-    log.i('Created post #${post.id}', name: 'api');
+    debugLog.i('Created post #${post.id}', name: 'api');
     return post;
   }
 
   Future<Post> updatePost() async {
     final res = await _service.updatePost();
     final post = Post.fromJson(res.data as Map<String, dynamic>);
-    log.i('Updated post #${post.id}', name: 'api');
+    debugLog.i('Updated post #${post.id}', name: 'api');
     return post;
   }
 

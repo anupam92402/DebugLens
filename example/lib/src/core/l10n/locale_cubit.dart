@@ -1,8 +1,8 @@
+import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../firebase/mock_firebase.dart';
-import '../logging/app_log.dart';
 import 'app_strings.dart';
 
 /// Holds the current app language (English / Hindi).
@@ -18,7 +18,7 @@ class LocaleCubit extends Cubit<AppLanguage> {
         'category': 'settings',
       },
     );
-    log.i('Language switched to ${lang.name}', name: 'locale');
+    debugLog.i('Language switched to ${lang.name}', name: 'locale');
     emit(lang);
   }
 }

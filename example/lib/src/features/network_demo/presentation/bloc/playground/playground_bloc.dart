@@ -1,9 +1,9 @@
+import 'package:debug_lens/debug_lens.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/firebase/mock_firebase.dart';
-import '../../../../../core/logging/app_log.dart';
 import '../../../data/api_repository.dart';
 import '../../../domain/api_action.dart';
 
@@ -53,7 +53,7 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
         reason: 'API ${action.name} failed ($detail)',
         customData: {'endpoint': action.name, 'detail': detail},
       );
-      log.e(
+      debugLog.e(
         'API ${action.name} failed · $detail',
         name: 'api',
         error: e,

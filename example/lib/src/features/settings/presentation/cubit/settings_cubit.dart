@@ -1,8 +1,8 @@
+import 'package:debug_lens/debug_lens.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/firebase/mock_firebase.dart';
-import '../../../../core/logging/app_log.dart';
 
 final class SettingsState extends Equatable {
   const SettingsState({
@@ -42,7 +42,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    log.i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
+    debugLog.i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
     emit(state.copyWith(darkMode: value));
   }
 
@@ -55,7 +55,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    log.i('Push ${value ? 'enabled' : 'disabled'}', name: 'settings');
+    debugLog.i('Push ${value ? 'enabled' : 'disabled'}', name: 'settings');
     emit(state.copyWith(pushEnabled: value));
   }
 
@@ -68,7 +68,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    log.i('Analytics ${value ? 'enabled' : 'disabled'}', name: 'settings');
+    debugLog.i('Analytics ${value ? 'enabled' : 'disabled'}', name: 'settings');
     emit(state.copyWith(analyticsEnabled: value));
   }
 }

@@ -1,8 +1,8 @@
+import 'package:debug_lens/debug_lens.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/firebase/mock_firebase.dart';
-import '../../../../core/logging/app_log.dart';
 import '../../data/activity_repository.dart';
 import '../../domain/activity.dart';
 
@@ -37,7 +37,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         'count': activities.length,
       },
     );
-    log.d('Loaded ${activities.length} activities', name: 'home');
+    debugLog.d('Loaded ${activities.length} activities', name: 'home');
     emit(state.copyWith(status: HomeStatus.ready, activities: activities));
   }
 
@@ -56,7 +56,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         'category': event.category.name,
       },
     );
-    log.i('Activity added · ${activity.title}', name: 'home');
+    debugLog.i('Activity added · ${activity.title}', name: 'home');
     emit(state.copyWith(activities: [activity, ...state.activities]));
   }
 
@@ -80,7 +80,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   void _onActivityDeleted(HomeActivityDeleted event, Emitter<HomeState> emit) {
-    log.i('Activity deleted · ${event.id}', name: 'home');
+    debugLog.i('Activity deleted · ${event.id}', name: 'home');
     emit(
       state.copyWith(
         activities: state.activities

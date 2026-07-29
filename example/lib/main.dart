@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'src/app.dart';
 import 'src/core/di/service_locator.dart';
 import 'src/core/firebase/mock_firebase.dart';
-import 'src/core/logging/app_log.dart';
 import 'src/core/notifications/notification_service.dart';
 import 'src/core/storage/storage_setup.dart';
 
@@ -19,7 +18,7 @@ Future<void> _bootstrap() async {
   /// install these itself — the app stays in charge of its own error handling,
   /// and both are the current Flutter way (no zone wrapping needed).
   FlutterError.onError = (details) {
-    log.e(
+    debugLog.e(
       details.exceptionAsString(),
       name: 'flutter',
       error: details.exception,
@@ -28,7 +27,7 @@ Future<void> _bootstrap() async {
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    log.e('Uncaught error', name: 'app', error: error, stackTrace: stack);
+    debugLog.e('Uncaught error', name: 'app', error: error, stackTrace: stack);
     return false;
   };
 
@@ -79,13 +78,13 @@ Future<void> _bootstrap() async {
 
     /// Fetch + activate Remote Config (applies any persisted device overrides).
     await MockFirebase.activate();
-    log.d('Remote Config activated', name: 'config');
+    debugLog.d('Remote Config activated', name: 'config');
 
     /// Local notifications — request permission up front.
     try {
       await sl<NotificationService>().init();
     } catch (error, stack) {
-      log.e(
+      debugLog.e(
         'Notification setup failed',
         name: 'notifications',
         error: error,
@@ -103,7 +102,10 @@ Future<void> _bootstrap() async {
       'startup_ms': startup.elapsedMilliseconds,
     },
   );
-  log.i('Startup finished in ${startup.elapsedMilliseconds}ms', name: 'app');
+  debugLog.i(
+    'Startup finished in ${startup.elapsedMilliseconds}ms',
+    name: 'app',
+  );
 
   runApp(const ExampleApp());
 }

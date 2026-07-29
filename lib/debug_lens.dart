@@ -63,6 +63,17 @@ export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
 export 'src/core/debug_role.dart' show DebugRole;
 export 'src/core/debug_screen.dart' show DebugScreen;
 
+/// The DebugLens logger, ready to use: `debugLog.i('…')`.
+///
+/// Deliberately not called `log` — that name is already taken by both
+/// `dart:math` and `dart:developer`, so any file importing either would clash
+/// with it. Prefixed instead, matching Flutter's own `debug*` globals.
+///
+/// Whether a record also reaches the terminal is `printToConsole`; an app that
+/// already owns a logger keeps printing from that one and sets this false, so
+/// DebugLens shows the record without printing it twice.
+DebugLensLogger get debugLog => DebugLensLogger.instance;
+
 /// Public entry point for the DebugLens in-app debugging overlay.
 class DebugLens {
   DebugLens._();

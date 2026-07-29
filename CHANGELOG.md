@@ -12,7 +12,8 @@ no console attached.
 * **Network** — every Dio request and response with headers, bodies, timings and
   status, plus per-endpoint call history and a live connectivity indicator.
 * **Logs** — a level-tagged log feed with per-source capture switches, so you can
-  mute a noisy origin without touching code.
+  mute a noisy origin without touching code. Write to it through the top-level
+  `debugLog`.
 * **Bloc** — every bloc and cubit lifecycle event: creation, events, state
   transitions, errors and closure.
 * **Navigation** — a route event log and a live navigator stack, including

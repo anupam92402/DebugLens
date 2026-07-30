@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'src/features/storage/data/debug_database_source.dart';
 import 'src/shared/debug_constants.dart';
 import 'src/shared/debug_strings.dart';
-import 'src/features/dashboard/data/dash_order_store.dart';
 import 'src/features/services/data/debug_analytics_store.dart';
 import 'src/features/settings/data/app_version_store.dart';
 import 'src/features/settings/data/bubble_store.dart';
@@ -453,7 +452,6 @@ class DebugLens {
     /// the binding — safe here, since [wrap] runs once the tree is up.
     DebugLensLogger.instance.restoreCaptureSettings();
     DebugLimits.instance.restore();
-    DashOrderStore.instance.restore();
     BubbleStore.instance.restore();
     return MultiProvider(
       providers: [

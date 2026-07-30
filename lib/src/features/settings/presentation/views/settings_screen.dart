@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/debug_role.dart';
-import '../../../dashboard/data/dash_order_store.dart';
 import '../../../health/data/health_check_store.dart';
 import '../../../health/presentation/widgets/health_reports_sheet.dart';
 import '../../../../core/debug_store.dart';
@@ -194,31 +193,6 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                // Dimmed until there is an arrangement to forget.
-                ListenableBuilder(
-                  listenable: DashOrderStore.instance,
-                  builder: (context, _) {
-                    final isCustom = DashOrderStore.instance.isCustom;
-                    return _tile(
-                      icon: Icons.grid_view_outlined,
-                      title: DebugStrings.settingsResetDashboard,
-                      value: isCustom
-                          ? DebugStrings.settingsResetDashboardCustom
-                          : DebugStrings.settingsResetDashboardDefault,
-                      enabled: isCustom,
-                      onTap: isCustom
-                          ? () {
-                              DashOrderStore.instance.reset();
-                              DebugToast.show(
-                                context,
-                                DebugStrings.settingsResetDashboardToast,
-                              );
-                            }
-                          : null,
-                    );
-                  },
-                ),
-                const Divider(height: 1, color: DebugColors.border),
                 ListTile(
                   leading: const Icon(
                     Icons.delete_outline,

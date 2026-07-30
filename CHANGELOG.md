@@ -44,6 +44,5 @@ no console attached.
   configure a fresh install from code, so a QA build ships ready.
 * **First-run walkthrough** — a three-step tour of the dashboard, the role chip
   and getting back to the app, shown once per install.
-* **Settings** — reorder the dashboard, restyle and reposition the bubble, set
-  per-feed retention limits, override the app version, and clear all captured
-  data.
+* **Settings** — restyle and reposition the bubble, set per-feed retention
+  limits, override the app version, and clear all captured data.

@@ -38,9 +38,6 @@ class DebugConstants {
   /// Navigation screen's eye toggle (hide `debug_lens/` routes).
   static const String navHideInternalPrefsKey = 'debug_lens_nav_hide_internal';
 
-  /// The dashboard's tile order, as a JSON list of route names.
-  static const String dashboardOrderPrefsKey = 'debug_lens_dashboard_order';
-
   /// Routes a tester may open, as a JSON list of route names.
   static const String testerRoutesPrefsKey = 'debug_lens_tester_routes';
 

@@ -106,10 +106,6 @@ class DebugStrings {
   static String settingsHealthPreviousCount(int n) =>
       n == 1 ? '1 report' : '$n reports';
   static const String settingsData = 'Data';
-  static const String settingsResetDashboard = 'Reset dashboard order';
-  static const String settingsResetDashboardToast = 'Dashboard order reset';
-  static const String settingsResetDashboardCustom = 'Rearranged';
-  static const String settingsResetDashboardDefault = 'Default';
   static const String settingsClearAll = 'Clear all data';
   static const String settingsClearAction = 'Clear';
   static const String settingsClearConfirm =

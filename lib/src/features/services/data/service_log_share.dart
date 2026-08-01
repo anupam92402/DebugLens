@@ -8,9 +8,6 @@ import '../domain/service_group.dart';
 /// Serializes what a service screen is currently showing and shares it as a log
 /// file. Handles both read-only services (groups) and editable ones (config
 /// entries).
-///
-/// Callers pass the **visible** rows — already searched and sorted — so the
-/// exported file matches the screen, and no extra `load()` is triggered.
 class ServiceLogShare {
   ServiceLogShare._();
 

@@ -13,11 +13,6 @@ import 'path_and_time.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Single row in the Network list screen.
-///
-/// Affordances:
-///   - tapping the row → navigate to detail (handled by [onTap])
-///   - swipe left→right → copy + share cURL only
-///   - swipe right→left → copy + share cURL + response
 class NetworkTile extends StatelessWidget {
   final NetworkEntry entry;
   final VoidCallback onTap;

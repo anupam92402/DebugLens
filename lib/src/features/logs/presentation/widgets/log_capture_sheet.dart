@@ -11,10 +11,6 @@ import 'log_capture_switch.dart';
 
 /// Bottom sheet listing DebugLens's own log producers with a switch each, so
 /// the user can silence a noisy one mid-session.
-///
-/// Switching one off only stops *new* records; what is already in the feed
-/// stays there and in anything shared from it. Rebuilds off the logger, which
-/// notifies whenever a toggle changes.
 class LogCaptureSheet extends StatelessWidget {
   const LogCaptureSheet({super.key});
 

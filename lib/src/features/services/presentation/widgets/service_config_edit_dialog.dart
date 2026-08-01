@@ -12,10 +12,6 @@ import '../../../../shared/theme/debug_colors.dart';
 /// Prompts for a new value for [entry], returning it in string form or null if
 /// cancelled. Booleans use a segmented true/false control; other types use a
 /// text field.
-///
-/// The returned string always satisfies [DebugLensConfigType.accepts] — Save
-/// stays disabled while the input is unparseable — so the host never has to
-/// defend against a malformed edit.
 Future<String?> showConfigEditDialog(
   BuildContext context,
   DebugLensConfigEntry entry,
@@ -36,8 +32,7 @@ class _ConfigEditDialog extends StatefulWidget {
 }
 
 class _ConfigEditDialogState extends State<_ConfigEditDialog> {
-  /// Shorter than [ConfigValueBlock.defaultMaxHeight]: the field above and the
-  /// keyboard below leave less room in this dialog than in the read-only one.
+  /// Ceiling for the source-of-truth block.
   static const double _sourceMaxHeight = 120;
 
   late final TextEditingController _controller = TextEditingController(
@@ -91,8 +86,7 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
     }
   }
 
-  /// Copies the pending value, confirming with a toast. Clipboard only — no
-  /// share sheet, which would slide over the dialog you are still editing in.
+  /// Copies `key: value` to the clipboard and confirms with a toast.
   void _copyValue(BuildContext context) {
     Clipboard.setData(ClipboardData(text: widget.entry.pair(_pending)));
     DebugToast.show(
@@ -122,8 +116,6 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: DebugColors.surface,
-      // Scrollable because the keyboard is up the moment this opens (the field
-      // autofocuses), which can leave the dialog shorter than its own content.
       scrollable: true,
       title: Row(
         children: [
@@ -135,10 +127,7 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
               style: monoStyle(size: 14),
             ),
           ),
-          // Copies `key: value` with what is in the field right now, not what
-          // was saved — the point is taking a long value out to edit it
-          // somewhere roomier and pasting it back. Sits in the title so a bool
-          // has it too, where there is no field to hang it off.
+          // Copies what is in the field, not what was saved.
           CopyIcon(
             tooltip: DebugStrings.commonCopy,
             padding: const EdgeInsets.only(left: 8),
@@ -187,8 +176,6 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
               style: monoStyle(size: 11, color: DebugColors.textMuted),
             ),
             const SizedBox(height: 4),
-            // Same block the read-only dialog uses, capped shorter: the field
-            // above it and the keyboard below leave less room here.
             ConfigValueBlock(
               widget.entry.sourceValue!,
               maxHeight: _sourceMaxHeight,

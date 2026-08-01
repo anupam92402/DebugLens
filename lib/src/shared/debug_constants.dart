@@ -1,9 +1,4 @@
 /// Non-display constant tokens used across DebugLens.
-///
-/// These are the small fixed markers rendered in place of missing or special
-/// data — not sentences. Human-readable UI *copy* lives in `DebugStrings`;
-/// this file holds the sentinels/placeholders (and similar value constants)
-/// so there is a single source of truth for each.
 class DebugConstants {
   DebugConstants._();
 

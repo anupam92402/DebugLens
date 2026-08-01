@@ -1,15 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 /// One crash / non-fatal report pushed in by the host's crash reporter.
-///
-/// The fields mirror `FirebaseCrashlytics.recordError`'s parameters, so a host
-/// wrapper forwards what it already has and invents nothing. DebugLens stays
-/// generic — it never imports Crashlytics (or Sentry, or Bugsnag).
-///
-/// Unlike the pull-based services, crashes are **pushed**: the host calls
-/// `DebugLens.instance.recordCrash` at the moment of the error and DebugLens
-/// keeps the event, because a reporter can't be read back after the fact.
-/// Nothing is uploaded anywhere — the event stays in memory for this session.
 @immutable
 class DebugLensCrashEvent {
   /// The thrown object, rendered through `toString()`. Also the report's row

@@ -12,8 +12,6 @@ class ClockFormat {
   /// Compact elapsed time for a gap between two events, in seconds to one
   /// decimal — `0.2s`, `2.5s`. Sub-second gaps stay in seconds rather than
   /// switching to milliseconds, so a column of gaps is directly comparable.
-  /// Past a minute it steps up to `1m 12s` / `2h 5m`, which stays readable
-  /// where `4320.0s` would not.
   static String gap(Duration d) {
     if (d.inSeconds < 60) {
       return '${(d.inMilliseconds / 1000).toStringAsFixed(1)}s';

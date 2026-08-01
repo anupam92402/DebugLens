@@ -6,14 +6,6 @@ import 'debug_widgets.dart';
 import '../theme/debug_colors.dart';
 
 /// Lightweight, dependency-free toast for DebugLens screens.
-///
-/// Uses an [OverlayEntry] inserted into the root [Overlay], so it works
-/// from any screen below `DebugLens.wrap` without a [Scaffold] in the
-/// immediate ancestor chain (something `ScaffoldMessenger.showSnackBar`
-/// can't guarantee inside the panel's nested navigator).
-///
-/// Only one toast is visible at a time — calling [show] while another is
-/// active replaces it. Auto-dismisses after [duration].
 class DebugToast {
   DebugToast._();
 
@@ -22,9 +14,6 @@ class DebugToast {
 
   /// Pops a brief toast over [context]. Returns immediately — the toast
   /// schedules its own removal.
-  ///
-  /// [duration] defaults to 1.5s, matching the longest of the SnackBars
-  /// this helper replaces.
   static void show(
     BuildContext context,
     String message, {

@@ -14,7 +14,6 @@ import 'package:share_plus/share_plus.dart';
 /// both Android and iOS.
 ///
 /// The dump is segregated per source with a `/// <source>` header so it stays
-/// readable:
 /// ```
 /// /// navigation
 /// <navigation data>
@@ -24,7 +23,7 @@ import 'package:share_plus/share_plus.dart';
 /// ```
 ///
 /// Nothing here is wired into the DebugLens screens — it is a standalone
-/// service a caller drives explicitly, e.g.:
+/// service a caller drives explicitly.
 /// ```dart
 /// DebugLogFileService.instance
 ///   ..log('navigation', 'push /home')
@@ -94,8 +93,6 @@ class DebugLogFileService {
 
   /// Filename for [at] (defaults to now, local time), formatted as
   /// `<name>_YYYY-MM-DD_HH-mm-ss.txt` — sorts chronologically in a file list.
-  /// [name] defaults to `logs` (e.g. `logs_2026-07-11_14-30-05.txt`); callers
-  /// sharing a single feature pass their own, e.g. `navigation_logs`.
   static String fileNameFor({DateTime? at, String? name}) {
     final t = at ?? DateTime.now();
     return '${name ?? _defaultName}_${t.year}-${_pad2(t.month)}-${_pad2(t.day)}_'
@@ -103,8 +100,6 @@ class DebugLogFileService {
   }
 
   /// Writes [buildDump] to a NEW file under the temp directory and returns it.
-  /// Every call creates a fresh file; a same-second name collision gets a
-  /// numeric suffix. [name] overrides the filename base (see [fileNameFor]).
   Future<File> writeLogFile({
     Map<String, String>? sections,
     String? name,
@@ -134,10 +129,6 @@ class DebugLogFileService {
 
   /// Writes a new log file (see [writeLogFile]) and opens the OS share sheet
   /// via `share_plus` — the only supported way to share a log file.
-  ///
-  /// Works on Android and iOS. On iPad the share sheet is a popover, so pass
-  /// [sharePositionOrigin] (the share control's global rect) to anchor it;
-  /// omit on phones. [name] overrides the filename base (see [fileNameFor]).
   Future<ShareResult> shareLogFile({
     Map<String, String>? sections,
     String? name,

@@ -6,8 +6,6 @@ import 'text_styles.dart';
 /// Monospace text in a code-style container — the panel's standard treatment
 /// for anything meant to be read verbatim: a stack trace, an exception, a
 /// snippet to copy into the host app.
-///
-/// Selectable, so a caller can take part of it without a copy button.
 class CodeBlock extends StatelessWidget {
   final String text;
 

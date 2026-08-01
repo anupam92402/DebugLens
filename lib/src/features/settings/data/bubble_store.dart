@@ -5,10 +5,6 @@ import '../../storage/data/debug_shared_prefs_source.dart';
 import '../domain/bubble_style.dart';
 
 /// How the panel's bubble looks and where it sits.
-///
-/// Persisted, unlike the captured feeds: this is a preference about the host
-/// app's screen, and having to reposition the bubble on every launch because it
-/// covers a FAB is exactly the annoyance the setting exists to fix.
 class BubbleStore extends ChangeNotifier {
   BubbleStore._();
 
@@ -25,9 +21,6 @@ class BubbleStore extends ChangeNotifier {
       _icon != BubbleIcon.fallback || _corner != BubbleCorner.fallback;
 
   /// Loads both values. Called once from `DebugLens.wrap`.
-  ///
-  /// Unknown names fall back rather than throw — the saved value may name an
-  /// icon or anchor a later version removed.
   Future<void> restore() async {
     _icon = BubbleIcon.byName(
       await DebugLensSharedPrefs.getString(DebugConstants.bubbleIconPrefsKey),

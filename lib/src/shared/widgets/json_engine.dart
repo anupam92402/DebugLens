@@ -20,10 +20,6 @@ enum JsonViewMode { tree, raw }
 
 /// Search context threaded into the JSON viewers so matches can be highlighted
 /// and the currently focused match scrolled into view.
-///
-/// [query] is already lower-cased and non-empty. [activeIndex] selects which
-/// match (in display order) gets the strong highlight; the widget rendering it
-/// attaches [activeKey] so the host can `Scrollable.ensureVisible` it.
 @immutable
 class JsonSearch {
   final String query;

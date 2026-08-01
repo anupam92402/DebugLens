@@ -5,11 +5,6 @@ import '../domain/service_group.dart';
 
 /// Generic, async view of one backend/SDK service, implemented by the host
 /// using its own wrappers (Firebase, Amplify, LaunchDarkly, a REST client, …).
-/// DebugLens calls [load] on demand from the Services screen and renders the
-/// groups — it never imports any vendor package, so it stays generic.
-///
-/// **`extends` this, don't `implements` it** — only [name] is required; the
-/// rest have working defaults that `implements` would force you to re-declare.
 abstract class DebugLensService {
   /// Display name shown in the service list (e.g. 'Remote Config').
   String get name;
@@ -33,8 +28,6 @@ abstract class DebugLensService {
   /// (a new analytics event, a crash recorded, a config fetch). When non-null
   /// the open service screen re-pulls on every notification, so the view stays
   /// live without the user leaving and re-entering.
-  ///
-  /// A `ValueNotifier`/`ChangeNotifier` you already own is the usual answer.
   Listenable? get changes => null;
 }
 

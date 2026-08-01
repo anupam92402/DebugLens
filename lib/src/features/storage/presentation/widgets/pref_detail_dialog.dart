@@ -5,9 +5,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
-/// Detail dialog using the Network screen's glass [SectionCard] containers:
-/// one for the key, one for the value, each with its own COPY (copy + share),
-/// plus a combined "copy key + value" action.
+/// Detail dialog for one preference, in the Network screen's glass cards.
 class PrefDetailDialog extends StatelessWidget {
   final DebugLensPrefEntry entry;
   final Future<void> Function(String text, String label) onCopyShare;

@@ -13,7 +13,6 @@ import '../../../../shared/theme/debug_colors.dart';
 /// a crash report, …), styled like the Navigation event rows: a position
 /// badge, the record's primary label + optional subtitle, expanding to its
 /// fields in a monospace box (like the Network body) with a single copy.
-///
 class ServiceEntryTile extends StatelessWidget {
   final int number;
   final DebugLensServiceGroup group;
@@ -26,11 +25,6 @@ class ServiceEntryTile extends StatelessWidget {
 
   /// The record as one JSON object. The subtitle is left out — it is already on
   /// the collapsed row, so repeating it here only pads the copy and the export.
-  /// Fields are nested under `fields` rather than spread alongside `name`, so a
-  /// record that happens to have its own `name` field can't shadow the title,
-  /// and the key is dropped entirely when there are none — a performance trace
-  /// carries nothing but its name and duration, and an empty `fields: {}` reads
-  /// like missing data rather than a record that never had any.
   Map<String, Object?> get _record => {
     'name': group.title,
     if (group.values.isNotEmpty) 'fields': group.values,

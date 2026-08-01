@@ -7,9 +7,6 @@ import 'deeplink_tile.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Captured deep-link feed with search and a recent/alphabetical sort toggle.
-/// Each row breaks the URI into its components (scheme / host / path) and
-/// renders query parameters as JSON. Filter/sort state lives in notifiers so
-/// only the list leaf rebuilds; the parent screen passes fresh [items].
 class DeeplinksTab extends StatefulWidget {
   final List<DeeplinkEntry> items;
 

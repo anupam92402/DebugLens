@@ -7,9 +7,6 @@ import '../shared/debug_constants.dart';
 import 'debug_screen.dart';
 
 /// Access role for the DebugLens panel.
-///
-/// - [tester] (default): can only open the screens a developer has granted.
-/// - [developer]: can open every screen.
 enum DebugRole { tester, developer }
 
 /// Holds the current [DebugRole] and the set of routes a tester may open, both
@@ -18,10 +15,6 @@ enum DebugRole { tester, developer }
 /// Network as the single granted route.
 class DebugRoleController extends ChangeNotifier {
   /// Role a fresh install starts in — set through `DebugLens.initialRole`.
-  ///
-  /// Only consulted when nothing has been persisted yet. Once the role has been
-  /// switched on a device, the saved value wins on every later launch, so
-  /// changing this never overrides a choice someone already made.
   static DebugRole initial = DebugRole.tester;
 
   /// Screens a tester may open on a fresh install — set through
@@ -57,10 +50,6 @@ class DebugRoleController extends ChangeNotifier {
   bool canOpen(String route) => isDeveloper || _testerRoutes.contains(route);
 
   /// Whether [toggle] would actually change anything.
-  ///
-  /// False only when a developer would be stepping down into a tester role that
-  /// is switched off. Callers check this *before* starting any switch
-  /// animation, and `RoleSwapButton` hides itself entirely when this is false.
   bool get canToggle => !isDeveloper || _testerEnabled;
 
   DebugRoleController() {
@@ -100,11 +89,6 @@ class DebugRoleController extends ChangeNotifier {
   }
 
   /// Switches between tester and developer and persists the new value.
-  ///
-  /// There is no gate on becoming a developer: the panel only ships in builds
-  /// the team controls, and a password that lived in the source protected
-  /// nothing. Stepping *down* is gated on [canToggle] — with the tester role
-  /// switched off there is nowhere to step down to, so this is a no-op.
   Future<void> toggle() async {
     if (!canToggle) return;
     _role = isDeveloper ? DebugRole.tester : DebugRole.developer;
@@ -113,11 +97,6 @@ class DebugRoleController extends ChangeNotifier {
   }
 
   /// Enables or disables the tester role.
-  ///
-  /// Deliberately does **not** switch roles: a developer turning it on stays a
-  /// developer. Turning it off while already a tester promotes back to
-  /// developer, since the current role would otherwise be one that no longer
-  /// exists.
   Future<void> setTesterEnabled(bool enabled) async {
     if (_testerEnabled == enabled) return;
     _testerEnabled = enabled;

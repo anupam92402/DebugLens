@@ -12,8 +12,6 @@ import '../widgets/network_status_filter_row.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Network → History: every endpoint called this session with its call count.
-/// Data lives in [DebugStore] for the session (survives clearing the log).
-/// Sorted by call frequency; filter chips scope to a status and count by it.
 class NetworkHistoryScreen extends StatefulWidget {
   const NetworkHistoryScreen({super.key});
 

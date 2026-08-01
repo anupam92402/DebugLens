@@ -7,10 +7,6 @@ import '../../../../shared/theme/debug_colors.dart';
 /// One collapsible category block on the Locale screen: a tappable header
 /// (chevron + category name + entry count) that expands to reveal the
 /// category's `key → value` rows.
-///
-/// Expansion is controlled by the parent ([expanded] + [onToggle]) so the
-/// screen can keep one source of truth — e.g. auto-expanding every section
-/// while a search is active, then restoring per-section state when it clears.
 class LocaleCategorySection extends StatelessWidget {
   final String category;
   final List<MapEntry<String, String>> entries;

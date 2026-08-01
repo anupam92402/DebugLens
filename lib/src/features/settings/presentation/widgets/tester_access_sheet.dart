@@ -10,11 +10,6 @@ import '../../../../shared/widgets/glass.dart';
 import '../../../../core/debug_screen.dart';
 
 /// Bottom sheet for choosing which screens a tester may open.
-///
-/// Ticking a screen here changes what the dashboard shows once the role is
-/// Tester; it has no effect while the panel is in Developer mode, which sees
-/// everything regardless. Settings is not offered — granting it would let a
-/// tester widen their own access.
 class TesterAccessSheet extends StatelessWidget {
   const TesterAccessSheet({super.key});
 

@@ -2,9 +2,6 @@ import '../../../shared/debug_constants.dart';
 import '../../storage/data/debug_shared_prefs_source.dart';
 
 /// Whether the first-run tour has been shown.
-///
-/// Persisted, and read once per launch rather than watched: a tour that
-/// reappears is worse than no tour, and a one-shot flag needs no notifier.
 class WalkthroughStore {
   WalkthroughStore._();
 

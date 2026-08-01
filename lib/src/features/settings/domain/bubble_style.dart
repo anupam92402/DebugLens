@@ -4,10 +4,6 @@ import '../../../shared/debug_constants.dart';
 import '../../../shared/theme/debug_colors.dart';
 
 /// Icon shown on the bubble that opens the panel.
-///
-/// A short list on purpose — the point is to move the bubble out of the way of
-/// whatever the host app puts in that corner, or to tell two builds apart, not
-/// to offer a theme.
 enum BubbleIcon {
   dash('Dash', Icons.flutter_dash_sharp),
   dashArt('Dash 3D', null),
@@ -24,20 +20,13 @@ enum BubbleIcon {
   /// Use [glyph] rather than reading this directly.
   final IconData? icon;
 
-  /// Fixed colour for a mark that is only itself in one colour, and null for the
-  /// rest. Set it and [glyph] paints the mark in it instead of the tint the
-  /// caller asked for.
+  /// Fixed colour for a brand mark; [glyph] uses it instead of the caller's.
   final Color? tint;
 
   /// The mark to render at [size].
-  ///
-  /// [color] is ignored by [dashArt] and [flutter] — both are multi-coloured by
-  /// definition, which is why neither can just be another `IconData` — and
-  /// overridden by any value carrying a [tint].
   Widget glyph({required double size, required Color color}) => switch (this) {
     BubbleIcon.flutter => FlutterLogo(size: size),
-    // `package:` is essential — without it the path resolves against the host
-    // app's assets and fails for everyone but this package's own example.
+    // `package:` — the path must resolve against this package's assets.
     BubbleIcon.dashArt => Image.asset(
       DebugConstants.dashAssetPath,
       package: DebugConstants.packageName,
@@ -48,8 +37,7 @@ enum BubbleIcon {
     _ => Icon(icon!, size: size, color: tint ?? color),
   };
 
-  /// The shipped default, and the fallback for an unreadable saved value — or
-  /// for one written before an icon was removed from this list.
+  /// The shipped default, and the fallback for an unrecognised saved value.
   static const BubbleIcon fallback = dashArt;
 
   static BubbleIcon byName(String? name) =>
@@ -57,11 +45,6 @@ enum BubbleIcon {
 }
 
 /// Where the bubble rests.
-///
-/// Six anchors rather than a saved offset: an anchor survives a rotation and a
-/// device change, where a raw offset would end up off-screen or under a system
-/// bar. Dragging is free and separate — it moves the bubble for this session
-/// only, and the anchor is what it returns to on the next launch.
 enum BubbleCorner {
   topLeft('Top left', Alignment.topLeft),
   topRight('Top right', Alignment.topRight),

@@ -1,6 +1,4 @@
 // Barrel for the shared widget kit — each widget now lives in its own file.
-// Screens keep importing `widgets/debug_widgets.dart` and get everything
-// (the widgets, monoStyle/formatAgo, and the re-exported formatClock).
 export '../util/clock_format.dart' show ClockFormat;
 export 'code_block.dart';
 export 'copy_icon.dart';

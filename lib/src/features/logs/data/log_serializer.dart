@@ -3,10 +3,6 @@ import '../domain/log_record.dart';
 
 /// Plain-text serializers for [DebugLogRecord] used by the Logs screen
 /// (bulk share / export) and Log detail screen (single-record copy).
-///
-/// Pure data → string; no UI imports. Single source of truth so a record
-/// copied from the detail screen looks identical to the same record in a
-/// shared bundle.
 class LogSerializer {
   LogSerializer._();
 

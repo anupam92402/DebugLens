@@ -18,10 +18,6 @@ import '../widgets/service_entry_tile.dart';
 /// [DebugLensConfigEditor] (e.g. Remote Config) renders typed, editable rows
 /// with a source toggle. Rows can be searched, copied, shared and cleared, and
 /// sorted — newest/oldest for records, A–Z for config keys.
-///
-/// Read-only data is re-pulled when the app resumes and whenever the service
-/// signals through `DebugLensService.changes` — so a screen left open keeps up
-/// with records arriving behind it without a manual refresh.
 class ServiceDetailScreen extends StatefulWidget {
   final DebugLensService service;
 
@@ -44,7 +40,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   /// alphabetically. Records use [_newestFirst] instead.
   final ValueNotifier<bool> _sortAlpha = ValueNotifier<bool>(true);
 
-  /// Record order for the read-only path, matching the Navigation events tab:
+  /// Record order for the read-only path — newest first, tap to flip.
   /// newest at the top by default, tap to flip.
   final ValueNotifier<bool> _newestFirst = ValueNotifier<bool>(true);
 
@@ -127,10 +123,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   /// Filters the groups, then numbers them by position (oldest = 1) so badges
   /// stay contiguous whatever the search hides and stay with their record
   /// across a sort flip. Returns (group, number) pairs in the chosen order.
-  ///
-  /// Services hand their groups over newest-first, so this walks them reversed
-  /// to number from the oldest and flips back at the end — the same shape as
-  /// the Navigation events tab, which reads an oldest-first store.
   List<_NumberedGroup> get _visibleGroups {
     final q = _q;
     Iterable<DebugLensServiceGroup> out = _groups.reversed;

@@ -10,8 +10,6 @@ import '../widgets/notifications_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Two-tab view of push/local notifications + captured deep-links.
-/// Thin assembler — both tab bodies live in `widgets/` and own their
-/// search/sort state. The AppBar's clear action targets the active tab.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 

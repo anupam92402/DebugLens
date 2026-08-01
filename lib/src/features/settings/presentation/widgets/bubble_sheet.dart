@@ -10,9 +10,6 @@ import '../../domain/bubble_style.dart';
 
 /// Bottom sheet for the bubble that opens the panel: which icon it shows, and
 /// which edge anchor it rests at.
-///
-/// Both apply immediately — the bubble is right there behind the sheet, so
-/// there is nothing to confirm and no restart to wait for.
 class BubbleSheet extends StatelessWidget {
   const BubbleSheet({super.key});
 

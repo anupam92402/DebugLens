@@ -14,17 +14,6 @@ import '../widgets/log_tile.dart';
 
 /// Live feed of everything in [DebugLensLogger] — the host's own calls and
 /// DebugLens's internal observers.
-///
-/// Filter state is held in [ValueNotifier]s rather than [State] fields so
-/// typing or flipping a chip rebuilds only the affected subtree, never the
-/// whole screen:
-///
-/// * [_query] — free-text over message + name
-/// * [_levels] — which levels to keep (empty = all)
-/// * [_newestFirst] — list order
-///
-/// The AppBar's capture action opens [LogCaptureSheet], which controls what is
-/// *recorded*; the chips below control what is *shown*.
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
 

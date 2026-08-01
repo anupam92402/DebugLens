@@ -15,11 +15,6 @@ class MatrixRain {
 
   /// How long after [show] the screen is fully covered — [_fadeIn] plus a frame
   /// of slack for the overlay to mount and its ticker to start.
-  ///
-  /// Await this before changing whatever is underneath, so the change happens
-  /// behind the curtain and the rain *reveals* it. Changing first and showing
-  /// the rain afterwards means the user sees the new state, then watches an
-  /// animation announce what they already saw.
   static const Duration coverDelay = Duration(milliseconds: 350);
 
   /// Inserts the rain over the root overlay, with [label] (e.g. the new role)

@@ -23,7 +23,7 @@ typedef DebugLogObserver =
 /// ## Purpose
 ///
 /// One place for everything the app says, on-device, so you aren't tied to a
-/// terminal. Records arrive two ways:
+/// terminal.
 ///
 /// 1. **Your own calls** — [i] / [d] / [e].
 /// 2. **DebugLens's own services** — the Dio interceptor, Bloc observer and
@@ -47,13 +47,13 @@ typedef DebugLogObserver =
 ///
 /// Terminal output is yours to control: [printToConsole] decides whether the
 /// logger echoes each record through `debugPrint`. Set it from your own build
-/// config, and turn it off when you already have a logger printing:
+/// config, and turn it off when you already have a logger printing.
 ///
 /// ```dart
 /// DebugLensLogger().printToConsole = kDebugMode; // or false
 /// ```
 ///
-/// Size the buffer once at startup ([defaultMaxHistory] records otherwise):
+/// Size the buffer with `DebugLens.initialLimits`.
 ///
 /// ```dart
 /// DebugLensLogger().maxHistory = 5000;
@@ -66,11 +66,7 @@ class DebugLensLogger extends ChangeNotifier {
 
   static final DebugLensLogger _instance = DebugLensLogger._internal();
 
-  /// Always the one logger — `DebugLensLogger()` constructs nothing, it hands
-  /// back the single instance the panel reads.
-  ///
-  /// Not something to hold and dispose: this is a [ChangeNotifier] the Logs
-  /// screen listens to, so disposing it would stop the panel updating.
+  /// Always the one logger; this constructs nothing.
   factory DebugLensLogger() => _instance;
 
   /// Whether records are echoed to the console. They are stored and shown
@@ -78,7 +74,6 @@ class DebugLensLogger extends ChangeNotifier {
   ///
   /// Yours to decide — wire it to your own build config rather than leaving it
   /// at the default, so DebugLens never silently changes what your terminal
-  /// shows between builds:
   ///
   /// ```dart
   /// DebugLensLogger().printToConsole = kDebugMode; // or a flavor flag
@@ -134,8 +129,6 @@ class DebugLensLogger extends ChangeNotifier {
 
   /// Reloads the persisted capture switches. `DebugLens.wrap()` calls this once
   /// — hosts don't need to, and it must not run before the binding exists.
-  /// Only an explicit `false` mutes, so an untouched (or newly added) origin
-  /// stays on; storage failures leave every origin recording.
   Future<void> restoreCaptureSettings() async {
     if (_captureRestored) return;
     _captureRestored = true;

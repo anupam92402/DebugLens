@@ -8,10 +8,6 @@ import '../../data/device_info_source.dart';
 import '../../domain/device_app_info.dart';
 
 /// Read-only App / Device / Screen / Network facts.
-///
-/// App and Device are fetched once per app run; Screen and Network are live, so
-/// rotating the device or dropping wifi updates the open screen. See
-/// [DeviceInfoSource] for why the three are treated differently.
 class DeviceInfoScreen extends StatefulWidget {
   const DeviceInfoScreen({super.key});
 

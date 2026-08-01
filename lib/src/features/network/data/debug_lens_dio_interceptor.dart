@@ -10,10 +10,7 @@ import '../../../shared/debug_strings.dart';
 import '../domain/network_entry.dart';
 import 'curl_helper.dart';
 
-/// Dio [Interceptor] that mirrors every HTTP transaction into DebugLens:
-/// appends a pending [NetworkEntry] on request, finalizes it on
-/// response/error, and (optionally) mirrors each into the Logs feed.
-/// Add one per Dio: `Dio()..interceptors.add(DebugLensDioInterceptor())`.
+/// Dio [Interceptor] that mirrors every HTTP transaction into DebugLens.
 class DebugLensDioInterceptor extends Interceptor {
   DebugLensDioInterceptor({
     this.settings = const DebugLensDioInterceptorSettings(),

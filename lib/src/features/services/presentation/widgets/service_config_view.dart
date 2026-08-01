@@ -9,12 +9,6 @@ import '../../../../shared/theme/debug_colors.dart';
 /// Renders an editable-config service (e.g. Remote Config) as a list of typed
 /// rows. When [editable] a row opens [onEdit] to override its value; otherwise
 /// it opens [onView], which shows the source of truth read-only.
-///
-/// Every row is tappable either way: a row ellipsizes a long value, so tapping
-/// to read the whole one is worth doing even when nothing can be changed.
-///
-/// [filtered] tells an empty list apart: a search that matched nothing versus a
-/// service that simply has no parameters.
 class ServiceConfigView extends StatelessWidget {
   final List<DebugLensConfigEntry> entries;
   final bool editable;

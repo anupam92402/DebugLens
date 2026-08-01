@@ -9,27 +9,12 @@ import '../../../shared/util/connectivity_label.dart';
 import '../domain/device_app_info.dart';
 
 /// Gathers the device and app facts shown on the Device screen.
-///
-/// Split by what a value costs and whether it can change:
-///
-/// * [platform] crosses a platform channel, so it is **fetched once per app
-///   run** and held in memory. Nothing is persisted — a stored copy would just
-///   be the previous run's device.
-/// * [screen] reads the `MediaQuery` the framework already has. That is not a
-///   fetch, so it is recomputed per build and a rotation shows up at once.
-/// * [network] is handed a value from `connectivityStream`, which fetches once
-///   and is pushed updates after — so dropping wifi shows up at once too.
 class DeviceInfoSource {
   DeviceInfoSource._();
 
   static List<InfoSection>? _cache;
 
   /// App + Device — the two platform-channel sections, read once per run.
-  ///
-  /// Cached only once **both** reads succeed. A plugin call that fails — most
-  /// often `MissingPluginException`, because the app was hot-reloaded after the
-  /// plugin was added instead of fully rebuilt — is left uncached, so the next
-  /// visit tries again instead of the session being stuck with a broken screen.
   static Future<List<InfoSection>> platform() async {
     final cached = _cache;
     if (cached != null) return cached;

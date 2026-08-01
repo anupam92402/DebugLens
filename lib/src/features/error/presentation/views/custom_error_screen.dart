@@ -9,7 +9,6 @@ import '../../../../shared/widgets/debug_widgets.dart';
 /// Replacement for Flutter's red error box, showing the exception and its stack
 /// trace as two copyable blocks.
 ///
-/// Wire it from the host once, at startup:
 ///
 /// ```dart
 /// ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
@@ -83,10 +82,6 @@ class CustomErrorScreen extends StatelessWidget {
 }
 
 /// Header + copy action over a code block, as used by [CustomErrorScreen].
-///
-/// The copy control is a bare [GestureDetector] rather than the shared
-/// [CopyIcon]: that one is an `IconButton` with a `Tooltip`, and neither is
-/// safe to assume in an error widget.
 class ErrorReportBlock extends StatelessWidget {
   /// Muted uppercase label above the block — `ERROR`, `STACK`.
   final String header;

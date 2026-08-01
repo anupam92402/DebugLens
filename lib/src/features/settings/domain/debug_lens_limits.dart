@@ -2,40 +2,21 @@ import 'package:flutter/foundation.dart';
 
 import 'debug_limit.dart';
 
-/// Starting retention limits for every captured feed, in one object.
+/// How many records each captured feed keeps, in one object.
 ///
-/// Each feed is a ring buffer: once it holds this many records the oldest is
-/// dropped. Set what your app needs and leave the rest null — a null feed keeps
-/// the limit the package ships with.
-///
-/// ```dart
-/// DebugLens.initialLimits = const DebugLensLimits(
-///   network: 1000, // a session that makes a lot of calls
-///   logs: 5000,
-/// );
-/// ```
-///
-/// Or one number for everything:
+/// A null feed keeps the shipped limit; every value must be within
+/// [DebugLimit.min]–[DebugLimit.max], and one that isn't is ignored.
 ///
 /// ```dart
+/// DebugLens.initialLimits = const DebugLensLimits(network: 1000, logs: 5000);
 /// DebugLens.initialLimits = const DebugLensLimits.all(1000);
 /// ```
-///
-/// **Seeds the first launch only**, like `DebugLens.initialRole`: once a limit
-/// has been edited from Settings on a device, the saved value wins for that feed
-/// on every later launch, so raising a limit in a new release never overrides
-/// what someone deliberately chose. Set it before [DebugLens.wrap] first builds.
-///
-/// Every value must be within [DebugLimit.min]–[DebugLimit.max]; one that isn't
-/// is ignored (and asserts in debug) rather than quietly clamping to a number
-/// you didn't ask for.
 @immutable
 class DebugLensLimits {
   /// Captured HTTP calls, with their headers and bodies.
   final int? network;
 
-  /// Log records — also the logger's own buffer, so this is the one place to
-  /// size it (it wins over `DebugLensLogger().maxHistory`).
+  /// Log records; also sizes the logger's own buffer.
   final int? logs;
 
   /// Push and local notifications.
@@ -71,7 +52,7 @@ class DebugLensLimits {
     this.traces,
   });
 
-  /// The same limit for every feed — for when the answer is simply "keep more".
+  /// The same limit for every feed.
   const DebugLensLimits.all(int limit)
     : network = limit,
       logs = limit,
@@ -84,9 +65,6 @@ class DebugLensLimits {
       traces = limit;
 
   /// The limit set for [limit], or null to leave it at its shipped default.
-  ///
-  /// Read on every capture, so it stays a switch and a range check rather than
-  /// building a map.
   int? valueOf(DebugLimit limit) {
     final value = switch (limit) {
       DebugLimit.network => network,

@@ -1,14 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 /// One finished performance trace pushed in by the host's performance wrapper.
-///
-/// Only *finished* traces reach DebugLens. The host keeps owning the running
-/// trace — the stopwatch, and the metrics and attributes accumulating on it —
-/// and pushes once when it stops, so there is no start/stop protocol here and
-/// no way for a half-recorded trace to sit in the panel.
-///
-/// Internal — hosts push through `DebugLens.instance.recordTrace`, which builds
-/// this, so there is nothing here for a caller to construct.
 @immutable
 class DebugLensTraceEvent {
   /// The trace name — `app_start`, `home_load`, … Shown as the row title.

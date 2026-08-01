@@ -40,8 +40,7 @@ class DebugColors {
   static const locale = Color(0xFFEC4899); // pink
   static const settings = Color(0xFF94A3B8); // slate
 
-  // Brand marks — bubble icons that are only themselves in their own colour, so
-  // they override the tint the bubble would otherwise apply.
+  // Brand marks — bubble icons painted in their own colour.
   static const androidGreen = Color(0xFF3DDC84);
   static const geminiPurple = Color(0xFF9B72CB);
 

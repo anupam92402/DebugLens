@@ -9,16 +9,6 @@ import 'debug_service_source.dart';
 
 /// DebugLens's own store for editable config, and the only implementation of
 /// [DebugLensConfigEditor].
-///
-/// The host hands its source-of-truth values over once through
-/// `DebugLens.registerConfig` and asks [activatedValue] whether to use an
-/// override. Everything else — which keys are overridden, the custom-mode flag,
-/// and persisting both — lives here, so a host never writes that code.
-///
-/// **Edits apply on the next app start.** [load] snapshots the persisted
-/// overrides into [_activated], which is what [activatedValue] answers from.
-/// Later edits only touch [_overrides] — the map the screen renders — so a value
-/// changed now shows as `custom` immediately but isn't served until relaunch.
 class DebugConfigStore extends DebugLensConfigEditor {
   DebugConfigStore._();
 

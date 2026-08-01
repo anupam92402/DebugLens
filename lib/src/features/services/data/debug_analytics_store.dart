@@ -10,11 +10,6 @@ import '../domain/service_group.dart';
 import 'debug_service_source.dart';
 
 /// DebugLens's own store for pushed analytics events.
-///
-/// Analytics SDKs are write-only — you can't ask Firebase what you logged — so
-/// like the crash store this one keeps what the host hands over through
-/// `DebugLens.instance.recordAnalyticsEvent`. Newest-first, ring-buffered at
-/// the Analytics limit, which is editable from Settings.
 class DebugAnalyticsStore {
   DebugAnalyticsStore._();
 

@@ -3,13 +3,6 @@ import '../../../shared/debug_strings.dart';
 
 /// A DebugLens-provided producer of log records, toggleable at runtime from
 /// the Logs screen's capture sheet.
-///
-/// These are the sources DebugLens itself writes into the Logs feed. Records
-/// the host emits through `DebugLensLogger().i/d/e` have no origin and
-/// are always captured — the host controls those at the call site.
-///
-/// Muting an origin stops *new* records from it; rows already in the buffer
-/// stay visible and shareable.
 enum DebugLogOrigin {
   network,
   bloc,

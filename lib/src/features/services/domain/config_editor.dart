@@ -35,7 +35,6 @@ bool _parsesAsDouble(String value) => double.tryParse(value) != null;
 
 /// Infers a config type from a live value. Anything that isn't a `bool`, `int`
 /// or `double` reads as a string, so a host can hand over whatever it has.
-/// Top-level for the same shadowing reason as [_parsesAsDouble].
 DebugLensConfigType _typeOf(Object? value) {
   if (value is bool) return DebugLensConfigType.boolean;
   if (value is int) return DebugLensConfigType.integer;
@@ -44,9 +43,6 @@ DebugLensConfigType _typeOf(Object? value) {
 }
 
 /// One config parameter shown on an editable service screen.
-///
-/// Build them one at a time in a loop, or hand over a whole map with
-/// [fromMap] — whichever fits how your config is held.
 class DebugLensConfigEntry {
   final String key;
 
@@ -78,10 +74,7 @@ class DebugLensConfigEntry {
        type = _typeOf(value),
        sourceValue = sourceValue?.toString();
 
-  /// `key: value` — how the panel copies an entry, so a pasted line says which
-  /// parameter it came from. Defined here so the read-only and edit dialogs
-  /// can't drift apart on the format; [value] defaults to the effective one, and
-  /// the editor passes what is in its field instead.
+  /// `key: value`, the form the panel copies. [value] defaults to [this.value].
   String pair([String? value]) => '$key: ${value ?? this.value}';
 }
 
@@ -89,10 +82,6 @@ class DebugLensConfigEntry {
 /// values. DebugLens supplies the only implementation — `DebugConfigStore` —
 /// which is why this type isn't exported: a host registers a plain map through
 /// `DebugLens.registerConfig` and never implements any of this.
-///
-/// A service exposes one via `DebugLensService.editor`; when present, the
-/// service screen renders a source toggle and (in override mode) editable,
-/// type-tagged rows instead of the read-only list.
 abstract class DebugLensConfigEditor {
   /// Whether device-local override ("custom") mode is on. Defaults off.
   bool get overrideEnabled;

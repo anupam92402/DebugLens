@@ -11,11 +11,6 @@ import '../domain/trace_event.dart';
 import 'debug_service_source.dart';
 
 /// DebugLens's own store for pushed performance traces.
-///
-/// Performance SDKs are write-only — you can't ask Firebase what it timed — so
-/// like the crash and analytics stores this one keeps what the host hands over
-/// through `DebugLens.instance.recordTrace`. Newest-first, ring-buffered at
-/// the Traces limit, which is editable from Settings.
 class DebugTraceStore {
   DebugTraceStore._();
 
@@ -69,7 +64,6 @@ class DebugTraceService extends DebugLensService {
 
   /// One record per trace: the name as the title, duration and time as the
   /// second line, and the attributes as the fields shown when the row expands.
-  /// The duration isn't repeated as a field — it is already on the row.
   static DebugLensServiceGroup _groupFor(DebugLensTraceEvent event) {
     return DebugLensServiceGroup(
       title: event.name,

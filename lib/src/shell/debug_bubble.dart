@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../features/settings/data/bubble_store.dart';
-import '../features/settings/domain/bubble_style.dart';
 
 /// A draggable, edge-floating button that opens the DebugLens panel.
-///
-/// Rendered in a full-screen [Stack] but only the button hit-tests, so the
-/// host app remains fully interactive around it.
-///
-/// Two ways to move it, deliberately different in how long they last:
-///
-/// * **Drag** — free, anywhere on screen, and it stays where you drop it. Good
-///   for nudging it off whatever you are looking at right now. Not saved.
-/// * **The anchor in Settings** — one of [BubbleCorner]'s six positions, saved
-///   and restored. This is where the bubble starts every launch, so a drag is
-///   undone by a restart.
 class DebugBubble extends StatefulWidget {
   final VoidCallback onTap;
 
@@ -28,10 +16,6 @@ class _DebugBubbleState extends State<DebugBubble> {
   static const double _size = 48;
 
   /// Where the last drag left it; null means "follow the saved anchor".
-  ///
-  /// A notifier rather than plain state so a drag rebuilds only the
-  /// [Positioned] — the button itself is passed through as a stable `child` and
-  /// never rebuilt while the finger moves, which is what keeps the drag smooth.
   final ValueNotifier<Offset?> _dragged = ValueNotifier<Offset?>(null);
 
   @override
@@ -49,7 +33,6 @@ class _DebugBubbleState extends State<DebugBubble> {
 
   /// Picking an anchor in Settings has to win over an earlier drag, or the
   /// bubble would sit where it was dropped and the picker would look broken.
-  /// The `setState` is for the icon, which may have changed in the same edit.
   void _onStoreChanged() {
     _dragged.value = null;
     if (mounted) setState(() {});

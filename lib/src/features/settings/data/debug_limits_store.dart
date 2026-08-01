@@ -9,13 +9,6 @@ import '../domain/debug_limit.dart';
 import '../domain/debug_lens_limits.dart';
 
 /// The panel's editable retention limits.
-///
-/// Held in memory so the capture paths can read a cap synchronously while
-/// trimming — [of] always answers, falling back to [DebugLimit.fallback] before
-/// [restore] has run. Persisted as one JSON map so a raised limit survives a
-/// relaunch.
-///
-/// A `ChangeNotifier` so the limits sheet re-renders as values are edited.
 class DebugLimits extends ChangeNotifier {
   DebugLimits._();
 
@@ -24,9 +17,6 @@ class DebugLimits extends ChangeNotifier {
   final Map<DebugLimit, int> _values = <DebugLimit, int>{};
 
   /// Limits the host asked for — set through `DebugLens.initialLimits`.
-  ///
-  /// Consulted per feed, and only where nothing is saved for that feed, so a
-  /// device edit outranks the host and the host outranks the shipped default.
   static DebugLensLimits initial = const DebugLensLimits();
 
   /// The cap in force for [limit] — saved edit, else host seed, else shipped.
@@ -34,9 +24,6 @@ class DebugLimits extends ChangeNotifier {
       _values[limit] ?? initial.valueOf(limit) ?? limit.fallback;
 
   /// Whether [limit] has been edited on this device.
-  ///
-  /// A host seed doesn't count: it is that build's default, which is what Reset
-  /// in the limits sheet puts the feed back to.
   bool isCustom(DebugLimit limit) => _values.containsKey(limit);
 
   /// Loads the saved limits. Called once from `DebugLens.wrap`.
@@ -49,16 +36,14 @@ class DebugLimits extends ChangeNotifier {
         final decoded = jsonDecode(raw) as Map<String, dynamic>;
         for (final limit in DebugLimit.values) {
           final value = decoded[limit.name];
-          // Ignore anything out of range: the bounds may have tightened since it
-          // was written, and a stored limit should never outvote them.
+          // Bounds may have tightened since this was written.
           if (value is int && DebugLimit.accepts(value)) _values[limit] = value;
         }
       } catch (_) {
         // Unreadable (hand-edited, or an older shape) — keep what we have.
       }
     }
-    // Unconditional: the logger owns its own buffer, so a host-seeded logs cap
-    // has to be pushed across even when this device has nothing saved.
+    // Runs even with nothing saved, so a seeded logs cap reaches the logger.
     _applyLogs();
     notifyListeners();
   }
@@ -82,8 +67,7 @@ class DebugLimits extends ChangeNotifier {
     await _write();
   }
 
-  /// The logger owns its own buffer and trims on write, so its cap has to be
-  /// pushed across rather than read from here.
+  /// Pushes the logs cap across; the logger owns that buffer.
   void _applyLogs() => DebugLensLogger().maxHistory = of(DebugLimit.logs);
 
   Future<void> _write() => DebugLensSharedPrefs.setString(

@@ -4,17 +4,11 @@ import '../../domain/dash_item.dart';
 import 'dash_card.dart';
 
 /// The dashboard's two-column grid of inspector tiles.
-///
-/// Each cell is keyed by its route so Flutter keeps element identity (and the
-/// tile's own state) as cells come and go with role filtering.
 class DashGrid extends StatelessWidget {
   final List<DashItem> items;
 
-  /// Optional [GlobalKey] per route, so a caller can measure one specific tile
-  /// — the first-run tour points at the first one this way. Returning null for a
-  /// route leaves that tile unkeyed.
-  ///
-  /// At most one tile per key: a `GlobalKey` may only be in the tree once.
+  /// Optional [GlobalKey] per route, so a caller can measure one tile — the
+  /// first-run tour points at the first. Null leaves that tile unkeyed.
   final GlobalKey? Function(String route)? cardKey;
 
   const DashGrid({super.key, required this.items, this.cardKey});

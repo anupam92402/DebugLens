@@ -7,10 +7,6 @@ import '../../data/debug_limits_store.dart';
 import '../../domain/debug_limit.dart';
 
 /// Prompts for a new cap for [limit] and applies it.
-///
-/// A slider rather than a field: it can only produce a value inside
-/// [DebugLimit.min]–[DebugLimit.max] and on a [DebugLimit.step] notch, so there
-/// is nothing to validate and no way to save something the store would reject.
 Future<void> showLimitEditDialog(BuildContext context, DebugLimit limit) {
   return showDialog<void>(
     context: context,

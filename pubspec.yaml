@@ -20,7 +20,7 @@ screenshots:
   - description: The dashboard every inspector opens from.
     path: doc/screenshots/dashboard.png
   - description: Captured network calls with status and timing.
-    path: doc/screenshots/network.png
+    path: doc/screenshots/network_list.png
   - description: The level-tagged log feed.
     path: doc/screenshots/logs.png
   - description: Remote config values, typed and overridable on the device.

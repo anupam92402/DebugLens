@@ -11,10 +11,6 @@ import '../../../../shared/widgets/debug_widgets.dart';
 /// Shows [entry] read-only — the counterpart to `showConfigEditDialog` for a
 /// service showing its source of truth, where a value can be inspected and
 /// copied but not changed.
-///
-/// A dialog rather than an expanding row because a config value is regularly too
-/// long for a list row: the row ellipsizes it, and this is where you read the
-/// whole thing.
 Future<void> showConfigValueDialog(
   BuildContext context,
   DebugLensConfigEntry entry,

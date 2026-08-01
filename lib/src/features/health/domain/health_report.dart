@@ -4,9 +4,6 @@ import 'package:flutter/foundation.dart';
 enum HealthEntryKind { crash, log }
 
 /// One thing that went wrong inside a health-check window.
-///
-/// A flattened view of two different sources — a pushed crash report and an
-/// error-level log — so the report screen renders one list instead of two.
 @immutable
 class HealthEntry {
   final HealthEntryKind kind;
@@ -35,10 +32,6 @@ class HealthEntry {
 }
 
 /// What a health check found between its start and stop taps.
-///
-/// A snapshot taken at stop: anything cleared from the logs or crash store
-/// while the check was running is simply absent, because the sources are read
-/// once, at the end.
 @immutable
 class HealthReport {
   /// 1-based position in the session's run of checks. Stamped when the report

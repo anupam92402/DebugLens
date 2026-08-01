@@ -10,10 +10,6 @@ import '../widgets/prefs_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Two-tab view of persistent state (SharedPreferences + databases).
-///
-/// Pull-based: the prefs tab reads the host-registered
-/// [DebugLensSharedPrefs.source] on each build (no copy kept); the refresh
-/// action re-pulls it.
 class StorageScreen extends StatefulWidget {
   const StorageScreen({super.key});
 

@@ -7,13 +7,6 @@ import '../../domain/walkthrough_step.dart';
 
 /// The first-run tour: a dimmed screen with a hole punched around whatever the
 /// current step points at, and a caption card beside it.
-///
-/// Inserted into the panel's [Overlay] rather than the dashboard's body, so it
-/// can dim the AppBar too — one of the steps points at the role chip up there.
-///
-/// The backdrop swallows taps: during the tour the only controls are Skip and
-/// Next, so a stray tap can't open a screen behind the dim and leave the
-/// spotlight pointing at nothing.
 class WalkthroughOverlay extends StatefulWidget {
   final List<WalkthroughStep> steps;
   final VoidCallback onFinish;
@@ -79,10 +72,6 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
 
   /// Placed on whichever side of the hole has more room, and centred when this
   /// step has nothing to point at.
-  ///
-  /// Both edges of the region are pinned and the card scrolls inside it, so a
-  /// tall caption or a hole close to an edge can't push it off screen — the
-  /// first version measured against a guessed card height and clipped.
   Widget _caption(Size screen, EdgeInsets safeArea, Rect? hole) {
     if (hole == null) return Center(child: _card());
 

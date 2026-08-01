@@ -9,15 +9,6 @@ import '../domain/health_report.dart';
 
 /// Runs the health check: a window opened by one tap and closed by the next,
 /// reporting everything that failed in between.
-///
-/// **Session-only, and deliberately not persisted.** A check is a "watch what
-/// happens while I do this" tool — carrying a half-open window across a
-/// relaunch would report against a process that no longer exists. Closing the
-/// app abandons it.
-///
-/// The sources are read at [stop], not sampled as they arrive, so clearing the
-/// logs or the crash store mid-window removes those records from the report
-/// too. That is the honest answer: the report says what is still there.
 class HealthCheckStore extends ChangeNotifier {
   HealthCheckStore._();
 
@@ -50,9 +41,6 @@ class HealthCheckStore extends ChangeNotifier {
   }
 
   /// Closes the window and returns what fell inside it, newest first.
-  ///
-  /// Returns null when no check is running, so a caller can't build a report
-  /// out of nothing.
   HealthReport? stop() {
     final startedAt = _startedAt;
     if (startedAt == null) return null;

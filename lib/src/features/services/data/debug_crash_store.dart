@@ -11,11 +11,6 @@ import '../domain/service_group.dart';
 import 'debug_service_source.dart';
 
 /// DebugLens's own store for pushed crash reports.
-///
-/// Crash reporters are write-only — you can't ask Crashlytics what it recorded
-/// — so unlike the other services this one keeps the events the host hands over
-/// through `DebugLens.instance.recordCrash`. Newest-first, ring-buffered at
-/// the Crashes limit, which is editable from Settings.
 class DebugCrashStore {
   DebugCrashStore._();
 
@@ -77,8 +72,6 @@ class DebugCrashService extends DebugLensService {
     };
 
     /// Custom keys are host-named, so they can collide with the fields above.
-    /// `putIfAbsent` here and plain assignment below keep the real error and
-    /// stack authoritative — a custom key can never shadow them.
     for (final entry in event.customData.entries) {
       values.putIfAbsent(
         entry.key,

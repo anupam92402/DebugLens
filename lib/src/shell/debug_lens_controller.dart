@@ -1,11 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 /// Owns the open/closed state of the DebugLens panel.
-///
-/// The panel is shown as a real route pushed on the host navigator (so the
-/// system back button — including Android predictive back — closes it). This
-/// controller just tracks that route so the bubble can hide while open and the
-/// in-panel close button can dismiss it.
 class DebugLensController extends ChangeNotifier {
   /// Key for the panel's nested [Navigator] so back can pop in-panel routes
   /// (step back) before closing the whole panel.

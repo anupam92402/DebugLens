@@ -11,14 +11,6 @@ import '../../../../shared/widgets/glass.dart';
 import 'api_call_row.dart';
 
 /// Bottom sheet listing every retained call to one endpoint, newest at the top.
-///
-/// Each row carries its timestamp plus the gap since the call below it, so the
-/// spacing of a polling loop or a burst of retries reads straight off the list.
-/// The bottom row is the oldest retained call and has nothing to compare
-/// against, so it shows a timestamp only.
-///
-/// Listens to [DebugStore] so calls arriving while the sheet is open appear at
-/// the top — the stat is mutated in place, so a rebuild re-reads it.
 class ApiCallsSheet extends StatelessWidget {
   final ApiCallStat stat;
 

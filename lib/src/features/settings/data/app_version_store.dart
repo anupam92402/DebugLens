@@ -5,18 +5,6 @@ import '../../../shared/debug_constants.dart';
 import '../../storage/data/debug_shared_prefs_source.dart';
 
 /// Device-local override for the app's version string.
-///
-/// Same shape as `DebugConfigStore`: the host hands its real version over once
-/// at startup through `DebugLens.instance.setAppVersion`, and reads back
-/// through [version] — so a tester can pin the app to another version without
-/// the host writing any of the plumbing.
-///
-/// **Edits apply on the next app start.** [load] snapshots the saved override
-/// into [_activated], which is what [version] answers from; a later edit only
-/// touches [_override], so the dialog shows the new value immediately but the
-/// app keeps reporting the old one until it relaunches. Matching Remote Config
-/// here is deliberate — a version that changed mid-session would disagree with
-/// whatever the app had already sent upstream.
 class AppVersionStore extends ChangeNotifier {
   AppVersionStore._();
 

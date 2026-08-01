@@ -7,10 +7,6 @@ import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 
 /// Shows how to install `CustomErrorScreen`, with the one line to copy.
-///
-/// Read-only on purpose: DebugLens can't install `ErrorWidget.builder` itself
-/// without taking over the host's error handling, so this documents the hook
-/// rather than pretending to be a setting.
 Future<void> showErrorScreenDialog(BuildContext context) {
   return showDialog<void>(
     context: context,

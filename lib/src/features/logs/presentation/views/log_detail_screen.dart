@@ -9,12 +9,7 @@ import '../widgets/message_card.dart';
 import '../widgets/stack_card.dart';
 import '../widgets/summary_card.dart';
 
-/// Drill-down view for a single [DebugLogRecord]. Three section cards:
-/// Summary (metadata), Message (the actual log text), Error (when an
-/// exception was passed), and Stack trace (when one was attached).
-///
-/// Each card carries its own COPY in its header, so the block you want — the
-/// message, the error, the stack — is one tap away.
+/// Drill-down view for a single [DebugLogRecord].
 class LogDetailScreen extends StatelessWidget {
   final DebugLogRecord record;
 

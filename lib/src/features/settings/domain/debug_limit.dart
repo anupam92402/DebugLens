@@ -1,8 +1,4 @@
 /// A retention limit the panel keeps — one per captured feed.
-///
-/// Each is a ring-buffer cap: once the feed holds this many records the oldest
-/// is dropped. The [fallback] values are the caps the package shipped with, so
-/// a fresh install behaves exactly as before anything is edited.
 enum DebugLimit {
   network(label: 'Network', fallback: 250),
   logs(label: 'Logs', fallback: 1000),

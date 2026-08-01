@@ -9,9 +9,6 @@ import '../widgets/health_entry_tile.dart';
 
 /// What a health check found: every crash and error log recorded between the
 /// start and stop taps, newest first, with the whole thing shareable.
-///
-/// The report is a value, not a live feed — it was assembled when the check
-/// stopped and doesn't change while you read it.
 class HealthReportScreen extends StatelessWidget {
   final HealthReport report;
 

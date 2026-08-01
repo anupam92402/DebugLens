@@ -59,9 +59,6 @@ class SettingsScreen extends StatelessWidget {
                     value: DebugStrings.settingsTesterAccessCount(
                       role.testerRoutes.length,
                     ),
-                    // Dimmed rather than hidden when the role is switched off:
-                    // the grants still exist and come back with it, so the row
-                    // says why it can't be opened instead of vanishing.
                     enabled: role.testerEnabled,
                     onTap: role.testerEnabled
                         ? () => TesterAccessSheet.show(context)
@@ -218,10 +215,6 @@ class SettingsScreen extends StatelessWidget {
   }
 
   /// First tap opens the window, second closes it and pushes the report.
-  ///
-  /// The report is passed as a route argument rather than held in the store:
-  /// it is a finished value, and keeping it around would leave the tile in a
-  /// third "stopped, unread" state nobody asked for.
   void _toggleHealthCheck(BuildContext context) {
     final health = HealthCheckStore.instance;
     if (!health.isRunning) {
@@ -238,13 +231,6 @@ class SettingsScreen extends StatelessWidget {
 
   /// Navigation-style row: what it is on the left, its current value on the
   /// right, opening a sheet on tap.
-  ///
-  /// [onTap] is optional — a row with nothing behind it yet renders without the
-  /// chevron rather than pointing at a destination that doesn't exist.
-  ///
-  /// [enabled] dims the row and drops the chevron while still firing [onTap],
-  /// so a disabled row can explain itself instead of swallowing the tap. Note
-  /// this is not `ListTile.enabled`, which would block the tap outright.
   Widget _tile({
     required IconData icon,
     required String title,

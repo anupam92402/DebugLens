@@ -1,12 +1,6 @@
 import 'debug_constants.dart';
 
 /// Central catalogue of user-facing display strings for DebugLens.
-///
-/// One flat, feature-prefixed namespace (e.g. [networkTitle], [logsEmpty]).
-/// Copy that needs runtime values is exposed as a static method
-/// (e.g. [commonCopyField]). Technical strings — map/JSON keys, route names,
-/// log tags, and pure-composition interpolations (`'$a $b'`) — are
-/// intentionally NOT centralised here.
 class DebugStrings {
   DebugStrings._();
 

@@ -17,10 +17,6 @@ import '../features/settings/data/debug_limits_store.dart';
 import '../features/settings/domain/debug_limit.dart';
 
 /// Holds all captured debug data in memory.
-///
-/// Everything here is captured live — by the observers, interceptors and
-/// loggers that write to [instance]. Data a source can be asked for on demand
-/// (services, storage, locale, device info) deliberately isn't held here.
 class DebugStore extends ChangeNotifier {
   DebugStore._();
 
@@ -74,9 +70,6 @@ class DebugStore extends ChangeNotifier {
   // screen reads the app's live prefs via `DebugLens.sharedPrefsSource` and its
   // databases via `DebugLens.registerDatabase` — DebugLens keeps no copy. See
   // `debug_shared_prefs_source.dart` and `debug_database_source.dart`.
-  // Device/app facts are NOT stored here either. The Device screen reads them
-  // live from the platform plugins and the current MediaQuery on each build.
-  // See `device_info_source.dart`.
 
   // Service data is NOT stored here. The Services screen reads each service’s
   // live data on demand via `DebugLens.registerService` and renders it
@@ -301,8 +294,6 @@ class DebugStore extends ChangeNotifier {
   }
 
   /// Records a push/local notification (called from `DebugLens.recordNotification`).
-  /// Inserted newest-first; the ring buffer trims the oldest past
-  /// the notifications limit.
   void recordNotification(NotificationEntry entry) {
     if (!DebugLensConfig.enabled) return;
     notifications.insert(0, entry);
@@ -313,8 +304,6 @@ class DebugStore extends ChangeNotifier {
   }
 
   /// Records a captured deep-link (called from `DebugLens.recordDeeplink`).
-  /// Inserted newest-first; the ring buffer trims the oldest past
-  /// the deep-links limit.
   void recordDeeplink(DeeplinkEntry entry) {
     if (!DebugLensConfig.enabled) return;
     deeplinks.insert(0, entry);
@@ -335,11 +324,6 @@ class DebugStore extends ChangeNotifier {
   }
 
   /// Wipes every captured feed — not just the ones this store owns.
-  ///
-  /// The logger and the three pushed service stores keep their own buffers, so
-  /// "clear all data" has to reach into them too; leaving them out made the
-  /// Settings action quietly partial. The live navigator stacks are the one
-  /// exception: they describe where the app is right now, not what it did.
   void clearAll() {
     network.clear();
     _apiStats.clear();

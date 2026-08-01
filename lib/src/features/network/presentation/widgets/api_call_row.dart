@@ -7,9 +7,6 @@ import '../../../../shared/widgets/sequence_badge.dart';
 
 /// One row in [ApiCallsSheet]: a call's position, its clock time, and how long
 /// after the previous call it fired.
-///
-/// [sincePrevious] is null for the oldest retained call — nothing precedes it,
-/// so there is no gap to show.
 class ApiCallRow extends StatelessWidget {
   final int number;
   final DateTime at;

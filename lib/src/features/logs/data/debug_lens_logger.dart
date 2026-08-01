@@ -53,11 +53,9 @@ typedef DebugLogObserver =
 /// DebugLensLogger().printToConsole = kDebugMode; // or false
 /// ```
 ///
-/// Size the buffer with `DebugLens.initialLimits`.
-///
-/// ```dart
-/// DebugLensLogger().maxHistory = 5000;
-/// ```
+/// Size the buffer with `DebugLens.initialLimits`; the shipped default is
+/// [defaultMaxHistory] and a tester can raise or lower it from the panel's
+/// Settings screen afterwards.
 ///
 /// Forward records elsewhere with [addLogObserver]. Extends [ChangeNotifier],
 /// so the Logs screen rebuilds as records land.
@@ -87,8 +85,14 @@ class DebugLensLogger extends ChangeNotifier {
 
   /// Cap on retained records, oldest dropped first. Lowering it trims now;
   /// values below 1 are ignored.
+  ///
+  /// Package-internal: pushed by `DebugLimitsStore` from `DebugLens.initialLimits`
+  /// and the Settings screen's edit sheet. Hosts size the buffer through
+  /// `DebugLens.initialLimits`, not this member directly.
+  @internal
   int get maxHistory => _maxHistory;
 
+  @internal
   set maxHistory(int value) {
     assert(value > 0, 'maxHistory must be greater than 0, got $value');
     if (value < 1 || value == _maxHistory) return;
@@ -114,10 +118,18 @@ class DebugLensLogger extends ChangeNotifier {
   List<DebugLogRecord> get history => List.unmodifiable(_history);
 
   /// Whether records from [origin] are currently being recorded.
+  ///
+  /// Package-internal: the mirroring gate every capture path checks, and the
+  /// backing value for the panel's own capture switches.
+  @internal
   bool isCapturing(DebugLogOrigin origin) => !_mutedOrigins.contains(origin);
 
   /// Starts or stops recording [origin], and persists the choice. Applies to
   /// new records only — rows already in [history] stay.
+  ///
+  /// Package-internal: wired to the capture sheet's switches, not meant to be
+  /// called by host apps.
+  @internal
   void setCapturing(DebugLogOrigin origin, bool enabled) {
     final changed = enabled
         ? _mutedOrigins.remove(origin)
@@ -129,6 +141,7 @@ class DebugLensLogger extends ChangeNotifier {
 
   /// Reloads the persisted capture switches. `DebugLens.wrap()` calls this once
   /// — hosts don't need to, and it must not run before the binding exists.
+  @internal
   Future<void> restoreCaptureSettings() async {
     if (_captureRestored) return;
     _captureRestored = true;
@@ -183,6 +196,10 @@ class DebugLensLogger extends ChangeNotifier {
   }
 
   /// Drops all retained records.
+  ///
+  /// Package-internal: backs the Logs screen's own Clear button and
+  /// `DebugStore.clearAll()`'s "wipe everything" cascade.
+  @internal
   void clear() {
     if (_history.isEmpty) return;
     _history.clear();

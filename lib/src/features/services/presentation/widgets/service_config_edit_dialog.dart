@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../domain/config_editor.dart';
+import 'config_value_block.dart';
 import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
+import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
@@ -34,6 +36,10 @@ class _ConfigEditDialog extends StatefulWidget {
 }
 
 class _ConfigEditDialogState extends State<_ConfigEditDialog> {
+  /// Shorter than [ConfigValueBlock.defaultMaxHeight]: the field above and the
+  /// keyboard below leave less room in this dialog than in the read-only one.
+  static const double _sourceMaxHeight = 120;
+
   late final TextEditingController _controller = TextEditingController(
     text: widget.entry.value,
   )..addListener(() => setState(() {}));
@@ -85,6 +91,17 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
     }
   }
 
+  /// Copies the pending value, confirming with a toast. Clipboard only — no
+  /// share sheet, which would slide over the dialog you are still editing in.
+  void _copyValue(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: widget.entry.pair(_pending)));
+    DebugToast.show(
+      context,
+      DebugStrings.commonCopied(widget.entry.key),
+      duration: const Duration(milliseconds: 1200),
+    );
+  }
+
   /// Reverts the field to the original source-of-truth value in place.
   void _resetToSource() {
     final v = widget.entry.sourceValue;
@@ -105,9 +122,29 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: DebugColors.surface,
-      title: Text(
-        DebugStrings.serviceEditTitle(widget.entry.key),
-        style: monoStyle(size: 14),
+      // Scrollable because the keyboard is up the moment this opens (the field
+      // autofocuses), which can leave the dialog shorter than its own content.
+      scrollable: true,
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              DebugStrings.serviceEditTitle(widget.entry.key),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: monoStyle(size: 14),
+            ),
+          ),
+          // Copies `key: value` with what is in the field right now, not what
+          // was saved — the point is taking a long value out to edit it
+          // somewhere roomier and pasting it back. Sits in the title so a bool
+          // has it too, where there is no field to hang it off.
+          CopyIcon(
+            tooltip: DebugStrings.commonCopy,
+            padding: const EdgeInsets.only(left: 8),
+            onTap: () => _copyValue(context),
+          ),
+        ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -146,9 +183,15 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
           if (widget.entry.sourceValue != null) ...[
             const SizedBox(height: 8),
             Text(
-              '${DebugStrings.serviceSourceValueLabel}: '
-              '${widget.entry.sourceValue}',
+              DebugStrings.serviceSourceValueLabel,
               style: monoStyle(size: 11, color: DebugColors.textMuted),
+            ),
+            const SizedBox(height: 4),
+            // Same block the read-only dialog uses, capped shorter: the field
+            // above it and the keyboard below leave less room here.
+            ConfigValueBlock(
+              widget.entry.sourceValue!,
+              maxHeight: _sourceMaxHeight,
             ),
           ],
         ],

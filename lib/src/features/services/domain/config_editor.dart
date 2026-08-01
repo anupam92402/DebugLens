@@ -77,6 +77,12 @@ class DebugLensConfigEntry {
   }) : value = '${value ?? ''}',
        type = _typeOf(value),
        sourceValue = sourceValue?.toString();
+
+  /// `key: value` — how the panel copies an entry, so a pasted line says which
+  /// parameter it came from. Defined here so the read-only and edit dialogs
+  /// can't drift apart on the format; [value] defaults to the effective one, and
+  /// the editor passes what is in its field instead.
+  String pair([String? value]) => '$key: ${value ?? this.value}';
 }
 
 /// The seam between the Services screen's editable rows and whatever stores the

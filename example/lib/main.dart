@@ -18,7 +18,7 @@ Future<void> _bootstrap() async {
   /// install these itself — the app stays in charge of its own error handling,
   /// and both are the current Flutter way (no zone wrapping needed).
   FlutterError.onError = (details) {
-    debugLog.e(
+    DebugLensLogger().e(
       details.exceptionAsString(),
       name: 'flutter',
       error: details.exception,
@@ -27,7 +27,12 @@ Future<void> _bootstrap() async {
     FlutterError.presentError(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugLog.e('Uncaught error', name: 'app', error: error, stackTrace: stack);
+    DebugLensLogger().e(
+      'Uncaught error',
+      name: 'app',
+      error: error,
+      stackTrace: stack,
+    );
     return false;
   };
 
@@ -55,7 +60,7 @@ Future<void> _bootstrap() async {
 
   /// Console echo is the host's call — DebugLens no longer assumes. This app
   /// wants it in debug builds only.
-  DebugLensLogger.instance.printToConsole = kDebugMode;
+  DebugLensLogger().printToConsole = kDebugMode;
 
   final startup = Stopwatch()..start();
 
@@ -78,13 +83,13 @@ Future<void> _bootstrap() async {
 
     /// Fetch + activate Remote Config (applies any persisted device overrides).
     await MockFirebase.activate();
-    debugLog.d('Remote Config activated', name: 'config');
+    DebugLensLogger().d('Remote Config activated', name: 'config');
 
     /// Local notifications — request permission up front.
     try {
       await sl<NotificationService>().init();
     } catch (error, stack) {
-      debugLog.e(
+      DebugLensLogger().e(
         'Notification setup failed',
         name: 'notifications',
         error: error,
@@ -102,7 +107,7 @@ Future<void> _bootstrap() async {
       'startup_ms': startup.elapsedMilliseconds,
     },
   );
-  debugLog.i(
+  DebugLensLogger().i(
     'Startup finished in ${startup.elapsedMilliseconds}ms',
     name: 'app',
   );

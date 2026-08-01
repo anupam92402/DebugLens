@@ -37,7 +37,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         'count': activities.length,
       },
     );
-    debugLog.d('Loaded ${activities.length} activities', name: 'home');
+    DebugLensLogger().d('Loaded ${activities.length} activities', name: 'home');
     emit(state.copyWith(status: HomeStatus.ready, activities: activities));
   }
 
@@ -56,7 +56,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         'category': event.category.name,
       },
     );
-    debugLog.i('Activity added · ${activity.title}', name: 'home');
+    DebugLensLogger().i('Activity added · ${activity.title}', name: 'home');
     emit(state.copyWith(activities: [activity, ...state.activities]));
   }
 
@@ -80,7 +80,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   void _onActivityDeleted(HomeActivityDeleted event, Emitter<HomeState> emit) {
-    debugLog.i('Activity deleted · ${event.id}', name: 'home');
+    DebugLensLogger().i('Activity deleted · ${event.id}', name: 'home');
     emit(
       state.copyWith(
         activities: state.activities

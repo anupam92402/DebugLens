@@ -53,7 +53,7 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
         reason: 'API ${action.name} failed ($detail)',
         customData: {'endpoint': action.name, 'detail': detail},
       );
-      debugLog.e(
+      DebugLensLogger().e(
         'API ${action.name} failed · $detail',
         name: 'api',
         error: e,

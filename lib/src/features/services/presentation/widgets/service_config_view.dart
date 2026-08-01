@@ -7,8 +7,11 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
 
 /// Renders an editable-config service (e.g. Remote Config) as a list of typed
-/// rows. When [editable] each row can be tapped to override its value via
-/// [onEdit]; otherwise the rows are read-only (showing the source of truth).
+/// rows. When [editable] a row opens [onEdit] to override its value; otherwise
+/// it opens [onView], which shows the source of truth read-only.
+///
+/// Every row is tappable either way: a row ellipsizes a long value, so tapping
+/// to read the whole one is worth doing even when nothing can be changed.
 ///
 /// [filtered] tells an empty list apart: a search that matched nothing versus a
 /// service that simply has no parameters.
@@ -17,6 +20,7 @@ class ServiceConfigView extends StatelessWidget {
   final bool editable;
   final bool filtered;
   final void Function(DebugLensConfigEntry entry) onEdit;
+  final void Function(DebugLensConfigEntry entry) onView;
 
   const ServiceConfigView({
     super.key,
@@ -24,6 +28,7 @@ class ServiceConfigView extends StatelessWidget {
     required this.editable,
     required this.filtered,
     required this.onEdit,
+    required this.onView,
   });
 
   @override
@@ -79,8 +84,11 @@ class ServiceConfigView extends StatelessWidget {
               ],
             ],
           ),
-          trailing: editable ? const Icon(Icons.edit_outlined, size: 18) : null,
-          onTap: editable ? () => onEdit(e) : null,
+          trailing: Icon(
+            editable ? Icons.edit_outlined : Icons.chevron_right,
+            size: 18,
+          ),
+          onTap: () => editable ? onEdit(e) : onView(e),
         );
       },
     );

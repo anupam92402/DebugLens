@@ -34,6 +34,7 @@ class ApiCallsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: ListenableBuilder(

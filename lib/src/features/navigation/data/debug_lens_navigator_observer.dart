@@ -47,8 +47,8 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
 
     /// Mirror into the Logs feed, unless the user paused navigation
     /// capture from the Logs screen.
-    if (DebugLensLogger.instance.isCapturing(DebugLogOrigin.navigation)) {
-      DebugLensLogger.instance.d(
+    if (DebugLensLogger().isCapturing(DebugLogOrigin.navigation)) {
+      DebugLensLogger().d(
         _formatNavMessage(action, routeName, previousName),
         name: 'nav.$label',
       );

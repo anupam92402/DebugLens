@@ -12,6 +12,11 @@ class GlassSurface extends StatelessWidget {
   final double radius;
   final double blur;
 
+  /// Rounds the top corners only, leaving the bottom square — for a surface
+  /// that sits flush against the bottom of the screen, where rounded bottom
+  /// corners would show the app behind them through the gap.
+  final bool squareBottom;
+
   const GlassSurface({
     super.key,
     required this.child,
@@ -20,17 +25,22 @@ class GlassSurface extends StatelessWidget {
     this.tint,
     this.radius = 16,
     this.blur = 16,
+    this.squareBottom = false,
   });
+
+  BorderRadius get _corners => squareBottom
+      ? BorderRadius.vertical(top: Radius.circular(radius))
+      : BorderRadius.circular(radius);
 
   @override
   Widget build(BuildContext context) {
     Widget surface = ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
+      borderRadius: _corners,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
+            borderRadius: _corners,
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

@@ -33,8 +33,10 @@ class DashGrid extends StatelessWidget {
       childAspectRatio: _aspectRatio,
       children: [
         for (final item in items)
-          DashCard(key: cardKey?.call(item.route) ?? ValueKey(item.route),
-              item: item),
+          DashCard(
+            key: cardKey?.call(item.route) ?? ValueKey(item.route),
+            item: item,
+          ),
       ],
     );
   }

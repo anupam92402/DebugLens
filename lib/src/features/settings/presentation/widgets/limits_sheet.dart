@@ -21,6 +21,7 @@ class LimitsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final limits = DebugLimits.instance;
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: ListenableBuilder(

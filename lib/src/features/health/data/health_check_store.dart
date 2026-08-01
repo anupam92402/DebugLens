@@ -100,7 +100,7 @@ class HealthCheckStore extends ChangeNotifier {
   }
 
   Iterable<HealthEntry> _errorLogs(DateTime since) sync* {
-    for (final record in DebugLensLogger.instance.history) {
+    for (final record in DebugLensLogger().history) {
       if (record.level != DebugLogLevel.error) continue;
       if (record.time.isBefore(since)) continue;
       yield HealthEntry(

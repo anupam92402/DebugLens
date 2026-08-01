@@ -93,16 +93,15 @@ muted from the panel, so a chatty origin stops filling the feed without a code
 change.
 
 ```dart
-DebugLensLogger.instance.printToConsole = kDebugMode;
+DebugLensLogger().printToConsole = kDebugMode;
 
-debugLog.i('Signed in', name: 'auth');
-debugLog.e('Upload failed', name: 'media', error: e, stackTrace: s);
+DebugLensLogger().i('Signed in', name: 'auth');
+DebugLensLogger().e('Upload failed', name: 'media', error: e, stackTrace: s);
 ```
 
-`debugLog` is a top-level getter for the logger, exported with the package — no
-alias to write. It isn't called `log` on purpose: that name is already taken by
-both `dart:math` and `dart:developer`, so any file importing either would clash
-with it.
+`DebugLensLogger()` constructs nothing — it hands back the one logger the panel
+reads, so there is no global to import and no instance to hold. Don't dispose it:
+it is a `ChangeNotifier` the Logs screen listens to.
 
 Implementation:
 [debug_lens_logger.dart](lib/src/features/logs/data/debug_lens_logger.dart) ·

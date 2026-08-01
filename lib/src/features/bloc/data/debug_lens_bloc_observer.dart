@@ -32,7 +32,7 @@ class DebugLensBlocObserver extends BlocObserver {
     Object? error,
     StackTrace? stackTrace,
   }) {
-    final logger = DebugLensLogger.instance;
+    final logger = DebugLensLogger();
     if (!logger.isCapturing(DebugLogOrigin.bloc)) return;
     if (error == null) {
       logger.d(message, name: tag);

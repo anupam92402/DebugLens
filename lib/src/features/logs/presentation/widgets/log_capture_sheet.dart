@@ -26,8 +26,9 @@ class LogCaptureSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logger = DebugLensLogger.instance;
+    final logger = DebugLensLogger();
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: Padding(
@@ -46,14 +47,16 @@ class LogCaptureSheet extends StatelessWidget {
                 style: monoStyle(size: 11, color: DebugColors.textMuted),
               ),
               const SizedBox(height: 4),
-              ListenableBuilder(
-                listenable: logger,
-                builder: (_, _) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final origin in DebugLogOrigin.values)
-                      LogCaptureSwitch(origin: origin, logger: logger),
-                  ],
+              Flexible(
+                child: ListenableBuilder(
+                  listenable: logger,
+                  builder: (_, _) => ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final origin in DebugLogOrigin.values)
+                        LogCaptureSwitch(origin: origin, logger: logger),
+                    ],
+                  ),
                 ),
               ),
             ],

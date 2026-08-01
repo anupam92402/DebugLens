@@ -8,6 +8,7 @@ import 'src/features/services/data/debug_analytics_store.dart';
 import 'src/features/settings/data/app_version_store.dart';
 import 'src/features/settings/data/bubble_store.dart';
 import 'src/features/settings/data/debug_limits_store.dart';
+import 'src/features/settings/domain/debug_lens_limits.dart';
 import 'src/features/services/data/debug_config_store.dart';
 import 'src/features/services/data/debug_crash_store.dart';
 import 'src/features/services/data/debug_service_source.dart';
@@ -18,6 +19,7 @@ import 'src/features/services/domain/trace_event.dart';
 import 'src/shell/debug_lens_controller.dart';
 import 'src/shell/debug_routes.dart';
 import 'src/features/logs/data/debug_lens_logger.dart';
+import 'src/features/logs/domain/log_origin.dart';
 import 'src/features/locale/data/debug_locale_source.dart';
 import 'src/core/debug_lens_config.dart';
 import 'src/core/debug_role.dart';
@@ -59,19 +61,10 @@ export 'src/features/network/data/debug_lens_dio_interceptor.dart'
     show DebugLensDioInterceptor, DebugLensDioInterceptorSettings;
 export 'src/features/navigation/data/debug_lens_navigator_observer.dart'
     show DebugLensNavigatorObserver;
+export 'src/features/settings/domain/debug_lens_limits.dart'
+    show DebugLensLimits;
 export 'src/core/debug_role.dart' show DebugRole;
 export 'src/core/debug_screen.dart' show DebugScreen;
-
-/// The DebugLens logger, ready to use: `debugLog.i('…')`.
-///
-/// Deliberately not called `log` — that name is already taken by both
-/// `dart:math` and `dart:developer`, so any file importing either would clash
-/// with it. Prefixed instead, matching Flutter's own `debug*` globals.
-///
-/// Whether a record also reaches the terminal is `printToConsole`; an app that
-/// already owns a logger keeps printing from that one and sets this false, so
-/// DebugLens shows the record without printing it twice.
-DebugLensLogger get debugLog => DebugLensLogger.instance;
 
 /// Public entry point for the DebugLens in-app debugging overlay.
 class DebugLens {
@@ -159,6 +152,23 @@ class DebugLens {
   static bool get initialTesterEnabled =>
       DebugRoleController.initialTesterEnabled;
 
+  /// How much of each feed to keep — network calls, logs, bloc events, and the
+  /// rest — in one object.
+  ///
+  /// ```dart
+  /// DebugLens.initialLimits = const DebugLensLimits(network: 1000, logs: 5000);
+  /// DebugLens.initialLimits = const DebugLensLimits.all(1000); // every feed
+  /// ```
+  ///
+  /// Set it **before** [wrap] first builds. Like [initialRole] it seeds the
+  /// first launch only, per feed: once a limit has been edited from Settings on
+  /// a device that value wins, so raising one in a later release won't undo a
+  /// deliberate choice. Feeds left null keep the limits the package ships with.
+  static set initialLimits(DebugLensLimits limits) =>
+      DebugLimits.initial = limits;
+
+  static DebugLensLimits get initialLimits => DebugLimits.initial;
+
   /// Add to your `MaterialApp.navigatorObservers` to capture navigation events.
   static final NavigatorObserver navigatorObserver =
       DebugLensNavigatorObserver();
@@ -185,8 +195,14 @@ class DebugLens {
   /// DebugLens calls this each time the screen builds and renders the result —
   /// it stores no copy. Set from the host's SharedPreferences wrapper; pass
   /// `null` to clear. DebugLens stays generic and never imports the client.
-  static set sharedPrefsSource(DebugLensSharedPrefsSource? source) =>
-      DebugLensSharedPrefs.source = source;
+  static set sharedPrefsSource(DebugLensSharedPrefsSource? source) {
+    DebugLensSharedPrefs.source = source;
+    _mirrorToLogs(
+      DebugLogOrigin.storage,
+      source == null ? 'prefs source cleared' : 'prefs source registered',
+      'storage.prefs',
+    );
+  }
 
   static DebugLensSharedPrefsSource? get sharedPrefsSource =>
       DebugLensSharedPrefs.source;
@@ -195,8 +211,14 @@ class DebugLens {
   /// reads tables/rows from it on demand and keeps no copy. Idempotent by
   /// [DebugLensDatabase.name]. DebugLens stays generic — it never imports the
   /// client's database package.
-  static void registerDatabase(DebugLensDatabase database) =>
-      DebugLensDatabases.register(database);
+  static void registerDatabase(DebugLensDatabase database) {
+    DebugLensDatabases.register(database);
+    _mirrorToLogs(
+      DebugLogOrigin.storage,
+      'database registered: ${database.name}',
+      'storage.database',
+    );
+  }
 
   /// The registered databases shown in the Database tab.
   static List<DebugLensDatabase> get databases => DebugLensDatabases.sources;
@@ -206,8 +228,14 @@ class DebugLens {
   /// calls its `load()` on demand and renders the returned groups; it keeps no
   /// copy. Idempotent by [DebugLensService.name]. DebugLens stays generic — it
   /// never imports any vendor package.
-  static void registerService(DebugLensService service) =>
-      DebugLensServices.register(service);
+  static void registerService(DebugLensService service) {
+    DebugLensServices.register(service);
+    _mirrorToLogs(
+      DebugLogOrigin.services,
+      'service registered: ${service.name}',
+      'service',
+    );
+  }
 
   /// The registered services shown on the Services screen.
   static List<DebugLensService> get services => DebugLensServices.services;
@@ -233,6 +261,11 @@ class DebugLens {
   }) async {
     await DebugConfigStore.instance.load(values, sourceLabel);
     DebugLensServices.register(DebugConfigService(name: name));
+    _mirrorToLogs(
+      DebugLogOrigin.services,
+      '$sourceLabel: ${values.length} parameters',
+      'config',
+    );
   }
 
   /// The value in force for [key], or `null` when nothing is registered under
@@ -300,6 +333,15 @@ class DebugLens {
   void recordCrash(DebugLensCrashEvent event) {
     if (!_crashReportingStarted) initCrashReporting();
     DebugCrashStore.instance.record(event);
+    final logger = DebugLensLogger();
+    if (logger.isCapturing(DebugLogOrigin.services)) {
+      logger.e(
+        '${event.fatal ? 'fatal' : 'non-fatal'}: ${event.error}',
+        name: 'crash',
+        error: event.error,
+        stackTrace: event.stackTrace,
+      );
+    }
   }
 
   /// Whether the analytics service has been put on the Services screen yet —
@@ -330,6 +372,11 @@ class DebugLens {
     if (!_analyticsStarted) initAnalytics();
     DebugAnalyticsStore.instance.record(
       DebugLensAnalyticsEvent(name: name, parameters: parameters),
+    );
+    _mirrorToLogs(
+      DebugLogOrigin.services,
+      parameters.isEmpty ? name : '$name $parameters',
+      'analytics',
     );
   }
 
@@ -367,6 +414,11 @@ class DebugLens {
         duration: duration,
         attributes: attributes,
       ),
+    );
+    _mirrorToLogs(
+      DebugLogOrigin.services,
+      '$name ${duration.inMilliseconds}ms',
+      'trace',
     );
   }
 
@@ -409,6 +461,11 @@ class DebugLens {
         kind: tapped ? NotificationKind.tapped : NotificationKind.received,
       ),
     );
+    _mirrorToLogs(
+      DebugLogOrigin.notifications,
+      '${tapped ? 'tapped' : 'received'}: ${title ?? body ?? DebugConstants.emptyValue}',
+      'notification.$source',
+    );
   }
 
   /// Clears the captured notifications shown on the Notifications tab.
@@ -429,6 +486,20 @@ class DebugLens {
         source: source,
       ),
     );
+    _mirrorToLogs(
+      DebugLogOrigin.notifications,
+      uri,
+      source == null ? 'deeplink' : 'deeplink.$source',
+    );
+  }
+
+  /// Mirrors a pushed record into the Logs feed, unless that origin's capture
+  /// switch is off — the same courtesy the Dio interceptor and the two observers
+  /// pay. Kept here because every push API funnels through this file.
+  static void _mirrorToLogs(DebugLogOrigin origin, String message, String tag) {
+    final logger = DebugLensLogger();
+    if (!logger.isCapturing(origin)) return;
+    logger.d(message, name: tag);
   }
 
   /// Monotonic id suffix so entries recorded within the same millisecond stay
@@ -450,7 +521,7 @@ class DebugLens {
 
     /// Restoring the Logs capture switches reads SharedPreferences, which needs
     /// the binding — safe here, since [wrap] runs once the tree is up.
-    DebugLensLogger.instance.restoreCaptureSettings();
+    DebugLensLogger().restoreCaptureSettings();
     DebugLimits.instance.restore();
     BubbleStore.instance.restore();
     return MultiProvider(
@@ -458,9 +529,7 @@ class DebugLens {
         ChangeNotifierProvider(create: (_) => DebugLensController()),
         ChangeNotifierProvider(create: (_) => DebugRoleController()),
         ChangeNotifierProvider<DebugStore>.value(value: DebugStore.instance),
-        ChangeNotifierProvider<DebugLensLogger>.value(
-          value: DebugLensLogger.instance,
-        ),
+        ChangeNotifierProvider<DebugLensLogger>.value(value: DebugLensLogger()),
       ],
       child: _DebugLensHost(child: child),
     );

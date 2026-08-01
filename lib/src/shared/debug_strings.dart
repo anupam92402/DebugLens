@@ -375,6 +375,14 @@ class DebugStrings {
   static const String logsOriginNetworkHint = 'Dio interceptor';
   static const String logsOriginBlocHint = 'Bloc observer';
   static const String logsOriginNavigationHint = 'Navigator observer';
+  static const String logsOriginNotifications = 'Notifications';
+  static const String logsOriginNotificationsHint =
+      'Notification + deep-link records';
+  static const String logsOriginServices = 'Services';
+  static const String logsOriginServicesHint =
+      'Analytics, crash, trace and config records';
+  static const String logsOriginStorage = 'Storage';
+  static const String logsOriginStorageHint = 'Prefs + database registration';
   static const String logsExportTitle = 'DebugLens log export';
 
   static String logsExportGenerated(String at) => 'Generated: $at';

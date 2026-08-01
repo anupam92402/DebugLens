@@ -37,9 +37,9 @@ typedef DebugLogObserver =
 /// ## Usage
 ///
 /// ```dart
-/// DebugLensLogger.instance.i('Login succeeded', name: 'auth');
-/// DebugLensLogger.instance.d('Fetched ${posts.length} posts', name: 'api');
-/// DebugLensLogger.instance.e('Charge failed', name: 'payment', error: e, stackTrace: s);
+/// DebugLensLogger().i('Login succeeded', name: 'auth');
+/// DebugLensLogger().d('Fetched ${posts.length} posts', name: 'api');
+/// DebugLensLogger().e('Charge failed', name: 'payment', error: e, stackTrace: s);
 /// ```
 ///
 /// `name` becomes the `[tag]` on the row and what the screen's search matches.
@@ -50,13 +50,13 @@ typedef DebugLogObserver =
 /// config, and turn it off when you already have a logger printing:
 ///
 /// ```dart
-/// DebugLensLogger.instance.printToConsole = kDebugMode; // or false
+/// DebugLensLogger().printToConsole = kDebugMode; // or false
 /// ```
 ///
 /// Size the buffer once at startup ([defaultMaxHistory] records otherwise):
 ///
 /// ```dart
-/// DebugLensLogger.instance.maxHistory = 5000;
+/// DebugLensLogger().maxHistory = 5000;
 /// ```
 ///
 /// Forward records elsewhere with [addLogObserver]. Extends [ChangeNotifier],
@@ -64,8 +64,14 @@ typedef DebugLogObserver =
 class DebugLensLogger extends ChangeNotifier {
   DebugLensLogger._internal();
 
-  /// Singleton accessor.
-  static final DebugLensLogger instance = DebugLensLogger._internal();
+  static final DebugLensLogger _instance = DebugLensLogger._internal();
+
+  /// Always the one logger — `DebugLensLogger()` constructs nothing, it hands
+  /// back the single instance the panel reads.
+  ///
+  /// Not something to hold and dispose: this is a [ChangeNotifier] the Logs
+  /// screen listens to, so disposing it would stop the panel updating.
+  factory DebugLensLogger() => _instance;
 
   /// Whether records are echoed to the console. They are stored and shown
   /// either way; a single call overrides this with `force: true`.
@@ -75,7 +81,7 @@ class DebugLensLogger extends ChangeNotifier {
   /// shows between builds:
   ///
   /// ```dart
-  /// DebugLensLogger.instance.printToConsole = kDebugMode; // or a flavor flag
+  /// DebugLensLogger().printToConsole = kDebugMode; // or a flavor flag
   /// ```
   bool printToConsole = true;
 

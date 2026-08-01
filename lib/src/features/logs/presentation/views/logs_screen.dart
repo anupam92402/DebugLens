@@ -74,13 +74,13 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   void _clear() {
-    DebugLensLogger.instance.clear();
+    DebugLensLogger().clear();
     DebugToast.show(context, DebugStrings.logsClearedToast);
   }
 
   @override
   Widget build(BuildContext context) {
-    final logger = DebugLensLogger.instance;
+    final logger = DebugLensLogger();
     return Scaffold(
       appBar: AppBar(
         title: const Text(DebugStrings.logsTitle),

@@ -23,7 +23,7 @@ class _NavigationScreenState extends State<NavigationScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tab = TabController(length: 2, vsync: this);
 
-  final ValueNotifier<bool> _hideInternal = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _hideInternal = ValueNotifier<bool>(true);
 
   @override
   void initState() {

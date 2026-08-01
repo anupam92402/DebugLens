@@ -28,6 +28,7 @@ class TesterAccessSheet extends StatelessWidget {
     final role = context.watch<DebugRoleController>();
     final granted = role.testerRoutes;
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: Column(

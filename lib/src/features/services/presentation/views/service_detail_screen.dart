@@ -10,6 +10,7 @@ import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/service_config_edit_dialog.dart';
 import '../widgets/service_config_view.dart';
+import '../widgets/service_config_value_dialog.dart';
 import '../widgets/service_entry_tile.dart';
 
 /// Shows one registered service. Read-only services render a flat,
@@ -402,6 +403,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
               editable: editor.overrideEnabled,
               filtered: _q.isNotEmpty,
               onEdit: _editEntry,
+              onView: (entry) => showConfigValueDialog(context, entry),
             ),
           ),
         ),

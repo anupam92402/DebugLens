@@ -24,6 +24,7 @@ class RoleSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final role = context.watch<DebugRoleController>();
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: Column(

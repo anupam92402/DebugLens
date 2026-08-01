@@ -29,7 +29,7 @@ class DebugLensDioInterceptor extends Interceptor {
   /// choice; the capture toggle is the user's runtime one, flipped from the
   /// Logs screen. The Network screen itself is unaffected either way.
   bool get _capturingLogs =>
-      DebugLensLogger.instance.isCapturing(DebugLogOrigin.network);
+      DebugLensLogger().isCapturing(DebugLogOrigin.network);
 
   /// RequestOptions identity → pending entry id, so the response/error can
   /// update the right entry.
@@ -146,7 +146,7 @@ class DebugLensDioInterceptor extends Interceptor {
     _store.recordNetwork(entry);
 
     if (settings.logToLogger && _capturingLogs) {
-      DebugLensLogger.instance.d(
+      DebugLensLogger().d(
         '${entry.methodLabel} ${entry.url}',
         name: 'network.${entry.methodLabel}',
       );
@@ -231,13 +231,13 @@ class DebugLensDioInterceptor extends Interceptor {
     if (settings.logToLogger && _capturingLogs) {
       final tag = 'network.${completed.methodLabel}';
       if (error != null) {
-        DebugLensLogger.instance.e(
+        DebugLensLogger().e(
           '${completed.methodLabel} ${statusCode ?? DebugConstants.emptyValue} '
           '${completed.url} (${durationMs ?? DebugConstants.unknownValue}ms): $error',
           name: tag,
         );
       } else {
-        DebugLensLogger.instance.d(
+        DebugLensLogger().d(
           '${completed.methodLabel} ${statusCode ?? DebugConstants.unknownValue} '
           '${completed.url} (${durationMs ?? DebugConstants.unknownValue}ms)',
           name: tag,

@@ -18,7 +18,7 @@ class LocaleCubit extends Cubit<AppLanguage> {
         'category': 'settings',
       },
     );
-    debugLog.i('Language switched to ${lang.name}', name: 'locale');
+    DebugLensLogger().i('Language switched to ${lang.name}', name: 'locale');
     emit(lang);
   }
 }

@@ -5,7 +5,7 @@ import '../../../shared/debug_strings.dart';
 /// the Logs screen's capture sheet.
 ///
 /// These are the sources DebugLens itself writes into the Logs feed. Records
-/// the host emits through `DebugLensLogger.instance.i/d/e` have no origin and
+/// the host emits through `DebugLensLogger().i/d/e` have no origin and
 /// are always captured — the host controls those at the call site.
 ///
 /// Muting an origin stops *new* records from it; rows already in the buffer
@@ -13,13 +13,19 @@ import '../../../shared/debug_strings.dart';
 enum DebugLogOrigin {
   network,
   bloc,
-  navigation;
+  navigation,
+  notifications,
+  services,
+  storage;
 
   /// Name shown in the capture sheet.
   String get label => switch (this) {
     DebugLogOrigin.network => DebugStrings.logsOriginNetwork,
     DebugLogOrigin.bloc => DebugStrings.logsOriginBloc,
     DebugLogOrigin.navigation => DebugStrings.logsOriginNavigation,
+    DebugLogOrigin.notifications => DebugStrings.logsOriginNotifications,
+    DebugLogOrigin.services => DebugStrings.logsOriginServices,
+    DebugLogOrigin.storage => DebugStrings.logsOriginStorage,
   };
 
   /// SharedPreferences key holding this origin's capture switch, so the user's
@@ -31,5 +37,8 @@ enum DebugLogOrigin {
     DebugLogOrigin.network => DebugStrings.logsOriginNetworkHint,
     DebugLogOrigin.bloc => DebugStrings.logsOriginBlocHint,
     DebugLogOrigin.navigation => DebugStrings.logsOriginNavigationHint,
+    DebugLogOrigin.notifications => DebugStrings.logsOriginNotificationsHint,
+    DebugLogOrigin.services => DebugStrings.logsOriginServicesHint,
+    DebugLogOrigin.storage => DebugStrings.logsOriginStorageHint,
   };
 }

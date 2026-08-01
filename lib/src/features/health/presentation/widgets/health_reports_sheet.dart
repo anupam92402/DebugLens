@@ -23,6 +23,7 @@ class HealthReportsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final reports = HealthCheckStore.instance.reports;
     return GlassSurface(
+      squareBottom: true,
       child: SafeArea(
         top: false,
         child: Column(

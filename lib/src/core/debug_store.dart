@@ -353,7 +353,7 @@ class DebugStore extends ChangeNotifier {
     notifyListeners();
 
     // Each notifies its own listeners.
-    DebugLensLogger.instance.clear();
+    DebugLensLogger().clear();
     DebugCrashStore.instance.clear();
     DebugAnalyticsStore.instance.clear();
     DebugTraceStore.instance.clear();

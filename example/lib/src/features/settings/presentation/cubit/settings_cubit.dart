@@ -42,7 +42,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    debugLog.i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
+    DebugLensLogger().i('Dark mode ${value ? 'on' : 'off'}', name: 'settings');
     emit(state.copyWith(darkMode: value));
   }
 
@@ -55,7 +55,10 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    debugLog.i('Push ${value ? 'enabled' : 'disabled'}', name: 'settings');
+    DebugLensLogger().i(
+      'Push ${value ? 'enabled' : 'disabled'}',
+      name: 'settings',
+    );
     emit(state.copyWith(pushEnabled: value));
   }
 
@@ -68,7 +71,10 @@ class SettingsCubit extends Cubit<SettingsState> {
         'category': 'settings',
       },
     );
-    debugLog.i('Analytics ${value ? 'enabled' : 'disabled'}', name: 'settings');
+    DebugLensLogger().i(
+      'Analytics ${value ? 'enabled' : 'disabled'}',
+      name: 'settings',
+    );
     emit(state.copyWith(analyticsEnabled: value));
   }
 }

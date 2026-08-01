@@ -19,7 +19,10 @@ Future<void> setupStorage() async {
     locator.registerSingleton<SharedPreferences>(prefs);
   }
   DebugLens.sharedPrefsSource = () => PrefsBridge.snapshot(prefs);
-  debugLog.i('Prefs ready · ${prefs.getKeys().length} keys', name: 'storage');
+  DebugLensLogger().i(
+    'Prefs ready · ${prefs.getKeys().length} keys',
+    name: 'storage',
+  );
 
   final db = AppDatabase();
   await db.seedIfEmpty();

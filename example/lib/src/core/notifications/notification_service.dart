@@ -79,7 +79,10 @@ class NotificationService {
         >()
         ?.requestPermissions(alert: true, badge: true, sound: true);
     _initialized = true;
-    debugLog.i('Local notifications initialised', name: 'notifications');
+    DebugLensLogger().i(
+      'Local notifications initialised',
+      name: 'notifications',
+    );
   }
 
   /// On tap, deep-link to the landing screen using the notification's payload.
@@ -91,7 +94,7 @@ class NotificationService {
         data = jsonDecode(raw) as Map<String, dynamic>;
       } catch (error, stack) {
         /// Non-JSON payload — nothing to route on, but worth surfacing.
-        debugLog.e(
+        DebugLensLogger().e(
           'Unreadable notification payload',
           name: 'notifications',
           error: error,
@@ -107,7 +110,7 @@ class NotificationService {
       source: 'local',
       tapped: true,
     );
-    debugLog.i(
+    DebugLensLogger().i(
       'Notification tapped · ${data['title'] ?? 'untitled'}',
       name: 'notifications',
     );
@@ -167,6 +170,9 @@ class NotificationService {
         );
       }
     });
-    debugLog.d('Dispatched $count local notifications', name: 'notifications');
+    DebugLensLogger().d(
+      'Dispatched $count local notifications',
+      name: 'notifications',
+    );
   }
 }

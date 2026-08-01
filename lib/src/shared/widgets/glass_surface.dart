@@ -11,10 +11,6 @@ class GlassSurface extends StatelessWidget {
   final Color? tint;
   final double radius;
   final double blur;
-
-  /// Rounds the top corners only, leaving the bottom square — for a surface
-  /// that sits flush against the bottom of the screen, where rounded bottom
-  /// corners would show the app behind them through the gap.
   final bool squareBottom;
 
   const GlassSurface({

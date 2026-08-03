@@ -10,40 +10,6 @@ teammate reproducing a bug, you on a phone that isn't plugged in. Every
 inspector is wired to your own app through a small seam, so DebugLens depends on
 none of your vendors and drops out cleanly when you remove it.
 
-## Screenshots
-
-| Dashboard | Network calls | Call detail |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_list.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_detail.png" width="240"> |
-
-| Logs | Capture switches | Bloc |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs_capture.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/bloc.png" width="240"> |
-
-| Notifications | Route events | Navigator stack |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/notifications.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_events.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_stack.png" width="240"> |
-
-| SharedPreferences | Database | Device & app |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_prefs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_database.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/device.png" width="240"> |
-
-| Analytics | Crashes | Traces |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_analytics.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_crashlytics.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_performance.png" width="240"> |
-
-| Remote config | Locale | Health report |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/remote_config.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/locale.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/health_report.png" width="240"> |
-
-| Settings | Bubble | Role swap |
-| :-: | :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/role_switch.png" width="240"> |
-
-| Custom error screen | Deep-links |
-| :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/custom_error_screen.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/deeplinks.png" width="240"> |
-
 ## Install
 
 ```yaml
@@ -62,6 +28,10 @@ MaterialApp(
   builder: (context, child) => DebugLens.wrap(child ?? const SizedBox.shrink()),
 );
 ```
+
+| Dashboard | Bubble |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
 
 Implementation: [debug_lens.dart](lib/debug_lens.dart) · Example:
 [app.dart](example/lib/src/app.dart)
@@ -97,13 +67,21 @@ Set it in `main`, before `wrap` first builds.
 
 ### Network
 
-Captures every Dio request and response — headers, bodies, status, duration —
-and keeps a per-endpoint call history for the session. A connectivity indicator
-in the AppBar shows the device's current transport.
+Every Dio request and response is captured in full: headers, body, status and
+duration, with no proxy or extra tooling attached to the device. Calls are
+grouped per endpoint into a running history, so a duplicate call firing off the
+same screen, a request repeating on an interval it shouldn't be polling on, or
+two taps racing to hit the same endpoint all surface as a visible pattern rather
+than a single log line. The connectivity indicator in the AppBar tells you
+upfront whether a stalled call is a transport problem or a backend one.
 
 ```dart
 dio.interceptors.add(DebugLensDioInterceptor());
 ```
+
+| Network calls | Call detail |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_list.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_detail.png" width="240"> |
 
 Implementation:
 [debug_lens_dio_interceptor.dart](lib/src/features/network/data/debug_lens_dio_interceptor.dart)
@@ -112,9 +90,13 @@ Implementation:
 
 ### Logs
 
-A level-tagged log feed you write to instead of `print`. Each source can be
-muted from the panel, so a chatty origin stops filling the feed without a code
-change.
+A single feed for everything the app says, replacing scattered `print` calls
+with one tagged timeline that lives on the device instead of a terminal. Each
+source, your own calls as well as DebugLens's own instrumentation, can be muted
+independently from the panel, so isolating one subsystem during a repro doesn't
+need a code change. Every push API (crash, analytics, trace, notification)
+mirrors into this same feed, so correlating an error against what led up to it
+is one list to scroll instead of four to cross-reference.
 
 ```dart
 DebugLensLogger().printToConsole = kDebugMode;
@@ -127,18 +109,28 @@ DebugLensLogger().e('Upload failed', name: 'media', error: e, stackTrace: s);
 reads, so there is no global to import and no instance to hold. Don't dispose it:
 it is a `ChangeNotifier` the Logs screen listens to.
 
+| Logs | Capture switches |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs_capture.png" width="240"> |
+
 Implementation:
 [debug_lens_logger.dart](lib/src/features/logs/data/debug_lens_logger.dart) ·
 Example: [app_log.dart](example/lib/src/core/logging/app_log.dart)
 
 ### Bloc
 
-Records every bloc and cubit lifecycle event — created, event received, state
-transition, error, closed. One line, and every bloc in the app is covered.
+Every bloc and cubit lifecycle event, created, event received, state
+transition, error, closed, is recorded the moment `Bloc.observer` is set, with
+no per-bloc wiring. An intermittent "the UI didn't update" report becomes a
+direct comparison instead of a guess: did the event reach the bloc, did the
+state actually change, or did the widget just not rebuild. A state that flips
+twice for one user action shows up here as two transitions back to back.
 
 ```dart
 Bloc.observer = DebugLensBlocObserver();
 ```
+
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/bloc.png" width="240">
 
 Implementation:
 [debug_lens_bloc_observer.dart](lib/src/features/bloc/data/debug_lens_bloc_observer.dart)
@@ -146,8 +138,12 @@ Implementation:
 
 ### Navigation
 
-A log of every route push, pop and replace, plus a live view of the navigator
-stack. Nested navigators get their own labelled stack.
+Records every route push, pop and replace, and keeps a live view of the
+navigator stack. A back button that closes the wrong screen, or a route
+pushed twice under a fast double-tap, shows up here as an actual sequence of
+events instead of something inferred from watching the screen. Nested
+navigators, a bottom-nav tab, a shell route, get their own labelled stack, so a
+leak in one tab's history is never confused with another's.
 
 ```dart
 // Root navigator — see Setup above.
@@ -157,6 +153,10 @@ navigatorObservers: [DebugLens.navigatorObserver],
 final observer = DebugLens.newNavigatorObserver(label: 'home');
 ```
 
+| Route events | Navigator stack |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_events.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_stack.png" width="240"> |
+
 Implementation:
 [debug_lens_navigator_observer.dart](lib/src/features/navigation/data/debug_lens_navigator_observer.dart)
 · Example:
@@ -164,9 +164,12 @@ Implementation:
 
 ### Storage
 
-Shows the app's SharedPreferences and its database tables. Both are read on
-demand through an adapter you supply, so DebugLens never holds a copy and never
-imports your storage package.
+Shows the app's SharedPreferences and its database tables, both read on demand
+through an adapter you supply, so DebugLens never holds a copy and never
+imports your storage package. A "stale value after the fix shipped" report
+becomes answerable on the device itself: is the flag actually persisted, did
+the migration run, is the row still there. What's on screen is what's on disk
+right now, not a snapshot from when the panel opened.
 
 ```dart
 DebugLens.sharedPrefsSource = () => [
@@ -177,6 +180,10 @@ DebugLens.sharedPrefsSource = () => [
 DebugLens.registerDatabase(MyDriftAdapter(db));
 ```
 
+| SharedPreferences | Database |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_prefs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_database.png" width="240"> |
+
 Implementation:
 [debug_shared_prefs_source.dart](lib/src/features/storage/data/debug_shared_prefs_source.dart),
 [debug_database_source.dart](lib/src/features/storage/data/debug_database_source.dart)
@@ -185,8 +192,11 @@ Implementation:
 
 ### Locale
 
-Renders the app's active string map so a missing or wrong translation is visible
-on the device. Read live on every build, so switching language updates it.
+Renders the app's currently active string map, so a missing key or an
+untranslated fallback is visible on the device instead of reported secondhand
+from a screenshot. It's read live on every build, so switching the app's
+language mid-session updates the screen immediately, turning a locale-switch
+bug into something reproducible in seconds rather than a restart per language.
 
 ```dart
 DebugLens.localeSource = () => DebugLensLocaleData(
@@ -195,14 +205,19 @@ DebugLens.localeSource = () => DebugLensLocaleData(
 );
 ```
 
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/locale.png" width="240">
+
 Implementation:
 [debug_locale_source.dart](lib/src/features/locale/data/debug_locale_source.dart)
 · Example: [service_locator.dart](example/lib/src/core/di/service_locator.dart)
 
 ### Notifications & deep-links
 
-Two tabs: the notifications your app shows or handles with their raw payloads,
-and the deep-links it opens, broken into scheme, host, path and query.
+Two tabs: every notification the app shows or handles, with its raw payload,
+and every deep-link it opens, broken into scheme, host, path and query. This is
+what turns "the push arrived but nothing happened" into a diagnosable case: did
+the payload look wrong, did the link parse into the route you expected, or did
+navigation just not follow through.
 
 ```dart
 DebugLens.recordNotification(
@@ -215,6 +230,10 @@ DebugLens.recordNotification(
 DebugLens.recordDeeplink(uri.toString(), source: 'os');
 ```
 
+| Notifications | Deep-links |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/notifications.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/deeplinks.png" width="240"> |
+
 Implementation:
 [notification_entry.dart](lib/src/features/notifications/domain/notification_entry.dart)
 · Example:
@@ -222,9 +241,11 @@ Implementation:
 
 ### Services
 
-Anything else your app talks to, as its own screen. Write an adapter when the
-source can be read back; push into one of the four built-ins below when it
-can't.
+A screen of your own for anything DebugLens doesn't already model. Write an
+adapter when the source can be read back on demand, a cache, a feature-flag
+client, a queue; push into one of the four built-ins below (remote config,
+crashes, analytics, traces) when it can't. Either way it's an inspector you
+define, not a fixed list DebugLens ships with.
 
 ```dart
 class CacheInspector extends DebugLensService {
@@ -248,9 +269,12 @@ Implementation:
 
 ### Remote config
 
-Share the values you fetched and override any of them on the device. DebugLens
-owns the override storage and the source/custom switch; overrides apply on the
-next app start.
+Shows every value fetched from your remote config provider and lets a device
+override any of them independently of what the backend actually sent. That's
+how a flag-gated bug gets reproduced without waiting on a config rollout or
+fighting the provider's own targeting rules: the override applies locally on
+the next launch, and the resolved getters (`getBool`, `getInt`, ...) always
+reflect it.
 
 ```dart
 await DebugLens.instance.setRemoteConfigData({
@@ -260,6 +284,8 @@ await DebugLens.instance.setRemoteConfigData({
 final timeout = DebugLens.instance.getInt('api_timeout_seconds');
 ```
 
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/remote_config.png" width="240">
+
 Implementation:
 [debug_config_store.dart](lib/src/features/services/data/debug_config_store.dart)
 · Example:
@@ -267,8 +293,11 @@ Implementation:
 
 ### Crash reports
 
-Crash reporters are write-only, so hand DebugLens the same payload you send
-upstream. The report stays on the device that produced it, stack trace included.
+Crash reporters are write-only by design, so DebugLens keeps the same payload
+you send upstream, stack trace included, right on the device that produced it.
+Reproducing a crash and reading its stack trace no longer waits on Crashlytics
+to finish processing the event, or on a tester remembering exactly what they
+tapped.
 
 ```dart
 DebugLens.instance.initCrashReporting();
@@ -278,6 +307,8 @@ DebugLens.instance.recordCrash(
 );
 ```
 
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_crashlytics.png" width="240">
+
 Implementation:
 [debug_crash_store.dart](lib/src/features/services/data/debug_crash_store.dart)
 · Example:
@@ -285,8 +316,10 @@ Implementation:
 
 ### Analytics
 
-The events you log, as you log them. The name is the row; everything else goes
-in the parameter map and shows when the row is expanded.
+Every event you log appears as its own row the moment you call it, with its
+parameters visible on expand. It answers a specific question during a manual
+test pass: did this action actually fire the event you expect, with the fields
+you expect, without waiting hours for it to land in a dashboard.
 
 ```dart
 DebugLens.instance.initAnalytics();
@@ -297,20 +330,26 @@ DebugLens.instance.recordAnalyticsEvent(
 );
 ```
 
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_analytics.png" width="240">
+
 Implementation:
 [debug_analytics_store.dart](lib/src/features/services/data/debug_analytics_store.dart)
 · Example: [mock_analytics.dart](example/lib/src/core/firebase/mock_analytics.dart)
 
 ### Performance
 
-Finished traces with their durations. You keep the running trace — the stopwatch
-and its attributes — and push once when it stops.
+Finished traces show up with their duration and whatever attributes you
+attached when the trace stopped. Since you own the running stopwatch, this is
+how you eyeball whether a screen's load time regressed on this exact device
+and build, without a performance-monitoring dashboard catching up later.
 
 ```dart
 DebugLens.instance.initPerformance();
 
 DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);
 ```
+
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_performance.png" width="240">
 
 Implementation:
 [debug_trace_store.dart](lib/src/features/services/data/debug_trace_store.dart)
@@ -319,16 +358,23 @@ Implementation:
 
 ### Device & app
 
-Model, manufacturer, OS, screen metrics and the active network transport,
-gathered once per run. No wiring — it reads the platform directly.
+Model, manufacturer, OS version, screen metrics and the current network
+transport, gathered once per run with no wiring required. It exists for the
+one question every bug report needs answered first: what device, what OS, what
+build was this actually seen on.
 
 Implementation:
 [device_info_source.dart](lib/src/features/device/data/device_info_source.dart)
 
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/device.png" width="240">
+
 ### App version
 
-Override the version string your app reports, so you can reproduce
-version-gated behaviour without a rebuild. Applies on the next app start.
+Overrides the version string the app reports, so version-gated behaviour, a
+feature flag tied to a minimum version, a forced-update check, can be
+reproduced on a device without rebuilding at that version. The override
+applies from the next app start, and reading it back is the same call your app
+already uses to display or report its version.
 
 ```dart
 await DebugLens.instance.setAppVersion(packageInfo.version);
@@ -343,13 +389,16 @@ Implementation:
 
 ### Custom error screen
 
-Replaces Flutter's red error box with a readable one showing the exception and
-stack trace, each copyable straight into a share sheet. You install it, so your
-own error handling stays in charge.
+Replaces Flutter's red error box with a readable one built for handing off: the
+exception and its full stack trace are both there, and both copyable straight
+into a share sheet. A tester who hits a build error can now send you the actual
+stack trace instead of a screenshot of a wall of red text.
 
 ```dart
 ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 ```
+
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/custom_error_screen.png" width="240">
 
 Implementation:
 [custom_error_screen.dart](lib/src/features/error/presentation/views/custom_error_screen.dart)
@@ -357,8 +406,13 @@ Implementation:
 
 ### Health check
 
-Start a window from Settings, reproduce the problem, stop it, and get a report
-of every crash and error log in between. No wiring — it reads the feeds above.
+Start a window from Settings, reproduce the problem, stop it, and get back
+every crash and error log recorded in between as a single report. It exists
+for the reports that start with "something went wrong somewhere in the last
+few minutes": instead of asking someone to describe what happened, you get the
+log.
+
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/health_report.png" width="240">
 
 Implementation:
 [health_check_store.dart](lib/src/features/health/data/health_check_store.dart)
@@ -366,8 +420,10 @@ Implementation:
 ### Roles
 
 Developer mode sees every screen; tester mode sees only what a developer has
-granted. Tap the role chip beside the dashboard title to switch, and configure
-the grants from Settings.
+explicitly granted, configured from Settings. This is what makes it safe to
+hand the panel to a QA build: a tester can't wander into Remote config and edit
+values meant for someone else, and what they can see is a decision made in
+code, not whatever they discover by tapping around.
 
 Both the starting role and what a tester may open can be set from code, so a QA
 build arrives configured instead of needing boxes ticked on the device:
@@ -389,6 +445,12 @@ first builds.
 
 `DebugScreen` covers every panel screen except Settings, which can't be granted:
 it is where access is configured, so a tester with it could widen their own.
+
+| Settings | Role picker | Tester access |
+| :-: | :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_role.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_tester_access.png" width="240"> |
+
+<img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/role_switch.png" width="240">
 
 Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 

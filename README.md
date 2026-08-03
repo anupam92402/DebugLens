@@ -18,20 +18,6 @@ dependencies:
   debug_lens: ^1.0.0
 ```
 
-### Dependencies
-
-| Package | Used for |
-| --- | --- |
-| [provider](https://pub.dev/packages/provider) | State management behind the panel itself — the Settings, Network and dashboard controllers. |
-| [dio](https://pub.dev/packages/dio) | Base type for `DebugLensDioInterceptor` and the cURL export on a call. |
-| [bloc](https://pub.dev/packages/bloc) | Base type for `DebugLensBlocObserver`. |
-| [shared_preferences](https://pub.dev/packages/shared_preferences) | Persists DebugLens's own on-device state (role, limits, capture switches, bubble position) and backs the default prefs source. |
-| [share_plus](https://pub.dev/packages/share_plus) | The share sheet behind every export — logs, crash and health reports, a single call's cURL. |
-| [path_provider](https://pub.dev/packages/path_provider) | Writes the temp file `share_plus` hands off when exporting a report. |
-| [connectivity_plus](https://pub.dev/packages/connectivity_plus) | The Network screen's connectivity indicator and the Device & app screen's transport reading. |
-| [device_info_plus](https://pub.dev/packages/device_info_plus) | The Device & app screen's model, manufacturer and OS facts. |
-| [package_info_plus](https://pub.dev/packages/package_info_plus) | The Device & app screen's build and version facts. |
-
 ## Setup
 
 Wrap your app and attach the navigator observer. Everything else is opt-in, one
@@ -516,26 +502,6 @@ it is where access is configured, so a tester with it could widen their own.
 Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 
 ---
-
-## Contributing
-
-Issues and pull requests are welcome at
-[github.com/anupam92402/DebugLens](https://github.com/anupam92402/DebugLens).
-
-### Conventions worth knowing
-
-* User-facing copy lives in
-  [debug_strings.dart](lib/src/shared/debug_strings.dart); non-display constants
-  and preference keys live in
-  [debug_constants.dart](lib/src/shared/debug_constants.dart).
-* Features follow `data/`, `domain/`, `presentation/views/`,
-  `presentation/widgets/`. Screens go in `views/`, everything else in
-  `widgets/`.
-* Reuse the shared widget kit in
-  [shared/widgets](lib/src/shared/widgets) before adding a new widget — most
-  layouts already have one.
-* The panel keeps no copy of data it can ask the host for. If your inspector can
-  read live, give it a source rather than a store.
 
 ## Credits
 

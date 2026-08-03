@@ -145,10 +145,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             const Text(DebugStrings.dashboardTitle),
             const SizedBox(width: 8),
-            // Hides itself when the tester role is switched off.
             RoleSwapButton(key: _roleKey, onSwap: () => _toggleRole(context)),
           ],
         ),

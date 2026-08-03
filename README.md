@@ -79,9 +79,9 @@ upfront whether a stalled call is a transport problem or a backend one.
 dio.interceptors.add(DebugLensDioInterceptor());
 ```
 
-| Network calls | Call detail |
-| :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_list.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_detail.png" width="240"> |
+| Network calls | Call detail | Per-endpoint history | Call timeline |
+| :-: | :-: | :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_list.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_detail.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_history.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_history_detail.png" width="240"> |
 
 Implementation:
 [debug_lens_dio_interceptor.dart](lib/src/features/network/data/debug_lens_dio_interceptor.dart)

@@ -17,12 +17,27 @@ dependencies:
   debug_lens: ^1.0.0
 ```
 
+### Dependencies
+
+| Package | Used for |
+| --- | --- |
+| [provider](https://pub.dev/packages/provider) | State management behind the panel itself — the Settings, Network and dashboard controllers. |
+| [dio](https://pub.dev/packages/dio) | Base type for `DebugLensDioInterceptor` and the cURL export on a call. |
+| [bloc](https://pub.dev/packages/bloc) | Base type for `DebugLensBlocObserver`. |
+| [shared_preferences](https://pub.dev/packages/shared_preferences) | Persists DebugLens's own on-device state (role, limits, capture switches, bubble position) and backs the default prefs source. |
+| [share_plus](https://pub.dev/packages/share_plus) | The share sheet behind every export — logs, crash and health reports, a single call's cURL. |
+| [path_provider](https://pub.dev/packages/path_provider) | Writes the temp file `share_plus` hands off when exporting a report. |
+| [connectivity_plus](https://pub.dev/packages/connectivity_plus) | The Network screen's connectivity indicator and the Device & app screen's transport reading. |
+| [device_info_plus](https://pub.dev/packages/device_info_plus) | The Device & app screen's model, manufacturer and OS facts. |
+| [package_info_plus](https://pub.dev/packages/package_info_plus) | The Device & app screen's build and version facts. |
+
 ## Setup
 
 Wrap your app and attach the navigator observer. Everything else is opt-in, one
 inspector at a time.
 
 ```dart
+// The observer feeds Navigation; wrap mounts the bubble and the panel itself.
 MaterialApp(
   navigatorObservers: [DebugLens.navigatorObserver],
   builder: (context, child) => DebugLens.wrap(child ?? const SizedBox.shrink()),
@@ -33,7 +48,7 @@ MaterialApp(
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
 
-Implementation: [debug_lens.dart](lib/debug_lens.dart) · Example:
+Implementation: [debug_lens.dart](lib/debug_lens.dart) · Integration:
 [app.dart](example/lib/src/app.dart)
 
 ### Shipping it
@@ -44,6 +59,7 @@ call:
 
 ```dart
 void main() {
+  // The one flag that decides whether any capture path runs at all.
   DebugLens.debugLensEnabled = !kReleaseMode;   // or: flavor != Flavor.production
   runApp(const MyApp());
 }
@@ -76,6 +92,7 @@ than a single log line. The connectivity indicator in the AppBar tells you
 upfront whether a stalled call is a transport problem or a backend one.
 
 ```dart
+// Captures every request/response this Dio instance makes.
 dio.interceptors.add(DebugLensDioInterceptor());
 ```
 
@@ -85,7 +102,7 @@ dio.interceptors.add(DebugLensDioInterceptor());
 
 Implementation:
 [debug_lens_dio_interceptor.dart](lib/src/features/network/data/debug_lens_dio_interceptor.dart)
-· Example:
+· Integration:
 [api_service.dart](example/lib/src/features/network_demo/data/api_service.dart)
 
 ### Logs
@@ -99,6 +116,7 @@ mirrors into this same feed, so correlating an error against what led up to it
 is one list to scroll instead of four to cross-reference.
 
 ```dart
+// Mute the terminal echo once you trust the panel; records still land here.
 DebugLensLogger().printToConsole = kDebugMode;
 
 DebugLensLogger().i('Signed in', name: 'auth');
@@ -109,13 +127,44 @@ DebugLensLogger().e('Upload failed', name: 'media', error: e, stackTrace: s);
 reads, so there is no global to import and no instance to hold. Don't dispose it:
 it is a `ChangeNotifier` the Logs screen listens to.
 
+#### Retention limits
+
+Every captured feed, logs included, keeps a fixed number of records before the
+oldest ones drop, so a long session doesn't hold an unbounded amount of bodies
+and stack traces in memory. `DebugLensLimits` sets these per feed in one
+object; a feed left `null` keeps its shipped default.
+
+```dart
+// Seeds the buffer size; a tester can still raise or lower it from Settings.
+DebugLens.initialLimits = const DebugLensLimits(logs: 5000, network: 1000);
+```
+
+| Feed | Default | Field |
+| --- | :-: | --- |
+| Network | 250 | `network` |
+| Logs | 1000 | `logs` |
+| Notifications | 200 | `notifications` |
+| Deep-links | 200 | `deeplinks` |
+| Bloc | 200 | `bloc` |
+| Navigation | 500 | `navigation` |
+| Crashes | 100 | `crashes` |
+| Analytics | 100 | `analytics` |
+| Traces | 100 | `traces` |
+
+Every field accepts 50–5000; a value outside that range is ignored and the
+default applies. Like the role and its grants, this seeds the **first launch
+only** — a limit edited from Settings afterwards wins from then on.
+
+Implementation:
+[debug_lens_limits.dart](lib/src/features/settings/domain/debug_lens_limits.dart)
+
 | Logs | Capture switches |
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs_capture.png" width="240"> |
 
 Implementation:
 [debug_lens_logger.dart](lib/src/features/logs/data/debug_lens_logger.dart) ·
-Example: [app_log.dart](example/lib/src/core/logging/app_log.dart)
+Integration: [app_log.dart](example/lib/src/core/logging/app_log.dart)
 
 ### Bloc
 
@@ -127,6 +176,7 @@ state actually change, or did the widget just not rebuild. A state that flips
 twice for one user action shows up here as two transitions back to back.
 
 ```dart
+// One line covers every bloc and cubit in the app.
 Bloc.observer = DebugLensBlocObserver();
 ```
 
@@ -134,7 +184,7 @@ Bloc.observer = DebugLensBlocObserver();
 
 Implementation:
 [debug_lens_bloc_observer.dart](lib/src/features/bloc/data/debug_lens_bloc_observer.dart)
-· Example: [main.dart](example/lib/main.dart)
+· Integration: [main.dart](example/lib/main.dart)
 
 ### Navigation
 
@@ -159,7 +209,7 @@ final observer = DebugLens.newNavigatorObserver(label: 'home');
 
 Implementation:
 [debug_lens_navigator_observer.dart](lib/src/features/navigation/data/debug_lens_navigator_observer.dart)
-· Example:
+· Integration:
 [tab_navigator.dart](example/lib/src/features/shell/presentation/widgets/tab_navigator.dart)
 
 ### Storage
@@ -172,6 +222,7 @@ the migration run, is the row still there. What's on screen is what's on disk
 right now, not a snapshot from when the panel opened.
 
 ```dart
+// Called on demand, so this always reflects what's on disk right now.
 DebugLens.sharedPrefsSource = () => [
   for (final key in prefs.getKeys())
     DebugLensPrefEntry(key: key, value: '${prefs.get(key)}'),
@@ -187,7 +238,7 @@ DebugLens.registerDatabase(MyDriftAdapter(db));
 Implementation:
 [debug_shared_prefs_source.dart](lib/src/features/storage/data/debug_shared_prefs_source.dart),
 [debug_database_source.dart](lib/src/features/storage/data/debug_database_source.dart)
-· Example: [prefs_bridge.dart](example/lib/src/core/storage/prefs_bridge.dart),
+· Integration: [prefs_bridge.dart](example/lib/src/core/storage/prefs_bridge.dart),
 [drift_debug_lens_adapter.dart](example/lib/src/core/storage/drift_debug_lens_adapter.dart)
 
 ### Locale
@@ -199,6 +250,7 @@ language mid-session updates the screen immediately, turning a locale-switch
 bug into something reproducible in seconds rather than a restart per language.
 
 ```dart
+// Read live on every build, so a language switch updates the screen instantly.
 DebugLens.localeSource = () => DebugLensLocaleData(
   entries: currentLangMap,
   label: 'English',
@@ -209,7 +261,7 @@ DebugLens.localeSource = () => DebugLensLocaleData(
 
 Implementation:
 [debug_locale_source.dart](lib/src/features/locale/data/debug_locale_source.dart)
-· Example: [service_locator.dart](example/lib/src/core/di/service_locator.dart)
+· Integration: [service_locator.dart](example/lib/src/core/di/service_locator.dart)
 
 ### Notifications & deep-links
 
@@ -220,6 +272,7 @@ the payload look wrong, did the link parse into the route you expected, or did
 navigation just not follow through.
 
 ```dart
+// Call on display and again on tap, so both show up as separate entries.
 DebugLens.recordNotification(
   title: message.title,
   body: message.body,
@@ -236,7 +289,7 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 Implementation:
 [notification_entry.dart](lib/src/features/notifications/domain/notification_entry.dart)
-· Example:
+· Integration:
 [notification_service.dart](example/lib/src/core/notifications/notification_service.dart)
 
 ### Services
@@ -248,6 +301,7 @@ crashes, analytics, traces) when it can't. Either way it's an inspector you
 define, not a fixed list DebugLens ships with.
 
 ```dart
+// load() is called on demand, not cached, so it's always the live source.
 class CacheInspector extends DebugLensService {
   @override
   String get name => 'API cache';
@@ -264,7 +318,7 @@ DebugLens.registerService(CacheInspector());
 
 Implementation:
 [debug_service_source.dart](lib/src/features/services/data/debug_service_source.dart)
-· Example:
+· Integration:
 [mock_firebase.dart](example/lib/src/core/firebase/mock_firebase.dart)
 
 ### Remote config
@@ -277,6 +331,7 @@ the next launch, and the resolved getters (`getBool`, `getInt`, ...) always
 reflect it.
 
 ```dart
+// Await once at startup — this loads any override saved on a previous run.
 await DebugLens.instance.setRemoteConfigData({
   for (final e in firebase.getAll().entries) e.key: e.value.asString(),
 }, sourceLabel: 'Firebase');
@@ -288,7 +343,7 @@ final timeout = DebugLens.instance.getInt('api_timeout_seconds');
 
 Implementation:
 [debug_config_store.dart](lib/src/features/services/data/debug_config_store.dart)
-· Example:
+· Integration:
 [mock_remote_config.dart](example/lib/src/core/firebase/mock_remote_config.dart)
 
 ### Crash reports
@@ -300,6 +355,7 @@ to finish processing the event, or on a tester remembering exactly what they
 tapped.
 
 ```dart
+// Hand it the exact payload your crash reporter sends upstream.
 DebugLens.instance.initCrashReporting();
 
 DebugLens.instance.recordCrash(
@@ -311,7 +367,7 @@ DebugLens.instance.recordCrash(
 
 Implementation:
 [debug_crash_store.dart](lib/src/features/services/data/debug_crash_store.dart)
-· Example:
+· Integration:
 [mock_crashlytics.dart](example/lib/src/core/firebase/mock_crashlytics.dart)
 
 ### Analytics
@@ -322,6 +378,7 @@ test pass: did this action actually fire the event you expect, with the fields
 you expect, without waiting hours for it to land in a dashboard.
 
 ```dart
+// The name becomes the row; parameters show when it's expanded.
 DebugLens.instance.initAnalytics();
 
 DebugLens.instance.recordAnalyticsEvent(
@@ -334,7 +391,7 @@ DebugLens.instance.recordAnalyticsEvent(
 
 Implementation:
 [debug_analytics_store.dart](lib/src/features/services/data/debug_analytics_store.dart)
-· Example: [mock_analytics.dart](example/lib/src/core/firebase/mock_analytics.dart)
+· Integration: [mock_analytics.dart](example/lib/src/core/firebase/mock_analytics.dart)
 
 ### Performance
 
@@ -344,6 +401,7 @@ how you eyeball whether a screen's load time regressed on this exact device
 and build, without a performance-monitoring dashboard catching up later.
 
 ```dart
+// You own the stopwatch; push once when the trace stops.
 DebugLens.instance.initPerformance();
 
 DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);
@@ -353,7 +411,7 @@ DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);
 
 Implementation:
 [debug_trace_store.dart](lib/src/features/services/data/debug_trace_store.dart)
-· Example:
+· Integration:
 [mock_performance.dart](example/lib/src/core/firebase/mock_performance.dart)
 
 ### Device & app
@@ -377,6 +435,7 @@ applies from the next app start, and reading it back is the same call your app
 already uses to display or report its version.
 
 ```dart
+// Await once at startup — this loads any override saved on a previous run.
 await DebugLens.instance.setAppVersion(packageInfo.version);
 
 // Read it back wherever the app shows or reports its version.
@@ -385,7 +444,7 @@ Text(DebugLens.instance.appVersion);
 
 Implementation:
 [app_version_store.dart](lib/src/features/settings/data/app_version_store.dart)
-· Example: [main.dart](example/lib/main.dart)
+· Integration: [main.dart](example/lib/main.dart)
 
 ### Custom error screen
 
@@ -395,6 +454,7 @@ into a share sheet. A tester who hits a build error can now send you the actual
 stack trace instead of a screenshot of a wall of red text.
 
 ```dart
+// Replaces Flutter's default red error box wherever a widget fails to build.
 ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 ```
 
@@ -402,7 +462,7 @@ ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 
 Implementation:
 [custom_error_screen.dart](lib/src/features/error/presentation/views/custom_error_screen.dart)
-· Example: [main.dart](example/lib/main.dart)
+· Integration: [main.dart](example/lib/main.dart)
 
 ### Health check
 

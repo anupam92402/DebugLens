@@ -1,9 +1,10 @@
 # DebugLens
 
-An in-app debugging overlay for Flutter. A draggable bubble opens a panel that
-shows what your app is actually doing — network calls, logs, bloc transitions,
-navigation, storage, device facts and your backend SDKs — on the device, with no
-console attached and no laptop in the room.
+An on-device debug panel for Flutter. A draggable bubble opens a view of what
+your app is actually doing — network calls, logs, bloc transitions, navigation,
+storage and device facts — plus whatever you push in from your own crash
+reporter, analytics or remote config, with no console attached and no laptop
+in the room.
 
 It is built for the people who don't have your IDE open: QA on a test build, a
 teammate reproducing a bug, you on a phone that isn't plugged in. Every
@@ -520,31 +521,6 @@ Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 
 Issues and pull requests are welcome at
 [github.com/anupam92402/DebugLens](https://github.com/anupam92402/DebugLens).
-
-### Before you open a PR
-
-* **Open an issue first** for anything beyond a bug fix. A new inspector or a
-  change to a public API is worth agreeing on before it is written.
-* **Branch from `master`** and keep the branch to one concern. A PR that fixes a
-  bug and renames three files is two PRs.
-* **`flutter analyze` must be clean** and `dart format .` must leave no diff.
-  Both run on the package and on `example/`.
-* **Try it in the example app.** `cd example && flutter run`. If your change has
-  no visible effect there, say in the PR how you verified it.
-
-### What a good PR looks like
-
-* **A title that says what changed**, not which files moved — "cap analytics
-  events at the configured limit", not "update store".
-* **A description that explains why**, and how you tested it. Screenshots for
-  anything visual; the panel is a UI.
-* **No new dependency** without a note on why the existing ones don't cover it.
-  DebugLens stays vendor-neutral: it must not import Firebase, Sentry, or any
-  other SDK a host might swap out.
-* **Comments that explain the reasoning**, not the syntax. Match the density of
-  the file you are editing.
-* **A CHANGELOG entry** under an `## Unreleased` heading for anything a user
-  would notice.
 
 ### Conventions worth knowing
 

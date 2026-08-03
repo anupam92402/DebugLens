@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0
+## 0.0.1
 
 First public release. DebugLens is an in-app debugging overlay: a draggable
 bubble opens a panel that inspects what your app is doing, on the device, with

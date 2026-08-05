@@ -15,7 +15,7 @@ none of your vendors and drops out cleanly when you remove it.
 
 ```yaml
 dependencies:
-  debug_lens: ^1.0.0
+  debug_lens: ^0.0.1
 ```
 
 ## Setup
@@ -34,9 +34,6 @@ MaterialApp(
 | Dashboard | Bubble |
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
-
-Implementation: [debug_lens.dart](lib/debug_lens.dart) · Integration:
-[main.dart](example/lib/main.dart)
 
 ### Shipping it
 
@@ -86,11 +83,6 @@ dio.interceptors.add(DebugLensDioInterceptor());
 | Network calls | Call detail | Per-endpoint history | Call timeline |
 | :-: | :-: | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_list.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_detail.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_history.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/network_history_detail.png" width="240"> |
-
-Implementation:
-[debug_lens_dio_interceptor.dart](lib/src/features/network/data/debug_lens_dio_interceptor.dart)
-· Integration:
-[api_service.dart](example/lib/src/features/network_demo/data/api_service.dart)
 
 ### Logs
 
@@ -142,16 +134,9 @@ Every field accepts 50–5000; a value outside that range is ignored and the
 default applies. Like the role and its grants, this seeds the **first launch
 only** — a limit edited from Settings afterwards wins from then on.
 
-Implementation:
-[debug_lens_limits.dart](lib/src/features/settings/domain/debug_lens_limits.dart)
-
 | Logs | Capture switches |
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/logs_capture.png" width="240"> |
-
-Implementation:
-[debug_lens_logger.dart](lib/src/features/logs/data/debug_lens_logger.dart) ·
-Integration: [app_log.dart](example/lib/src/core/logging/app_log.dart)
 
 ### Bloc
 
@@ -168,10 +153,6 @@ Bloc.observer = DebugLensBlocObserver();
 ```
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/bloc.png" width="240">
-
-Implementation:
-[debug_lens_bloc_observer.dart](lib/src/features/bloc/data/debug_lens_bloc_observer.dart)
-· Integration: [main.dart](example/lib/main.dart)
 
 ### Navigation
 
@@ -193,11 +174,6 @@ final observer = DebugLens.newNavigatorObserver(label: 'home');
 | Route events | Navigator stack |
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_events.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/navigation_stack.png" width="240"> |
-
-Implementation:
-[debug_lens_navigator_observer.dart](lib/src/features/navigation/data/debug_lens_navigator_observer.dart)
-· Integration:
-[tab_navigator.dart](example/lib/src/features/shell/presentation/widgets/tab_navigator.dart)
 
 ### Storage
 
@@ -222,12 +198,6 @@ DebugLens.registerDatabase(MyDriftAdapter(db));
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_prefs.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/storage_database.png" width="240"> |
 
-Implementation:
-[debug_shared_prefs_source.dart](lib/src/features/storage/data/debug_shared_prefs_source.dart),
-[debug_database_source.dart](lib/src/features/storage/data/debug_database_source.dart)
-· Integration: [prefs_bridge.dart](example/lib/src/core/storage/prefs_bridge.dart),
-[drift_debug_lens_adapter.dart](example/lib/src/core/storage/drift_debug_lens_adapter.dart)
-
 ### Locale
 
 Renders the app's currently active string map, so a missing key or an
@@ -245,10 +215,6 @@ DebugLens.localeSource = () => DebugLensLocaleData(
 ```
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/locale.png" width="240">
-
-Implementation:
-[debug_locale_source.dart](lib/src/features/locale/data/debug_locale_source.dart)
-· Integration: [service_locator.dart](example/lib/src/core/di/service_locator.dart)
 
 ### Notifications & deep-links
 
@@ -274,11 +240,6 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 | :-: | :-: |
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/notifications.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/deeplinks.png" width="240"> |
 
-Implementation:
-[notification_entry.dart](lib/src/features/notifications/domain/notification_entry.dart)
-· Integration:
-[notification_service.dart](example/lib/src/core/notifications/notification_service.dart)
-
 ### Services
 
 A screen of your own for anything DebugLens doesn't already model. Write an
@@ -303,11 +264,6 @@ class CacheInspector extends DebugLensService {
 DebugLens.registerService(CacheInspector());
 ```
 
-Implementation:
-[debug_service_source.dart](lib/src/features/services/data/debug_service_source.dart)
-· Integration:
-[mock_firebase.dart](example/lib/src/core/firebase/mock_firebase.dart)
-
 ### Remote config
 
 Shows every value fetched from your remote config provider and lets a device
@@ -328,11 +284,6 @@ final timeout = DebugLens.instance.getInt('api_timeout_seconds');
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/remote_config.png" width="240">
 
-Implementation:
-[debug_config_store.dart](lib/src/features/services/data/debug_config_store.dart)
-· Integration:
-[mock_remote_config.dart](example/lib/src/core/firebase/mock_remote_config.dart)
-
 ### Crash reports
 
 Crash reporters are write-only by design, so DebugLens keeps the same payload
@@ -351,11 +302,6 @@ DebugLens.instance.recordCrash(
 ```
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_crashlytics.png" width="240">
-
-Implementation:
-[debug_crash_store.dart](lib/src/features/services/data/debug_crash_store.dart)
-· Integration:
-[mock_crashlytics.dart](example/lib/src/core/firebase/mock_crashlytics.dart)
 
 ### Analytics
 
@@ -376,10 +322,6 @@ DebugLens.instance.recordAnalyticsEvent(
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_analytics.png" width="240">
 
-Implementation:
-[debug_analytics_store.dart](lib/src/features/services/data/debug_analytics_store.dart)
-· Integration: [mock_analytics.dart](example/lib/src/core/firebase/mock_analytics.dart)
-
 ### Performance
 
 Finished traces show up with their duration and whatever attributes you
@@ -396,20 +338,12 @@ DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/services_performance.png" width="240">
 
-Implementation:
-[debug_trace_store.dart](lib/src/features/services/data/debug_trace_store.dart)
-· Integration:
-[mock_performance.dart](example/lib/src/core/firebase/mock_performance.dart)
-
 ### Device & app
 
 Model, manufacturer, OS version, screen metrics and the current network
 transport, gathered once per run with no wiring required. It exists for the
 one question every bug report needs answered first: what device, what OS, what
 build was this actually seen on.
-
-Implementation:
-[device_info_source.dart](lib/src/features/device/data/device_info_source.dart)
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/device.png" width="240">
 
@@ -429,10 +363,6 @@ await DebugLens.instance.setAppVersion(packageInfo.version);
 Text(DebugLens.instance.appVersion);
 ```
 
-Implementation:
-[app_version_store.dart](lib/src/features/settings/data/app_version_store.dart)
-· Integration: [main.dart](example/lib/main.dart)
-
 ### Custom error screen
 
 Replaces Flutter's red error box with a readable one built for handing off: the
@@ -447,10 +377,6 @@ ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/custom_error_screen.png" width="240">
 
-Implementation:
-[custom_error_screen.dart](lib/src/features/error/presentation/views/custom_error_screen.dart)
-· Integration: [main.dart](example/lib/main.dart)
-
 ### Health check
 
 Start a window from Settings, reproduce the problem, stop it, and get back
@@ -460,9 +386,6 @@ few minutes": instead of asking someone to describe what happened, you get the
 log.
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/health_report.png" width="240">
-
-Implementation:
-[health_check_store.dart](lib/src/features/health/data/health_check_store.dart)
 
 ### Roles
 
@@ -498,8 +421,6 @@ it is where access is configured, so a tester with it could widen their own.
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_role.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_tester_access.png" width="240"> |
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/role_switch.png" width="240">
-
-Implementation: [debug_role.dart](lib/src/core/debug_role.dart)
 
 ---
 

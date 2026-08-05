@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.2
+
+* Updated and simplified the README.
+* Updated package dependencies.
+* Updated the example app.
+
+
 ## 0.0.1
 
 First public release. DebugLens is an in-app debugging overlay: a draggable

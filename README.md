@@ -17,7 +17,7 @@ is saved anywhere but the device.
 
 ```yaml
 dependencies:
-  debug_lens: ^0.0.1
+  debug_lens: ^0.0.2
 ```
 
 | Dashboard | Bubble |

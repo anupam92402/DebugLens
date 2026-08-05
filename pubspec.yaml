@@ -2,7 +2,7 @@ name: debug_lens
 description: >-
   An on-device debug panel for Flutter: network calls, logs, bloc/navigation
   events, storage, plus your own crash, analytics and remote-config data.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/anupam92402/DebugLens
 repository: https://github.com/anupam92402/DebugLens
 issue_tracker: https://github.com/anupam92402/DebugLens/issues

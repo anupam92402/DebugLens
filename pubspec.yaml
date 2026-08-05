@@ -30,14 +30,14 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  share_plus: ^12.0.1
+  share_plus: ^13.3.0
   path_provider: ^2.1.5
-  bloc: ^8.1.4
+  bloc: ^9.2.1
   dio: ^5.4.0
-  connectivity_plus: ^4.0.2
+  connectivity_plus: ^7.3.1
   shared_preferences: ^2.3.2
-  device_info_plus: ^12.4.0
-  package_info_plus: ^9.0.1
+  device_info_plus: ^13.2.0
+  package_info_plus: ^10.2.1
 
 dev_dependencies:
   flutter_test:

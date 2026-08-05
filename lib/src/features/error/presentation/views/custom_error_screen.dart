@@ -15,8 +15,11 @@ import '../../../../shared/widgets/debug_widgets.dart';
 /// ```
 
 class CustomErrorScreen extends StatelessWidget {
+  /// The build failure to render — the same object Flutter's own
+  /// `ErrorWidget.builder` receives.
   final FlutterErrorDetails details;
 
+  /// Wraps [details] for display. Install via `ErrorWidget.builder`.
   const CustomErrorScreen({super.key, required this.details});
 
   String get _error => details.exceptionAsString();

@@ -36,7 +36,7 @@ MaterialApp(
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
 
 Implementation: [debug_lens.dart](lib/debug_lens.dart) · Integration:
-[app.dart](example/lib/src/app.dart)
+[main.dart](example/lib/main.dart)
 
 ### Shipping it
 

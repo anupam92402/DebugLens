@@ -10,13 +10,16 @@ String connectivityLabel(ConnectivityResult? result) => switch (result) {
   ConnectivityResult.ethernet => DebugStrings.networkConnEthernet,
   ConnectivityResult.vpn => DebugStrings.networkConnVpn,
   ConnectivityResult.bluetooth => DebugStrings.networkConnBluetooth,
+  ConnectivityResult.satellite => DebugStrings.networkConnSatellite,
   ConnectivityResult.other => DebugStrings.networkConnOther,
   ConnectivityResult.none => DebugStrings.networkConnOffline,
   null => DebugStrings.networkConnChecking,
 };
 
-/// The current transport, then every change.
+ConnectivityResult _primary(List<ConnectivityResult> results) => results
+    .firstWhere((r) => r != ConnectivityResult.none, orElse: () => ConnectivityResult.none);
+
 Stream<ConnectivityResult> connectivityStream() async* {
-  yield await Connectivity().checkConnectivity();
-  yield* Connectivity().onConnectivityChanged;
+  yield _primary(await Connectivity().checkConnectivity());
+  yield* Connectivity().onConnectivityChanged.map(_primary);
 }

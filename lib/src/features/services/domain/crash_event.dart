@@ -32,6 +32,7 @@ class DebugLensCrashEvent {
   /// something that happened earlier (a crash caught on the previous run).
   final DateTime time;
 
+  /// Builds the event to hand to `DebugLens.recordCrash`.
   DebugLensCrashEvent({
     required this.error,
     this.stackTrace,

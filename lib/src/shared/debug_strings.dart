@@ -435,6 +435,7 @@ class DebugStrings {
   static const String networkConnEthernet = 'Ethernet';
   static const String networkConnVpn = 'VPN';
   static const String networkConnBluetooth = 'Bluetooth';
+  static const String networkConnSatellite = 'Satellite';
   static const String networkConnOther = 'Other';
   static const String networkConnOffline = 'Offline';
   static const String networkConnChecking = 'Checking…';

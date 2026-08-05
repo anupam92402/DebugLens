@@ -23,10 +23,7 @@ class _ConnectivityIndicatorState extends State<ConnectivityIndicator> {
   @override
   void initState() {
     super.initState();
-    Connectivity().checkConnectivity().then((value) {
-      if (mounted) setState(() => _result = value);
-    });
-    _sub = Connectivity().onConnectivityChanged.listen((value) {
+    _sub = connectivityStream().listen((value) {
       if (mounted) setState(() => _result = value);
     });
   }
@@ -65,6 +62,8 @@ class _ConnectivityIndicatorState extends State<ConnectivityIndicator> {
         return const _IndicatorVisual(Icons.vpn_lock, DebugColors.warning);
       case ConnectivityResult.bluetooth:
         return const _IndicatorVisual(Icons.bluetooth, DebugColors.info);
+      case ConnectivityResult.satellite:
+        return const _IndicatorVisual(Icons.satellite_alt, DebugColors.info);
       case ConnectivityResult.other:
         return const _IndicatorVisual(Icons.device_hub, DebugColors.textMuted);
       case ConnectivityResult.none:

@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'src/app.dart';
-import 'src/core/di/service_locator.dart';
-import 'src/core/firebase/mock_firebase.dart';
-import 'src/core/notifications/notification_service.dart';
-import 'src/core/storage/storage_setup.dart';
+import 'src/app_providers.dart';
+import 'src/core/app_navigator.dart';
+import 'src/core/backend_bootstrap.dart';
+import 'src/core/error_routing.dart';
+import 'src/core/theme/app_theme.dart';
+import 'src/features/settings/presentation/cubit/settings_cubit.dart';
+import 'src/features/shell/presentation/views/shell_screen.dart';
 
 void main() => _bootstrap();
 
@@ -15,30 +17,13 @@ Future<void> _bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Routes Flutter's error channels into the Logs feed.
-  FlutterError.onError = (details) {
-    DebugLensLogger().e(
-      details.exceptionAsString(),
-      name: 'flutter',
-      error: details.exception,
-      stackTrace: details.stack,
-    );
-    FlutterError.presentError(details);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    DebugLensLogger().e(
-      'Uncaught error',
-      name: 'app',
-      error: error,
-      stackTrace: stack,
-    );
-    return false;
-  };
+  logErrorRouting();
 
   // Swaps Flutter's red error box for DebugLens's shareable one.
   ErrorWidget.builder = (details) => CustomErrorScreen(details: details);
 
   // Master switch — on in every mode here so a release build stays inspectable.
-  DebugLens.debugLensEnabled = true;
+  DebugLens.debugLensEnabled = !kReleaseMode;
 
   // Opens straight into the full panel instead of the default tester role.
   DebugLens.initialRole = DebugRole.developer;
@@ -53,53 +38,42 @@ Future<void> _bootstrap() async {
   // Echo to console only in debug builds.
   DebugLensLogger().printToConsole = kDebugMode;
 
-  final startup = Stopwatch()..start();
+  // Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
+  Bloc.observer = DebugLensBlocObserver();
 
-  // Time the whole startup as a mock-Firebase performance trace.
-  await MockFirebase.performance.trace('app_start', () async {
-    // Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
-    Bloc.observer = DebugLensBlocObserver();
-    setupLocator();
-
-    // Mock Firebase init: seed realistic data + identify the user.
-    MockFirebase.configure();
-
-    // Hands the app's real version to DebugLens; an override applies next start.
-    await DebugLens.instance.setAppVersion('1.0.0+1');
-
-    // Real app storage (SharedPreferences + Drift), bridged to DebugLens.
-    await setupStorage();
-
-    // Fetch + activate Remote Config (applies any persisted device overrides).
-    await MockFirebase.activate();
-    DebugLensLogger().d('Remote Config activated', name: 'config');
-
-    // Local notifications — request permission up front.
-    try {
-      await sl<NotificationService>().init();
-    } catch (error, stack) {
-      DebugLensLogger().e(
-        'Notification setup failed',
-        name: 'notifications',
-        error: error,
-        stackTrace: stack,
-      );
-    }
-  });
-
-  startup.stop();
-  MockFirebase.analytics.logEvent(
-    'app_open',
-    parameters: {
-      'action': 'launch',
-      'category': 'lifecycle',
-      'startup_ms': startup.elapsedMilliseconds,
-    },
-  );
-  DebugLensLogger().i(
-    'Startup finished in ${startup.elapsedMilliseconds}ms',
-    name: 'app',
-  );
+  // This demo's own DI + mock backend + storage + notifications.
+  await initializeDemoBackend();
 
   runApp(const ExampleApp());
+}
+
+/// Root of the example app.
+///
+/// Wires DebugLens onto the [MaterialApp]: the navigator observer feeds the
+/// Navigation inspector and [DebugLens.wrap] overlays the draggable bug
+/// bubble. Everything else this demo needs comes from [AppProviders].
+class ExampleApp extends StatelessWidget {
+  const ExampleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppProviders(
+      child: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, settings) {
+          return MaterialApp(
+            title: 'DebugLens Example',
+            debugShowCheckedModeBanner: false,
+            navigatorKey: appNavigatorKey,
+            navigatorObservers: [DebugLens.navigatorObserver],
+            builder: (context, child) =>
+                DebugLens.wrap(child ?? const SizedBox.shrink()),
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: settings.darkMode ? ThemeMode.dark : ThemeMode.light,
+            home: const ShellScreen(),
+          );
+        },
+      ),
+    );
+  }
 }

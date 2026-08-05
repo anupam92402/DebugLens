@@ -1,3 +1,9 @@
+/// An in-app debugging overlay for Flutter: a draggable bubble opens a panel
+/// that surfaces network calls, logs, bloc/navigation events, storage and
+/// device facts, plus whatever you push in from your own crash reporter,
+/// analytics or remote config.
+library;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

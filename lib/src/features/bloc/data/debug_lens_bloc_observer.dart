@@ -17,6 +17,7 @@ class DebugLensBlocObserver extends BlocObserver {
 
   final DebugStore _store;
 
+  /// Install once: `Bloc.observer = DebugLensBlocObserver()`.
   DebugLensBlocObserver({this.showLogs = true, DebugStore? store})
     : _store = store ?? DebugStore.instance;
 

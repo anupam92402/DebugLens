@@ -204,7 +204,7 @@ DebugLens.localeSource = () => DebugLensLocaleData(
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/locale.png" width="240">
 
-### Notifications & deep-links
+### Notifications & Deep Links
 
 Two dedicated tabs let you inspect **Notifications** and **Deep Links**. View every notification 
 your app receives or displays along with its raw payload, and inspect every deep link with its 
@@ -232,39 +232,14 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 ### Services
 
-A screen of your own for anything DebugLens doesn't already model. Write an
-adapter when the source can be read back on demand, a cache, a feature-flag
-client, a queue; push into one of the four built-ins below (remote config,
-crashes, analytics, traces) when it can't. Either way it's an inspector you
-define, not a fixed list DebugLens ships with.
+The **Services** screen lets you inspect data from integrations that are specific to your app. Use the built-in adapters for **Remote Config**, **Crash Reports**, **Analytics**, and **Performance**.
+
+### Remote Config
+
+View all your remote config values in one place and override them locally for testing. This makes it easy to verify feature flags and version-gated behavior without waiting for a rollout or changing values on the backend.
 
 ```dart
-// load() is called on demand, not cached, so it's always the live source.
-class CacheInspector extends DebugLensService {
-  @override
-  String get name => 'API cache';
-
-  @override
-  Future<List<DebugLensServiceGroup>> load() async => [
-    for (final e in myCache.entries)
-      DebugLensServiceGroup(title: e.key, values: {'size': '${e.bytes} B'}),
-  ];
-}
-
-DebugLens.registerService(CacheInspector());
-```
-
-### Remote config
-
-Shows every value fetched from your remote config provider and lets a device
-override any of them independently of what the backend actually sent. That's
-how a flag-gated bug gets reproduced without waiting on a config rollout or
-fighting the provider's own targeting rules: the override applies locally on
-the next launch, and the resolved getters (`getBool`, `getInt`, ...) always
-reflect it.
-
-```dart
-// Await once at startup — this loads any override saved on a previous run.
+// Load remote config values into DebugLens during app startup.
 await DebugLens.instance.setRemoteConfigData({
   for (final e in firebase.getAll().entries) e.key: e.value.asString(),
 }, sourceLabel: 'Firebase');
@@ -274,16 +249,11 @@ final timeout = DebugLens.instance.getInt('api_timeout_seconds');
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/remote_config.png" width="240">
 
-### Crash reports
+### Crash Reports
 
-Crash reporters are write-only by design, so DebugLens keeps the same payload
-you send upstream, stack trace included, right on the device that produced it.
-Reproducing a crash and reading its stack trace no longer waits on Crashlytics
-to finish processing the event, or on a tester remembering exactly what they
-tapped.
+Capture the same crash information you send to your crash reporting service and view it instantly on the device, including the error and stack trace. This lets you investigate crashes immediately without waiting for them to appear in your crash dashboard.
 
 ```dart
-// Hand it the exact payload your crash reporter sends upstream.
 DebugLens.instance.initCrashReporting();
 
 DebugLens.instance.recordCrash(
@@ -295,13 +265,9 @@ DebugLens.instance.recordCrash(
 
 ### Analytics
 
-Every event you log appears as its own row the moment you call it, with its
-parameters visible on expand. It answers a specific question during a manual
-test pass: did this action actually fire the event you expect, with the fields
-you expect, without waiting hours for it to land in a dashboard.
+View analytics events as they are recorded, along with their parameters. This makes it easy to verify that the correct events are fired during testing without waiting for them to appear in your analytics dashboard.
 
 ```dart
-// The name becomes the row; parameters show when it's expanded.
 DebugLens.instance.initAnalytics();
 
 DebugLens.instance.recordAnalyticsEvent(
@@ -314,13 +280,9 @@ DebugLens.instance.recordAnalyticsEvent(
 
 ### Performance
 
-Finished traces show up with their duration and whatever attributes you
-attached when the trace stopped. Since you own the running stopwatch, this is
-how you eyeball whether a screen's load time regressed on this exact device
-and build, without a performance-monitoring dashboard catching up later.
+Record and inspect performance traces directly in DebugLens. Each trace displays its duration and any attributes you attach, making it easy to compare performance while testing on a real device.
 
 ```dart
-// You own the stopwatch; push once when the trace stops.
 DebugLens.instance.initPerformance();
 
 DebugLens.instance.recordTrace('home_load', stopwatch.elapsed);

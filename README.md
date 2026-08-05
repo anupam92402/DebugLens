@@ -1,15 +1,17 @@
 # DebugLens
 
-An on-device debug panel for Flutter. A draggable bubble opens a view of what
-your app is actually doing — network calls, logs, bloc transitions, navigation,
-storage and device facts — plus whatever you push in from your own crash
-reporter, analytics or remote config, with no console attached and no laptop
-in the room.
+**DebugLens** is an on-device debugging tool for your Flutter projects. It gives you 
+visibility into what's happening inside your app by bringing together all the important 
+runtime information in one place, network calls, logs, bloc transitions, navigation, storage,
+device facts, crashes, analytics and remote config — all in one place, on the
+device. You don't have to reproduce a bug or walk through the steps to get
+back to the state something failed in; the current state is just there, which
+saves you the time.
 
-It is built for the people who don't have your IDE open: QA on a test build, a
-teammate reproducing a bug, you on a phone that isn't plugged in. Every
-inspector is wired to your own app through a small seam, so DebugLens depends on
-none of your vendors and drops out cleanly when you remove it.
+Whether you're a developer, a tester, or on the product side, DebugLens helps you 
+identify problems faster. Any inspector's data can be shared on its own,
+including straight into an AI tool, for faster debugging. Nothing it captures
+is saved anywhere but the device.
 
 ## Install
 
@@ -19,6 +21,10 @@ dependencies:
 ```
 
 ## Setup
+
+| Dashboard | Bubble |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
 
 Wrap your app and attach the navigator observer. Everything else is opt-in, one
 inspector at a time.
@@ -31,35 +37,18 @@ MaterialApp(
 );
 ```
 
-| Dashboard | Bubble |
-| :-: | :-: |
-| <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/dashboard.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_bubble.png" width="240"> |
-
-### Shipping it
-
-`DebugLens.debugLensEnabled` is the one switch that decides whether any of this runs. It
-defaults to **true**; turning it off for the builds you don't want it in is your
-call:
+`DebugLens.debugLensEnabled` decides whether any of this runs at all —
+defaults to **true**. Off, `wrap` is a no-op: nothing is captured, no
+overrides apply. Set it in `main`, before `wrap` first builds, and base it on
+your own flavor flag rather than `kReleaseMode` — a QA build is usually a
+release build, exactly when a tester needs the panel.
 
 ```dart
 void main() {
-  // The one flag that decides whether any capture path runs at all.
   DebugLens.debugLensEnabled = !kReleaseMode;   // or: flavor != Flavor.production
   runApp(const MyApp());
 }
 ```
-
-With it off, `wrap` returns your app untouched and **every capture path becomes a
-no-op** — nothing is stored, nothing is persisted, and neither the remote-config
-nor the app-version override is applied, so your own values are what your code
-reads. The interceptor, observers and `record*` calls can stay exactly where they
-are; they simply stop writing.
-
-Set it in `main`, before `wrap` first builds.
-
-> The package deliberately doesn't infer this from the build mode. A QA build is
-> usually a release build, and that is exactly when a tester needs the panel —
-> so guessing would take the decision away from you.
 
 ---
 

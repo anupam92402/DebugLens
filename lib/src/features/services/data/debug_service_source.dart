@@ -2,10 +2,14 @@ import 'package:flutter/foundation.dart';
 
 import '../domain/config_editor.dart';
 import '../domain/service_group.dart';
+import '../../../shared/util/deferred_notifier.dart';
 
 /// Generic, async view of one backend/SDK service, implemented by the host
 /// using its own wrappers (Firebase, Amplify, LaunchDarkly, a REST client, …).
 abstract class DebugLensService {
+  /// Const constructor so an implementation can be const.
+  const DebugLensService();
+
   /// Display name shown in the service list (e.g. 'Remote Config').
   String get name;
 
@@ -44,6 +48,14 @@ class DebugLensServices {
   static final ValueNotifier<List<DebugLensService>> listenable =
       ValueNotifier<List<DebugLensService>>(List.unmodifiable(_services));
 
+  /// Publishes the registry between frames. The first `recordCrash`,
+  /// `recordAnalyticsEvent` or `recordTrace` registers its service lazily, and
+  /// those can land inside a build, where marking the Services screen dirty
+  /// would fire the framework's "setState() during build" assertion.
+  static final DeferredSignal _publish = DeferredSignal(
+    () => listenable.value = List.unmodifiable(_services),
+  );
+
   /// Registered services, in insertion order. Returns an unmodifiable view so
   /// callers can't mutate the registry behind [register]'s back.
   static List<DebugLensService> get services => List.unmodifiable(_services);
@@ -53,6 +65,6 @@ class DebugLensServices {
   static void register(DebugLensService service) {
     _services.removeWhere((s) => s.name == service.name);
     _services.add(service);
-    listenable.value = List.unmodifiable(_services);
+    _publish.schedule();
   }
 }

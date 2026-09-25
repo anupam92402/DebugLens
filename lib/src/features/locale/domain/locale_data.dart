@@ -11,6 +11,8 @@ class DebugLensLocaleData {
   /// Human-readable label for the active locale (e.g. 'English', 'Hindi').
   final String label;
 
+  /// Builds a snapshot. Nothing is copied, so pass the map the app already
+  /// holds rather than a duplicate.
   const DebugLensLocaleData({required this.entries, this.label = ''});
 
   /// An empty snapshot — rendered as the "No locale entries" empty state.

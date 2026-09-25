@@ -47,32 +47,36 @@ class _ConnectivityIndicatorState extends State<ConnectivityIndicator> {
 
   /// Maps a `ConnectivityResult` to its icon and colour. The label comes from
   /// the shared `connectivityLabel`, so the Device screen shows the same words.
+  ///
+  /// Matched on the enum's name for the same reason as `connectivityLabel`:
+  /// the members differ across the `connectivity_plus` majors DebugLens
+  /// supports.
   static _IndicatorVisual _resolve(ConnectivityResult? r) {
-    switch (r) {
-      case ConnectivityResult.wifi:
-        return const _IndicatorVisual(Icons.wifi, DebugColors.success);
-      case ConnectivityResult.mobile:
-        return const _IndicatorVisual(
-          Icons.signal_cellular_alt,
-          DebugColors.info,
-        );
-      case ConnectivityResult.ethernet:
-        return const _IndicatorVisual(Icons.lan, DebugColors.info);
-      case ConnectivityResult.vpn:
-        return const _IndicatorVisual(Icons.vpn_lock, DebugColors.warning);
-      case ConnectivityResult.bluetooth:
-        return const _IndicatorVisual(Icons.bluetooth, DebugColors.info);
-      case ConnectivityResult.satellite:
-        return const _IndicatorVisual(Icons.satellite_alt, DebugColors.info);
-      case ConnectivityResult.other:
-        return const _IndicatorVisual(Icons.device_hub, DebugColors.textMuted);
-      case ConnectivityResult.none:
-        return const _IndicatorVisual(Icons.signal_wifi_off, DebugColors.error);
+    switch (r?.name) {
       case null:
         return const _IndicatorVisual(
           Icons.help_outline,
           DebugColors.textMuted,
         );
+      case 'wifi':
+        return const _IndicatorVisual(Icons.wifi, DebugColors.success);
+      case 'mobile':
+        return const _IndicatorVisual(
+          Icons.signal_cellular_alt,
+          DebugColors.info,
+        );
+      case 'ethernet':
+        return const _IndicatorVisual(Icons.lan, DebugColors.info);
+      case 'vpn':
+        return const _IndicatorVisual(Icons.vpn_lock, DebugColors.warning);
+      case 'bluetooth':
+        return const _IndicatorVisual(Icons.bluetooth, DebugColors.info);
+      case 'satellite':
+        return const _IndicatorVisual(Icons.satellite_alt, DebugColors.info);
+      case 'none':
+        return const _IndicatorVisual(Icons.signal_wifi_off, DebugColors.error);
+      default:
+        return const _IndicatorVisual(Icons.device_hub, DebugColors.textMuted);
     }
   }
 }

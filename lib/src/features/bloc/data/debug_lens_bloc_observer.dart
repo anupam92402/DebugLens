@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import '../../logs/data/debug_lens_logger.dart';
 import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
+import '../../../shared/util/payload_budget.dart';
 import '../domain/bloc_event.dart';
 
 /// [BlocObserver] that routes every Bloc/Cubit lifecycle event into the Bloc
@@ -21,6 +22,12 @@ class DebugLensBlocObserver extends BlocObserver {
   DebugLensBlocObserver({this.showLogs = true, DebugStore? store})
     : _store = store ?? DebugStore.instance;
 
+  /// Every state, event and error is stringified through
+  /// [PayloadBudget.describe] rather than `toString()` directly. A state that
+  /// carries a list or a decoded response prints megabytes, and the Bloc feed
+  /// keeps two of those per change plus the same text again as a log line —
+  /// a record-count cap alone does not bound that.
+  ///
   /// Logs tag for grepping by bloc class, e.g. `bloc.AuthCubit`.
   String _name(BlocBase<dynamic> bloc) => 'bloc.${bloc.runtimeType}';
 
@@ -65,7 +72,7 @@ class DebugLensBlocObserver extends BlocObserver {
     if (!showLogs) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
-    final eventStr = event?.toString();
+    final eventStr = PayloadBudget.describe(event);
     _defer(() {
       _store.recordBlocEvent(
         kind: BlocActionKind.event,
@@ -82,8 +89,8 @@ class DebugLensBlocObserver extends BlocObserver {
     if (!showLogs) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
-    final current = change.currentState?.toString();
-    final next = change.nextState?.toString();
+    final current = PayloadBudget.describe(change.currentState);
+    final next = PayloadBudget.describe(change.nextState);
     _defer(() {
       _store.recordBlocEvent(
         kind: BlocActionKind.change,
@@ -104,9 +111,9 @@ class DebugLensBlocObserver extends BlocObserver {
     if (!showLogs) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
-    final eventStr = transition.event?.toString();
-    final current = transition.currentState?.toString();
-    final next = transition.nextState?.toString();
+    final eventStr = PayloadBudget.describe(transition.event);
+    final current = PayloadBudget.describe(transition.currentState);
+    final next = PayloadBudget.describe(transition.nextState);
     _defer(() {
       _store.recordBlocEvent(
         kind: BlocActionKind.transition,
@@ -129,8 +136,8 @@ class DebugLensBlocObserver extends BlocObserver {
       _store.recordBlocEvent(
         kind: BlocActionKind.error,
         blocName: blocName,
-        error: error.toString(),
-        stackTrace: stackTrace.toString(),
+        error: PayloadBudget.describe(error),
+        stackTrace: PayloadBudget.describe(stackTrace),
       );
       _mirror('error: $error', tag, error: error, stackTrace: stackTrace);
     });

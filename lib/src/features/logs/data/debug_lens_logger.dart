@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 import '../../storage/data/debug_shared_prefs_source.dart';
+import '../../../shared/util/deferred_notifier.dart';
 import '../../../shared/debug_constants.dart';
 import '../../../shared/debug_strings.dart';
 import '../../../core/debug_lens_config.dart';
+import '../../../shared/util/payload_budget.dart';
 import '../domain/log_origin.dart';
 import '../domain/log_record.dart';
 
@@ -59,7 +61,7 @@ typedef DebugLogObserver =
 ///
 /// Forward records elsewhere with [addLogObserver]. Extends [ChangeNotifier],
 /// so the Logs screen rebuilds as records land.
-class DebugLensLogger extends ChangeNotifier {
+class DebugLensLogger extends ChangeNotifier with DeferredNotifier {
   DebugLensLogger._internal();
 
   static final DebugLensLogger _instance = DebugLensLogger._internal();
@@ -97,7 +99,7 @@ class DebugLensLogger extends ChangeNotifier {
     assert(value > 0, 'maxHistory must be greater than 0, got $value');
     if (value < 1 || value == _maxHistory) return;
     _maxHistory = value;
-    if (_trimToLimit()) notifyListeners();
+    if (_trimToLimit()) scheduleNotification();
   }
 
   /// The records themselves, oldest first — read via [history], capped by
@@ -136,7 +138,7 @@ class DebugLensLogger extends ChangeNotifier {
         : _mutedOrigins.add(origin);
     if (!changed) return;
     DebugLensSharedPrefs.setBool(origin.prefsKey, enabled);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Reloads the persisted capture switches. `DebugLens.wrap()` calls this once
@@ -156,7 +158,7 @@ class DebugLensLogger extends ChangeNotifier {
     } catch (_) {
       // Storage unavailable — defaults apply for this session.
     }
-    if (changed) notifyListeners();
+    if (changed) scheduleNotification();
   }
 
   /// Registers a forwarder. Observers fire regardless of [printToConsole], so
@@ -203,10 +205,43 @@ class DebugLensLogger extends ChangeNotifier {
   void clear() {
     if (_history.isEmpty) return;
     _history.clear();
-    notifyListeners();
+    scheduleNotification();
   }
 
+  /// Whether a record is being emitted right now.
+  ///
+  /// A record can reach the console, the observers and the panel, and any of
+  /// those can fail. If that failure is routed back in as another log record —
+  /// which is exactly what a host's `FlutterError.onError` does — the second
+  /// record would emit from inside the first. The guard drops it instead of
+  /// letting the two feed each other.
+  bool _emitting = false;
+
   void _log(
+    String message, {
+    String? name,
+    Object? error,
+    StackTrace? stackTrace,
+    required DebugLogLevel level,
+    bool force = false,
+  }) {
+    if (_emitting) return;
+    _emitting = true;
+    try {
+      _emit(
+        message,
+        name: name,
+        error: error,
+        stackTrace: stackTrace,
+        level: level,
+        force: force,
+      );
+    } finally {
+      _emitting = false;
+    }
+  }
+
+  void _emit(
     String message, {
     String? name,
     Object? error,
@@ -218,27 +253,45 @@ class DebugLensLogger extends ChangeNotifier {
     if (name?.isNotEmpty ?? false) logBuffer.write('-$name');
     final logName = logBuffer.toString();
 
+    // Clamped before anything is kept or printed. A caller can hand us a
+    // whole decoded response or a state dump, and [maxHistory] only bounds how
+    // many records are kept, not how large one is. `debugPrint` matters too:
+    // it drains at a fixed rate, so oversized lines queue up indefinitely.
+    final text = PayloadBudget.clamp(message);
+    final trace = PayloadBudget.describe(stackTrace);
+    // Stored as text, not as the thrown object: a `DioException` carries the
+    // whole decoded response, so keeping the object would pin that payload for
+    // as long as the record lives. Observers below still get the real error.
+    final errorText = PayloadBudget.describe(error);
+
     _append(
       DebugLogRecord(
         level: level,
-        message: message,
+        message: text,
         name: name,
-        error: error,
-        stackTrace: stackTrace?.toString(),
+        error: errorText,
+        stackTrace: trace,
         time: DateTime.now(),
       ),
     );
 
     if (printToConsole || force) {
       final messageBuffer = StringBuffer()
-        ..write('${level.paddedName} [$logName] $message');
+        ..write('${level.paddedName} [$logName] $text');
       if (error != null) {
-        messageBuffer.write('\n${DebugStrings.logsPrintError}: $error');
+        messageBuffer.write('\n${DebugStrings.logsPrintError}: $errorText');
       }
-      if (stackTrace != null) {
-        messageBuffer.write('\n${DebugStrings.logsPrintStack}: $stackTrace');
+      if (trace != null) {
+        messageBuffer.write('\n${DebugStrings.logsPrintStack}: $trace');
       }
-      debugPrint(messageBuffer.toString());
+      // Cut further than the stored record: see [PayloadBudget.maxConsoleChars]
+      // for why an oversized console line is a heap problem, not just noise.
+      debugPrint(
+        PayloadBudget.clamp(
+          messageBuffer.toString(),
+          max: PayloadBudget.maxConsoleChars,
+        ),
+      );
     }
 
     for (final observer in _onLog) {
@@ -258,7 +311,7 @@ class DebugLensLogger extends ChangeNotifier {
     if (!DebugLensConfig.enabled) return;
     _history.add(record);
     _trimToLimit();
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Drops records above [maxHistory]; true if any went.

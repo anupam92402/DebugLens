@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import 'debug_lens_config.dart';
+import '../shared/util/deferred_notifier.dart';
+import '../shared/util/payload_budget.dart';
 import '../features/network/domain/api_call_stat.dart';
 import '../features/bloc/domain/bloc_event.dart';
 import '../features/network/domain/network_entry.dart';
@@ -17,7 +17,7 @@ import '../features/settings/data/debug_limits_store.dart';
 import '../features/settings/domain/debug_limit.dart';
 
 /// Holds all captured debug data in memory.
-class DebugStore extends ChangeNotifier {
+class DebugStore extends ChangeNotifier with DeferredNotifier {
   DebugStore._();
 
   /// Shared instance: capture sources (observers, interceptors, loggers) write
@@ -38,7 +38,15 @@ class DebugStore extends ChangeNotifier {
 
   /// Last status counted for each entry id, so [updateNetwork] can move a call
   /// between buckets (e.g. pending → success) without double-counting [total].
+  ///
+  /// Insertion-ordered and capped at [_maxEntryStatus]: the ids outlive the
+  /// entries themselves (a response can land after its request was trimmed),
+  /// so nothing else bounds this map over a long session.
   final Map<String, NetworkStatusKind> _entryStatus = {};
+
+  /// How many call statuses are remembered. Far beyond the interceptor's
+  /// five-minute pending timeout, so no live request is ever forgotten.
+  static const int _maxEntryStatus = 2000;
 
   /// Per-endpoint call stats for the History screen, in first-seen order.
   /// Callers sort/filter as needed.
@@ -107,7 +115,7 @@ class DebugStore extends ChangeNotifier {
       ),
     );
     if (navEvents.length > _cap(DebugLimit.navigation)) navEvents.removeAt(0);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Replaces the live stack snapshot for [navigator] (bottom → top). An empty
@@ -120,28 +128,24 @@ class DebugStore extends ChangeNotifier {
     } else {
       navStacks[navigator] = List.of(routes);
     }
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Drops a navigator's stack snapshot — call when a nested navigator is
   /// disposed (see `DebugLensNavigatorObserver.detach`).
   void removeNavStack(String navigator) {
     if (!DebugLensConfig.enabled) return;
-    if (navStacks.remove(navigator) != null) notifyListeners();
+    if (navStacks.remove(navigator) != null) scheduleNotification();
   }
 
   /// Returns a deep copy of [args] decoupled from the app's live object graph,
   /// so later mutations don't change the logged value and no large object is
   /// pinned in memory by the log. Non-JSON values fall back to their
   /// `toString()` representation.
-  static Object? _snapshotArguments(Object? args) {
-    if (args == null) return null;
-    try {
-      return jsonDecode(jsonEncode(args, toEncodable: (o) => o.toString()));
-    } catch (_) {
-      return args.toString();
-    }
-  }
+  /// Budgeted: route arguments and notification payloads can carry a whole
+  /// model, and the copy is retained for the life of the event.
+  static Object? _snapshotArguments(Object? args) =>
+      PayloadBudget.snapshot(args, max: PayloadBudget.maxTextChars);
 
   /// Appends a new network entry. Used by `DebugLensDioInterceptor` to
   /// register a request as pending the moment it goes out.
@@ -150,7 +154,7 @@ class DebugStore extends ChangeNotifier {
     network.add(entry);
     if (network.length > _cap(DebugLimit.network)) network.removeAt(0);
     _recordHistory(entry);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Replaces the entry with id [entry.id] (typically a pending request being
@@ -164,7 +168,7 @@ class DebugStore extends ChangeNotifier {
       network[idx] = entry;
     }
     _updateHistory(entry);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Marks a still-pending entry (by [id]) as errored — used by the
@@ -175,14 +179,14 @@ class DebugStore extends ChangeNotifier {
     if (idx == -1 || !network[idx].isPending) return;
     network[idx] = network[idx].copyWith(error: message);
     _updateHistory(network[idx]);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Clears the captured network entries. Intentionally does **not** touch the
   /// session call history ([apiHistory]) — that survives until app restart.
   void clearNetwork() {
     network.clear();
-    notifyListeners();
+    scheduleNotification();
   }
 
   // --- Session call history (History screen) -------------------------------
@@ -216,6 +220,9 @@ class DebugStore extends ChangeNotifier {
     stat.recordCall(entry.requestTime);
     _bumpStatus(stat, status, 1);
     _entryStatus[entry.id] = status;
+    if (_entryStatus.length > _maxEntryStatus) {
+      _entryStatus.remove(_entryStatus.keys.first);
+    }
   }
 
   /// Re-buckets a call whose status changed (e.g. pending → success). Falls
@@ -242,7 +249,7 @@ class DebugStore extends ChangeNotifier {
   void clearNavigation() {
     navEvents.clear();
     _navSeq = 0;
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Appends a Bloc lifecycle event (called from `DebugLensBlocObserver`).
@@ -272,14 +279,14 @@ class DebugStore extends ChangeNotifier {
       ),
     );
     if (blocEvents.length > _cap(DebugLimit.bloc)) blocEvents.removeAt(0);
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Clears only the Bloc events list.
   void clearBlocEvents() {
     blocEvents.clear();
     _blocSeq = 0;
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Deep-copies a notification [payload] so the logged entry is decoupled from
@@ -290,7 +297,9 @@ class DebugStore extends ChangeNotifier {
     if (payload.isEmpty) return const {};
     final snap = _snapshotArguments(payload);
     if (snap is Map<String, Object?>) return snap;
-    return {for (final e in payload.entries) e.key: e.value?.toString()};
+    return {
+      for (final e in payload.entries) e.key: PayloadBudget.describe(e.value),
+    };
   }
 
   /// Records a push/local notification (called from `DebugLens.recordNotification`).
@@ -300,7 +309,7 @@ class DebugStore extends ChangeNotifier {
     if (notifications.length > _cap(DebugLimit.notifications)) {
       notifications.removeLast();
     }
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Records a captured deep-link (called from `DebugLens.recordDeeplink`).
@@ -308,19 +317,19 @@ class DebugStore extends ChangeNotifier {
     if (!DebugLensConfig.enabled) return;
     deeplinks.insert(0, entry);
     if (deeplinks.length > _cap(DebugLimit.deeplinks)) deeplinks.removeLast();
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Clears the captured notifications (Notifications tab).
   void clearNotifications() {
     notifications.clear();
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Clears the captured deep-links (Deep-links tab).
   void clearDeeplinks() {
     deeplinks.clear();
-    notifyListeners();
+    scheduleNotification();
   }
 
   /// Wipes every captured feed — not just the ones this store owns.
@@ -334,7 +343,7 @@ class DebugStore extends ChangeNotifier {
     deeplinks.clear();
     navEvents.clear();
     _navSeq = 0;
-    notifyListeners();
+    scheduleNotification();
 
     // Each notifies its own listeners.
     DebugLensLogger().clear();

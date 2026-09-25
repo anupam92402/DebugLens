@@ -4,11 +4,23 @@ import '../../../shared/debug_strings.dart';
 /// A DebugLens-provided producer of log records, toggleable at runtime from
 /// the Logs screen's capture sheet.
 enum DebugLogOrigin {
+  /// Records mirrored in by `DebugLensDioInterceptor`.
   network,
+
+  /// Records mirrored in by `DebugLensBlocObserver`.
   bloc,
+
+  /// Records mirrored in by `DebugLensNavigatorObserver`.
   navigation,
+
+  /// Records mirrored in by `DebugLens.recordNotification` and
+  /// `DebugLens.recordDeeplink`.
   notifications,
+
+  /// Records mirrored in by the crash, analytics, trace and config pushes.
   services,
+
+  /// Records mirrored in when a prefs source or database is registered.
   storage;
 
   /// Name shown in the capture sheet.

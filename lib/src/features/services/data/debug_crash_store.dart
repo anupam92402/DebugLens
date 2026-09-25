@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/debug_lens_config.dart';
+import '../../../shared/util/deferred_notifier.dart';
 import '../../../shared/debug_constants.dart';
 import '../../settings/data/debug_limits_store.dart';
 import '../../settings/domain/debug_limit.dart';
@@ -26,18 +27,23 @@ class DebugCrashStore {
   /// service screen re-pulls as errors are recorded behind it.
   final ValueNotifier<int> revision = ValueNotifier<int>(0);
 
+  /// Bumps [revision] between frames. Records arrive from wherever the host is
+  /// — including from inside a build — and an open service screen rebuilds on
+  /// this signal, so bumping it inline would mark a widget dirty mid-build.
+  late final DeferredSignal _bump = DeferredSignal(() => revision.value++);
+
   void record(DebugLensCrashEvent event) {
     if (!DebugLensConfig.enabled) return;
     _events.insert(0, event);
     if (_events.length > DebugLimits.instance.of(DebugLimit.crashes)) {
       _events.removeLast();
     }
-    revision.value++;
+    _bump.schedule();
   }
 
   void clear() {
     _events.clear();
-    revision.value++;
+    _bump.schedule();
   }
 }
 

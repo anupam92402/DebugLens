@@ -2,7 +2,7 @@ name: debug_lens
 description: >-
   An on-device debug panel for Flutter: network calls, logs, bloc/navigation
   events, storage, plus your own crash, analytics and remote-config data.
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/anupam92402/DebugLens
 repository: https://github.com/anupam92402/DebugLens
 issue_tracker: https://github.com/anupam92402/DebugLens/issues
@@ -26,18 +26,22 @@ environment:
   sdk: ^3.9.0
   flutter: ">=3.35.0"
 
+# A debugging tool has no business forcing a major version bump on the app it
+# is dropped into, so each constraint spans every major whose API DebugLens
+# actually uses. `connectivity_plus` changed shape at v5 (a list of transports
+# rather than one) and `shared/util/connectivity_label.dart` handles both.
 dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  share_plus: ^13.3.0
+  share_plus: ">=12.0.1 <14.0.0"
   path_provider: ^2.1.5
-  bloc: ^9.2.1
+  bloc: ">=8.1.4 <10.0.0"
   dio: ^5.4.0
-  connectivity_plus: ^7.3.1
+  connectivity_plus: ">=4.0.2 <8.0.0"
   shared_preferences: ^2.3.2
-  device_info_plus: ^13.2.0
-  package_info_plus: ^10.2.1
+  device_info_plus: ">=12.4.0 <14.0.0"
+  package_info_plus: ">=9.0.1 <11.0.0"
 
 dev_dependencies:
   flutter_test:

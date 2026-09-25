@@ -7,7 +7,15 @@ import '../shared/debug_constants.dart';
 import 'debug_screen.dart';
 
 /// Access role for the DebugLens panel.
-enum DebugRole { tester, developer }
+enum DebugRole {
+  /// Limited access: only the screens granted through
+  /// `DebugLens.initialTesterAccess` or the Tester access sheet, and never
+  /// Settings.
+  tester,
+
+  /// Full access to every panel screen, including Settings.
+  developer,
+}
 
 /// Holds the current [DebugRole] and the set of routes a tester may open, both
 /// persisted with `shared_preferences` so the choices survive across launches

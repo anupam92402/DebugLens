@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import '../../../shared/debug_constants.dart';
 import '../../../shared/util/clock_format.dart';
+import '../../../shared/util/payload_budget.dart';
 import '../domain/network_entry.dart';
 import 'http_status_codes.dart';
 
@@ -10,16 +9,10 @@ import 'http_status_codes.dart';
 class NetworkSerializer {
   NetworkSerializer._();
 
-  /// Wraps [jsonEncode] with a fall-through to `toString()` for values that
-  /// aren't JSON-encodable (streams, raw bytes, custom objects).
-  static String _compactJson(Object? value) {
-    if (value == null) return 'null';
-    try {
-      return jsonEncode(value);
-    } catch (_) {
-      return value.toString();
-    }
-  }
+  /// Compact JSON with a fall-through to `toString()` for values that aren't
+  /// JSON-encodable (streams, raw bytes, custom objects). Budgeted, so sharing
+  /// an entry can't build a copy of a whole payload in memory.
+  static String _compactJson(Object? value) => PayloadBudget.encode(value);
 
   /// Overview → Request → Response text dump (no cURL — that's a separate
   /// share). Mirrors the three detail tabs for pasting into a ticket.
@@ -92,7 +85,7 @@ class NetworkSerializer {
     final b = StringBuffer('curl -X ${e.methodLabel}');
     e.requestHeaders.forEach((k, v) => b.write(" \\\n  -H '$k: $v'"));
     if (e.requestBody != null) {
-      b.write(" \\\n  -d '${jsonEncode(e.requestBody)}'");
+      b.write(" \\\n  -d '${_compactJson(e.requestBody)}'");
     }
     b.write(" \\\n  '${e.url}'");
     return b.toString();

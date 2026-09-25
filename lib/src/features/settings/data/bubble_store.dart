@@ -20,8 +20,15 @@ class BubbleStore extends ChangeNotifier {
   bool get isCustom =>
       _icon != BubbleIcon.fallback || _corner != BubbleCorner.fallback;
 
-  /// Loads both values. Called once from `DebugLens.wrap`.
+  /// Whether [restore] has already run this session.
+  bool _restored = false;
+
+  /// Loads both values. `DebugLens.wrap` calls this from `MaterialApp.builder`,
+  /// which runs on every rebuild, so it is guarded: the unguarded version
+  /// issued a SharedPreferences read and a notification per frame.
   Future<void> restore() async {
+    if (_restored) return;
+    _restored = true;
     _icon = BubbleIcon.byName(
       await DebugLensSharedPrefs.getString(DebugConstants.bubbleIconPrefsKey),
     );

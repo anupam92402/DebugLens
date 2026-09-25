@@ -8,6 +8,9 @@ import '../domain/nav_event.dart';
 /// Records route transitions into DebugStore and keeps a live stack snapshot.
 /// Add to MaterialApp.navigatorObservers.
 class DebugLensNavigatorObserver extends NavigatorObserver {
+  /// Builds an observer. [label] groups this navigator's events and gives it
+  /// its own Stack entry; leave it at `'root'` for the app's main navigator
+  /// and pass a name for a nested one.
   DebugLensNavigatorObserver({DebugStore? store, this.label = 'root'})
     : _store = store ?? DebugStore.instance;
 

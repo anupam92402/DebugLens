@@ -40,6 +40,8 @@ class DebugLensLimits {
   /// Finished traces pushed in through `recordTrace`.
   final int? traces;
 
+  /// Builds a set of limits. Every feed left null keeps the shipped default,
+  /// so pass only the ones you want to change.
   const DebugLensLimits({
     this.network,
     this.logs,

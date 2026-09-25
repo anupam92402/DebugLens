@@ -90,6 +90,7 @@ class DebugLens {
   /// ```
   static set debugLensEnabled(bool value) => DebugLensConfig.enabled = value;
 
+  /// Whether DebugLens is switched on. See the setter above.
   static bool get debugLensEnabled => DebugLensConfig.enabled;
 
   /// The role a fresh install starts in. Defaults to [DebugRole.tester].
@@ -98,6 +99,7 @@ class DebugLens {
   /// Set before [wrap] first builds.
   static set initialRole(DebugRole role) => DebugRoleController.initial = role;
 
+  /// The role seeded on a fresh install. See the setter above.
   static DebugRole get initialRole => DebugRoleController.initial;
 
   /// Screens a tester may open on a fresh install. Defaults to
@@ -107,6 +109,7 @@ class DebugLens {
   static set initialTesterAccess(Set<DebugScreen> screens) =>
       DebugRoleController.initialTesterAccess = {...screens};
 
+  /// The screens seeded for a tester on a fresh install. See the setter above.
   static Set<DebugScreen> get initialTesterAccess =>
       DebugRoleController.initialTesterAccess;
 
@@ -115,6 +118,7 @@ class DebugLens {
   static set initialTesterEnabled(bool value) =>
       DebugRoleController.initialTesterEnabled = value;
 
+  /// Whether the tester role is seeded as available. See the setter above.
   static bool get initialTesterEnabled =>
       DebugRoleController.initialTesterEnabled;
 
@@ -128,6 +132,7 @@ class DebugLens {
   static set initialLimits(DebugLensLimits limits) =>
       DebugLimits.initial = limits;
 
+  /// The retention limits seeded on a fresh install. See the setter above.
   static DebugLensLimits get initialLimits => DebugLimits.initial;
 
   /// Add to your `MaterialApp.navigatorObservers` to capture navigation events.
@@ -145,6 +150,7 @@ class DebugLens {
   static set localeSource(DebugLensLocaleSource? source) =>
       DebugLensLocale.source = source;
 
+  /// The registered Locale screen source, or null when none is set.
   static DebugLensLocaleSource? get localeSource => DebugLensLocale.source;
 
   /// Pull-based source for the Storage screen's SharedPrefs tab, called on each
@@ -158,6 +164,7 @@ class DebugLens {
     );
   }
 
+  /// The registered SharedPrefs source, or null when none is set.
   static DebugLensSharedPrefsSource? get sharedPrefsSource =>
       DebugLensSharedPrefs.source;
 

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 
 import '../../logs/data/debug_lens_logger.dart';
@@ -7,11 +5,14 @@ import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
 import '../../../shared/debug_constants.dart';
 import '../../../shared/debug_strings.dart';
+import '../../../shared/util/payload_budget.dart';
 import '../domain/network_entry.dart';
 import 'curl_helper.dart';
 
 /// Dio [Interceptor] that mirrors every HTTP transaction into DebugLens.
 class DebugLensDioInterceptor extends Interceptor {
+  /// Builds the interceptor. Add it to a `Dio` instance's `interceptors`;
+  /// [settings] gates body capture, header redaction and the Logs mirror.
   DebugLensDioInterceptor({
     this.settings = const DebugLensDioInterceptorSettings(),
     DebugStore? store,
@@ -84,18 +85,19 @@ class DebugLensDioInterceptor extends Interceptor {
     return out;
   }
 
-  /// Best-effort UTF-8 byte count for the request/response payload. Encodes
-  /// JSON maps/lists so structured bodies report a real size (not 0). Returns
-  /// null when the size isn't knowable (e.g. streams, FormData).
-  int? _byteSizeOf(Object? body) {
-    if (body == null) return null;
-    if (body is List<int>) return body.length; // already raw bytes
-    if (body is String) return utf8.encode(body).length;
-    try {
-      return utf8.encode(jsonEncode(body)).length;
-    } catch (_) {
-      return null;
-    }
+  /// What DebugLens keeps for one payload, and how big that payload was.
+  ///
+  /// Bodies within [PayloadBudget.maxBodyBytes] are kept as-is, so the viewer
+  /// still gets a real object tree. Anything larger is replaced by a truncated
+  /// preview: holding the decoded value would pin the app's whole response in
+  /// memory for as long as the entry survives, and 50 retained entries of a
+  /// 1.5 MB response is 150 MB of heap.
+  ///
+  /// Measuring is part of the same single pass, so a large payload costs the
+  /// budget rather than two full re-encodes of itself.
+  ({Object? value, int? bytes}) _capture(Object? body, {required bool keep}) {
+    if (!keep || body == null) return (value: null, bytes: null);
+    return PayloadBudget.capture(body);
   }
 
   /// Removes tracking entries for requests that never completed (cancelled
@@ -124,6 +126,7 @@ class DebugLensDioInterceptor extends Interceptor {
     _idByRequest[key] = id;
     _startByRequest[key] = DateTime.now();
 
+    final request = _capture(options.data, keep: settings.captureRequestBody);
     final entry = NetworkEntry(
       id: id,
       method: _methodOf(options.method),
@@ -134,10 +137,8 @@ class DebugLensDioInterceptor extends Interceptor {
       responseType: options.responseType.name,
       requestTime: _startByRequest[key]!,
       requestHeaders: _normalizeHeaders(options.headers),
-      requestBody: settings.captureRequestBody ? options.data : null,
-      requestBytes: settings.captureRequestBody
-          ? _byteSizeOf(options.data)
-          : null,
+      requestBody: request.value,
+      requestBytes: request.bytes,
       curl: CurlHelper.render(options),
     );
     _store.recordNetwork(entry);
@@ -199,6 +200,9 @@ class DebugLensDioInterceptor extends Interceptor {
         ? null
         : DateTime.now().difference(start).inMilliseconds;
 
+    final request = _capture(options.data, keep: settings.captureRequestBody);
+    final response = _capture(responseBody, keep: true);
+
     // Re-snapshot the request side: later interceptors can add headers (e.g.
     // auth) after our onRequest ran, so re-read options for a complete entry.
     final completed = NetworkEntry(
@@ -211,16 +215,14 @@ class DebugLensDioInterceptor extends Interceptor {
       responseType: options.responseType.name,
       requestTime: start ?? DateTime.now(),
       requestHeaders: _normalizeHeaders(options.headers),
-      requestBody: settings.captureRequestBody ? options.data : null,
-      requestBytes: settings.captureRequestBody
-          ? _byteSizeOf(options.data)
-          : null,
+      requestBody: request.value,
+      requestBytes: request.bytes,
       curl: CurlHelper.render(options),
       statusCode: statusCode,
       durationMs: durationMs,
       responseHeaders: responseHeaders,
-      responseBody: responseBody,
-      responseBytes: _byteSizeOf(responseBody),
+      responseBody: response.value,
+      responseBytes: response.bytes,
       error: error,
     );
     _store.updateNetwork(completed);
@@ -258,6 +260,9 @@ class DebugLensDioInterceptorSettings {
   /// Redact `Authorization` / `Cookie` header values.
   final bool redactSensitiveHeaders;
 
+  /// Builds a settings object. Every option defaults to on, which is the
+  /// right choice for most apps; turn body capture off for large uploads or
+  /// streamed downloads.
   const DebugLensDioInterceptorSettings({
     this.logToLogger = true,
     this.captureRequestBody = true,

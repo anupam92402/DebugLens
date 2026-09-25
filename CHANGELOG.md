@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.3
+
+* Fixed heap memory full issue
+
 ## 0.0.2
 
 * Updated and simplified the README.

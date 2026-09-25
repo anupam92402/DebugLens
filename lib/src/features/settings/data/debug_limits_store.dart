@@ -26,8 +26,16 @@ class DebugLimits extends ChangeNotifier {
   /// Whether [limit] has been edited on this device.
   bool isCustom(DebugLimit limit) => _values.containsKey(limit);
 
-  /// Loads the saved limits. Called once from `DebugLens.wrap`.
+  /// Whether [restore] has already run this session.
+  bool _restored = false;
+
+  /// Loads the saved limits. `DebugLens.wrap` calls this from
+  /// `MaterialApp.builder`, which runs on every rebuild, so it is guarded: the
+  /// unguarded version issued a SharedPreferences read and a notification per
+  /// frame.
   Future<void> restore() async {
+    if (_restored) return;
+    _restored = true;
     final raw = await DebugLensSharedPrefs.getString(
       DebugConstants.limitsPrefsKey,
     );

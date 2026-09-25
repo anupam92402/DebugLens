@@ -3,6 +3,9 @@ import '../domain/table_data.dart';
 /// Read-only async view of one inspectable database, implemented by the host
 /// (e.g. a drift/sqflite adapter). Called on demand; no copy kept.
 abstract class DebugLensDatabase {
+  /// Const constructor so an implementation can be const.
+  const DebugLensDatabase();
+
   /// Display name (e.g. the database file name).
   String get name;
 

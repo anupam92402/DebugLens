@@ -8,6 +8,8 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Prompts for a new value for [entry], returning it in string form or null if
 /// cancelled. Booleans use a segmented true/false control; other types use a
@@ -16,8 +18,9 @@ Future<String?> showConfigEditDialog(
   BuildContext context,
   DebugLensConfigEntry entry,
 ) {
-  return showDialog<String>(
-    context: context,
+  return showDebugDialog<String>(
+    context,
+    name: DebugRoutes.configEditDialog,
     builder: (_) => _ConfigEditDialog(entry: entry),
   );
 }

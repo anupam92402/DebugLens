@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import '../../logs/data/debug_lens_logger.dart';
 import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
+import '../../../shared/debug_constants.dart';
 import '../domain/nav_event.dart';
+import '../../../shell/debug_routes.dart';
+import '../../../core/debug_lens_config.dart';
 
 /// Records route transitions into DebugStore and keeps a live stack snapshot.
 /// Add to MaterialApp.navigatorObservers.
@@ -49,11 +52,14 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
     );
 
     /// Mirror into the Logs feed, unless the user paused navigation
-    /// capture from the Logs screen.
-    if (DebugLensLogger().isCapturing(DebugLogOrigin.navigation)) {
+    /// capture from the Logs screen. DebugLens's own routes stay out of it.
+    final internal =
+        routeName.startsWith(DebugRoutes.prefix) ||
+        (previousName?.startsWith(DebugRoutes.prefix) ?? false);
+    if (!internal && DebugLensLogger().isCapturing(DebugLogOrigin.navigation)) {
       DebugLensLogger().d(
         _formatNavMessage(action, routeName, previousName),
-        name: 'nav.$label',
+        name: '${DebugConstants.navLogTagPrefix}$label',
       );
     }
   }
@@ -99,6 +105,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
+    if (!DebugLensConfig.enabled) return;
     _stack.add(route);
     _record(NavAction.push, route, previousRoute);
     _syncStack();
@@ -107,6 +114,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
+    if (!DebugLensConfig.enabled) return;
     _stack.remove(route);
     _record(NavAction.pop, route, previousRoute);
     _syncStack();
@@ -115,6 +123,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (!DebugLensConfig.enabled) return;
     if (newRoute != null) {
       final index = oldRoute == null ? -1 : _stack.indexOf(oldRoute);
       if (index >= 0) {
@@ -130,6 +139,7 @@ class DebugLensNavigatorObserver extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
+    if (!DebugLensConfig.enabled) return;
     _stack.remove(route);
     _record(NavAction.remove, route, previousRoute);
     _syncStack();

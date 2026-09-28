@@ -27,8 +27,8 @@ class DebugColors {
   /// Accent used for `String`-typed value chips (prefs, remote config).
   static const console = Color(0xFFC77DFF); // light purple
 
-  // Per-tool accents — dashboard tiles + per-screen theming.
-  static const base = Color(0xFF7C8CF8); // dashboard / fallback (indigo)
+  // Per-tool accents — bottom bar tabs + per-screen theming.
+  static const base = Color(0xFF7C8CF8); // panel / fallback (indigo)
   static const network = Color(0xFF4F8CFF); // blue
   static const logs = Color(0xFF3FD17A); // green
   static const notifications = Color(0xFFFFC857); // amber
@@ -37,6 +37,7 @@ class DebugColors {
   static const storage = Color(0xFF2DD4BF); // teal
   static const device = Color(0xFF22D3EE); // cyan
   static const service = Color(0xFFFB923C); // orange
+  static const analytics = Color(0xFFA3E635); // lime
   static const locale = Color(0xFFEC4899); // pink
   static const settings = Color(0xFF94A3B8); // slate
 

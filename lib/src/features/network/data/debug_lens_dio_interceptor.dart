@@ -8,6 +8,7 @@ import '../../../shared/debug_strings.dart';
 import '../../../shared/util/payload_budget.dart';
 import '../domain/network_entry.dart';
 import 'curl_helper.dart';
+import '../../../core/debug_lens_config.dart';
 
 /// Dio [Interceptor] that mirrors every HTTP transaction into DebugLens.
 class DebugLensDioInterceptor extends Interceptor {
@@ -64,8 +65,10 @@ class DebugLensDioInterceptor extends Interceptor {
         return HttpMethod.head;
       case 'OPTIONS':
         return HttpMethod.options;
+      case 'QUERY':
+        return HttpMethod.query;
     }
-    return HttpMethod.get;
+    return HttpMethod.other;
   }
 
   /// Collapses Dio's `List<String>` header values to comma-joined strings and
@@ -120,6 +123,7 @@ class DebugLensDioInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (!DebugLensConfig.enabled) return super.onRequest(options, handler);
     _pruneStalePending();
     final id = _nextId();
     final key = identityHashCode(options);
@@ -130,6 +134,7 @@ class DebugLensDioInterceptor extends Interceptor {
     final entry = NetworkEntry(
       id: id,
       method: _methodOf(options.method),
+      rawMethod: options.method,
       url: options.uri.toString(),
       baseUrl: options.baseUrl.isEmpty ? null : options.baseUrl,
       queryParameters: Map<String, dynamic>.from(options.queryParameters),
@@ -158,6 +163,7 @@ class DebugLensDioInterceptor extends Interceptor {
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
   ) {
+    if (!DebugLensConfig.enabled) return super.onResponse(response, handler);
     _finalize(
       response.requestOptions,
       statusCode: response.statusCode,
@@ -170,6 +176,7 @@ class DebugLensDioInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (!DebugLensConfig.enabled) return super.onError(err, handler);
     _finalize(
       err.requestOptions,
       statusCode: err.response?.statusCode,
@@ -208,6 +215,7 @@ class DebugLensDioInterceptor extends Interceptor {
     final completed = NetworkEntry(
       id: id,
       method: _methodOf(options.method),
+      rawMethod: options.method,
       url: options.uri.toString(),
       baseUrl: options.baseUrl.isEmpty ? null : options.baseUrl,
       queryParameters: Map<String, dynamic>.from(options.queryParameters),

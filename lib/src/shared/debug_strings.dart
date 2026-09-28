@@ -20,12 +20,18 @@ class DebugStrings {
   static const String dashboardStorage = 'Storage';
   static const String dashboardDevice = 'Device & App';
   static const String dashboardServices = 'Services';
+  static const String dashboardAnalytics = 'Analytics';
   static const String dashboardLocale = 'Locale';
   static const String dashboardSettings = 'Settings';
+  static const String dashboardMore = 'More';
+  static const String dashboardMoreTitle = 'More Services';
+  static const String dashboardNoAccess = 'No screens are granted to this role';
   static String dashboardRoleSwap(String role) =>
       'Switch role — currently $role';
   static const String roleDeveloper = 'DEVELOPER';
   static const String roleTester = 'TESTER';
+  static const String roleDeveloperShort = 'DEV';
+  static const String roleTesterShort = 'QA';
 
   // --- Walkthrough ----------------------------------------------------------
   static const String walkthroughSkip = 'Skip';
@@ -33,9 +39,9 @@ class DebugStrings {
   static const String walkthroughDone = 'Got it';
   static const String walkthroughPickTitle = 'Pick what to inspect';
   static const String walkthroughPickBody =
-      'Each tile opens a live view of one part of your app — network calls, '
-      'logs, bloc events, navigation, storage and the rest. Tap one to start '
-      'monitoring it.';
+      'Each tab opens a live view of one part of your app — network calls, '
+      'logs, bloc events, navigation, storage and the rest. More holds the '
+      'others.';
   static const String walkthroughRoleTitle = 'Switch role here';
   static const String walkthroughRoleBody =
       'Developer sees every screen. Tester sees only the ones granted to it. '
@@ -53,8 +59,8 @@ class DebugStrings {
   static const String settingsModeDeveloperHint =
       'Master access — every screen and setting';
   static const String settingsModeTesterHint =
-      'Allow stepping down to the granted screens. Use the role chip beside '
-      'the dashboard title to actually switch.';
+      'Allow stepping down to the granted screens. Use the role tag beside '
+      'a screen title to actually switch.';
   static const String settingsTesterAccess = 'Tester access';
   static const String settingsTesterDisabledToast = 'Please enable tester mode';
   static const String settingsTesterAccessHint =
@@ -82,6 +88,13 @@ class DebugStrings {
   static const String bubblePositionHeader = 'POSITION';
   static const String settingsApp = 'App';
   static const String settingsAppVersion = 'App version';
+  static const String settingsTabAdaptive = 'Adaptive tab order';
+  static const String settingsTabAdaptiveHint =
+      'Move your most-used tabs into the bottom bar';
+  static const String settingsTabOrder = 'Reset tab order';
+  static const String settingsTabOrderLearned = 'Learned';
+  static const String settingsTabOrderDefault = 'Default';
+  static const String settingsTabOrderResetToast = 'Tab order reset';
   static const String appVersionOriginal = 'Original';
   static const String appVersionInvalid = 'Enter a version';
   static const String appVersionPending = 'next start';
@@ -206,6 +219,8 @@ class DebugStrings {
   static const String blocSummaryCreated = 'created';
   static const String blocSummaryClosed = 'closed';
   static const String blocSummaryError = 'error';
+  static String blocSummaryDone(String? event, {required bool failed}) =>
+      '${failed ? 'failed' : 'handled'} ${event ?? DebugConstants.unknownValue}';
 
   static String blocSummaryEvent(String? event) =>
       'event · ${event ?? DebugConstants.emptyValue}';
@@ -311,6 +326,8 @@ class DebugStrings {
   // --- Storage --------------------------------------------------------------
   static const String storageTitle = 'Storage';
   static const String storageRefreshTooltip = 'Refresh current tab';
+  static const String storageHideInternal = 'Hide DebugLens keys';
+  static const String storageShowInternal = 'Show DebugLens keys';
   static const String storageTabPrefs = 'SharedPrefs';
   static const String storageTabDatabase = 'Database';
   static const String storageSearchTables = 'Search tables';
@@ -442,6 +459,7 @@ class DebugStrings {
   static const String networkTabOverview = 'Overview';
   static const String networkTabRequest = 'Request';
   static const String networkTabResponse = 'Response';
+  static const String networkTabHeaders = 'Headers';
   static const String networkCurlLabel = 'cURL';
   static const String networkCopyShareCurl = 'Copy + share cURL';
   static const String networkNoRequestBody = 'No request body';
@@ -464,6 +482,8 @@ class DebugStrings {
   static const String networkLabelReqSize = 'Req size';
   static const String networkLabelRespSize = 'Resp size';
   static const String networkQueryParams = 'Query parameters';
+  static const String networkPathParams = 'Path parameters';
+  static String networkPathSegment(int n) => 'segment $n';
   static const String networkNone = 'none';
 
   static String networkOk(int n) => 'OK $n';

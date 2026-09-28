@@ -34,11 +34,18 @@ enum DebugScreen {
   /// Device and app facts, and live screen metrics.
   device(DebugStrings.dashboardDevice, Icons.phone_iphone, DebugRoutes.device),
 
-  /// Registered services: remote config, crashes, analytics, traces.
+  /// Registered services: remote config, crashes, traces.
   services(
     DebugStrings.dashboardServices,
     Icons.cloud_outlined,
     DebugRoutes.services,
+  ),
+
+  /// Recorded analytics events.
+  analytics(
+    DebugStrings.dashboardAnalytics,
+    Icons.insights,
+    DebugRoutes.analytics,
   ),
 
   /// The app's active locale strings.
@@ -49,7 +56,7 @@ enum DebugScreen {
   /// Shown beside the switch in the Tester access sheet.
   final String label;
 
-  /// Shown on this screen's dashboard tile and in the Tester access sheet.
+  /// Shown in the Tester access sheet.
   final IconData icon;
 
   /// The panel route this screen is reached by — what the grant is keyed on.

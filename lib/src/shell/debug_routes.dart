@@ -13,7 +13,25 @@ class DebugRoutes {
   /// readable label (instead of `PageRouteBuilder`) on the Navigation screen.
   static const String panelRouteName = 'debug_lens/panel';
 
-  static const dashboard = 'debug_lens/dashboard';
+  static const noAccess = 'debug_lens/no_access';
+
+  // DebugLens's own bottom sheets and dialogs, pushed on the host navigator.
+  static const moreServicesSheet = 'debug_lens/sheet_more_services';
+  static const roleSheet = 'debug_lens/sheet_role';
+  static const testerAccessSheet = 'debug_lens/sheet_tester_access';
+  static const bubbleSheet = 'debug_lens/sheet_bubble';
+  static const limitsSheet = 'debug_lens/sheet_limits';
+  static const healthReportsSheet = 'debug_lens/sheet_health_reports';
+  static const apiCallsSheet = 'debug_lens/sheet_api_calls';
+  static const logCaptureSheet = 'debug_lens/sheet_log_capture';
+  static const appVersionDialog = 'debug_lens/dialog_app_version';
+  static const errorScreenDialog = 'debug_lens/dialog_error_screen';
+  static const clearDataDialog = 'debug_lens/dialog_clear_data';
+  static const limitEditDialog = 'debug_lens/dialog_limit_edit';
+  static const prefDetailDialog = 'debug_lens/dialog_pref_detail';
+  static const configValueDialog = 'debug_lens/dialog_config_value';
+  static const configEditDialog = 'debug_lens/dialog_config_edit';
+  static const serviceRestartDialog = 'debug_lens/dialog_service_restart';
   static const network = 'debug_lens/network';
   static const networkDetail = 'debug_lens/network/detail';
   static const networkHistory = 'debug_lens/network/history';
@@ -27,6 +45,7 @@ class DebugRoutes {
   static const databaseData = 'debug_lens/storage/database/table';
   static const device = 'debug_lens/device';
   static const services = 'debug_lens/services';
+  static const analytics = 'debug_lens/analytics';
   static const serviceDetail = 'debug_lens/services/detail';
   static const locale = 'debug_lens/locale';
   static const settings = 'debug_lens/settings';

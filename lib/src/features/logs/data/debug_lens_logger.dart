@@ -249,6 +249,13 @@ class DebugLensLogger extends ChangeNotifier with DeferredNotifier {
     required DebugLogLevel level,
     bool force = false,
   }) {
+    /// Off, not printing and nobody observing: nothing would use the record.
+    if (!DebugLensConfig.enabled &&
+        !printToConsole &&
+        !force &&
+        _onLog.isEmpty) {
+      return;
+    }
     final logBuffer = StringBuffer(DebugConstants.logTagPrefix);
     if (name?.isNotEmpty ?? false) logBuffer.write('-$name');
     final logName = logBuffer.toString();

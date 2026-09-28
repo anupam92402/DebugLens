@@ -4,7 +4,7 @@ import '../../shell/debug_routes.dart';
 import 'debug_colors.dart';
 
 /// Maps a route to its per-tool accent color — the router themes each screen
-/// with its route's accent and the dashboard tints each tile the same. Colors
+/// with its route's accent and the bottom bar tints each tab the same. Colors
 /// live in [DebugColors].
 class DebugAccents {
   DebugAccents._();
@@ -30,6 +30,8 @@ class DebugAccents {
         return DebugColors.device;
       case DebugRoutes.services:
         return DebugColors.service;
+      case DebugRoutes.analytics:
+        return DebugColors.analytics;
       case DebugRoutes.locale:
         return DebugColors.locale;
       case DebugRoutes.settings:

@@ -7,6 +7,8 @@ import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/util/copy_share.dart';
 import 'config_value_block.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Shows [entry] read-only — the counterpart to `showConfigEditDialog` for a
 /// service showing its source of truth, where a value can be inspected and
@@ -15,8 +17,9 @@ Future<void> showConfigValueDialog(
   BuildContext context,
   DebugLensConfigEntry entry,
 ) {
-  return showDialog<void>(
-    context: context,
+  return showDebugDialog<void>(
+    context,
+    name: DebugRoutes.configValueDialog,
     builder: (_) => _ConfigValueDialog(entry: entry),
   );
 }

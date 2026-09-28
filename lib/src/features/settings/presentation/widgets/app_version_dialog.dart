@@ -5,11 +5,14 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../data/app_version_store.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Prompts for a device-local app version, applied on the next app start.
 Future<void> showAppVersionDialog(BuildContext context) {
-  return showDialog<void>(
-    context: context,
+  return showDebugDialog<void>(
+    context,
+    name: DebugRoutes.appVersionDialog,
     builder: (_) => const _AppVersionDialog(),
   );
 }

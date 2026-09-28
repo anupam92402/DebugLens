@@ -5,8 +5,10 @@ import 'package:bloc/bloc.dart';
 import '../../logs/data/debug_lens_logger.dart';
 import '../../logs/domain/log_origin.dart';
 import '../../../core/debug_store.dart';
+import '../../../shared/debug_strings.dart';
 import '../../../shared/util/payload_budget.dart';
 import '../domain/bloc_event.dart';
+import '../../../core/debug_lens_config.dart';
 
 /// [BlocObserver] that routes every Bloc/Cubit lifecycle event into the Bloc
 /// screen (via [DebugStore.recordBlocEvent]) and the Logs feed (tagged
@@ -49,6 +51,9 @@ class DebugLensBlocObserver extends BlocObserver {
     }
   }
 
+  /// Whether events are captured: [showLogs] and the master switch both on.
+  bool get _active => showLogs && DebugLensConfig.enabled;
+
   /// Defers [body] to the next microtask. `onCreate` fires synchronously from
   /// `BlocBase`'s constructor; notifying the store mid-`BlocProvider.create()`
   /// crashes Provider's introspection, so we let that chain finish first.
@@ -57,7 +62,7 @@ class DebugLensBlocObserver extends BlocObserver {
   @override
   void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     _defer(() {
@@ -69,7 +74,7 @@ class DebugLensBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     final eventStr = PayloadBudget.describe(event);
@@ -86,7 +91,7 @@ class DebugLensBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     final current = PayloadBudget.describe(change.currentState);
@@ -108,7 +113,7 @@ class DebugLensBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     final eventStr = PayloadBudget.describe(transition.event);
@@ -129,7 +134,7 @@ class DebugLensBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     _defer(() {
@@ -144,9 +149,38 @@ class DebugLensBlocObserver extends BlocObserver {
   }
 
   @override
+  // ignore: must_call_super
+  void onDone(
+    Bloc<dynamic, dynamic> bloc,
+    Object? event, [
+    Object? error,
+    StackTrace? stackTrace,
+  ]) {
+    if (!_active) return;
+    final blocName = bloc.runtimeType.toString();
+    final tag = _name(bloc);
+    final eventStr = PayloadBudget.describe(event);
+    final errorStr = PayloadBudget.describe(error);
+    final traceStr = PayloadBudget.describe(stackTrace);
+    _defer(() {
+      _store.recordBlocEvent(
+        kind: BlocActionKind.done,
+        blocName: blocName,
+        event: eventStr,
+        error: errorStr,
+        stackTrace: traceStr,
+      );
+      _mirror(
+        DebugStrings.blocSummaryDone(eventStr, failed: error != null),
+        tag,
+      );
+    });
+  }
+
+  @override
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
-    if (!showLogs) return;
+    if (!_active) return;
     final blocName = bloc.runtimeType.toString();
     final tag = _name(bloc);
     _defer(() {

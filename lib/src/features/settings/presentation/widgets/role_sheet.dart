@@ -6,20 +6,23 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Bottom sheet showing the panel's two access roles.
 class RoleSheet extends StatelessWidget {
   const RoleSheet({super.key});
 
-  static Future<void> show(BuildContext context) =>
-      showDebugBottomSheet<void>(context, builder: (_) => const RoleSheet());
+  static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
+    context,
+    name: DebugRoutes.roleSheet,
+    builder: (_) => const RoleSheet(),
+  );
 
   @override
   Widget build(BuildContext context) {
     final role = context.watch<DebugRoleController>();
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: Column(

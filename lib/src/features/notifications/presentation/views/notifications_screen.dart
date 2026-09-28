@@ -8,6 +8,7 @@ import '../../data/notification_log_share.dart';
 import '../widgets/deeplinks_tab.dart';
 import '../widgets/notifications_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Two-tab view of push/local notifications + captured deep-links.
 class NotificationsScreen extends StatefulWidget {
@@ -56,10 +57,17 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final store = context.watch<DebugStore>();
+    // Both feeds: the tab labels carry their counts.
+    context.select<DebugStore, (int, int)>(
+      (s) => (
+        s.revisionOf(DebugFeed.notifications),
+        s.revisionOf(DebugFeed.deeplinks),
+      ),
+    );
+    final store = context.read<DebugStore>();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.notificationsTitle),
         actions: [
           ListenableBuilder(

@@ -45,31 +45,76 @@ class _JsonNodeState extends State<JsonNode> {
   @override
   Widget build(BuildContext context) {
     final v = widget.value;
-    if (v is Map) return _composite(_mapEntries(v), '{', '}');
-    if (v is List) return _composite(_listEntries(v), '[', ']');
-    return _leaf(v);
+    final search = widget.search;
+    final keyIndex = _matchIndex(isKey: true);
+    if (v is Map || v is List) {
+      return _JsonBranch(
+        entries: v is Map ? _mapEntries(v) : _listEntries(v as List),
+        openBrace: v is Map ? '{' : '[',
+        closeBrace: v is Map ? '}' : ']',
+        label: widget.label,
+        path: widget.path,
+        search: search,
+        matches: widget.matches,
+        keyIndex: keyIndex,
+        // Forced open while searching if a descendant matches, so the hit is
+        // seen.
+        expanded: _expanded || (search != null && _descendantHasMatch),
+        onToggle: () => setState(() => _expanded = !_expanded),
+      );
+    }
+    return _JsonLeaf(
+      value: v,
+      label: widget.label,
+      search: search,
+      keyIndex: keyIndex,
+      valueIndex: _matchIndex(isKey: false),
+    );
   }
 
-  Iterable<MapEntry<String, Object?>> _mapEntries(Map<dynamic, dynamic> map) =>
-      map.entries.map((e) => MapEntry(e.key.toString(), e.value));
+  List<MapEntry<String, Object?>> _mapEntries(Map<dynamic, dynamic> map) => [
+    for (final e in map.entries) MapEntry(e.key.toString(), e.value),
+  ];
 
-  Iterable<MapEntry<String, Object?>> _listEntries(List<dynamic> list) =>
-      list.asMap().entries.map((e) => MapEntry('[${e.key}]', e.value));
+  List<MapEntry<String, Object?>> _listEntries(List<dynamic> list) => [
+    for (final e in list.asMap().entries) MapEntry('[${e.key}]', e.value),
+  ];
+}
 
-  Widget _composite(
-    Iterable<MapEntry<String, Object?>> entries,
-    String openBrace,
-    String closeBrace,
-  ) {
-    final list = entries.toList();
-    final summary = '$openBrace${list.length}$closeBrace';
-    final search = widget.search;
+/// A map or list: a tappable header with its size, and its children when
+/// [expanded].
+class _JsonBranch extends StatelessWidget {
+  final List<MapEntry<String, Object?>> entries;
+  final String openBrace;
+  final String closeBrace;
+  final String label;
+  final String path;
+  final JsonSearch? search;
+  final List<JsonTreeMatch>? matches;
+
+  /// Global index of this node's key match, or -1.
+  final int keyIndex;
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  const _JsonBranch({
+    required this.entries,
+    required this.openBrace,
+    required this.closeBrace,
+    required this.label,
+    required this.path,
+    required this.search,
+    required this.matches,
+    required this.keyIndex,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final search = this.search;
+    final summary = '$openBrace${entries.length}$closeBrace';
     final accent = Theme.of(context).colorScheme.primary;
-
-    // Force open while searching if a descendant matches, so the hit is seen.
-    final expanded = _expanded || (search != null && _descendantHasMatch);
-
-    final keyIndex = _matchIndex(isKey: true);
     final keyActive = search != null && keyIndex == search.activeIndex;
 
     final labelStyle = monoStyle(size: 12, color: DebugColors.textMuted);
@@ -82,18 +127,18 @@ class _JsonNodeState extends State<JsonNode> {
             size: 16,
             color: DebugColors.textMuted,
           ),
-          if (widget.label.isNotEmpty)
+          if (label.isNotEmpty)
             (keyIndex >= 0)
                 ? Text.rich(
                     highlightSpan(
-                      '${widget.label}: ',
+                      '$label: ',
                       search!.query,
                       labelStyle,
                       active: keyActive,
                       accent: accent,
                     ),
                   )
-                : Text('${widget.label}: ', style: labelStyle),
+                : Text('$label: ', style: labelStyle),
           Text(
             summary,
             style: monoStyle(
@@ -110,7 +155,7 @@ class _JsonNodeState extends State<JsonNode> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
+          onTap: onToggle,
           borderRadius: BorderRadius.circular(4),
           child: keyActive
               ? KeyedSubtree(key: search.activeKey, child: header)
@@ -122,13 +167,13 @@ class _JsonNodeState extends State<JsonNode> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final e in list)
+                for (final e in entries)
                   JsonNode(
                     value: e.value,
                     label: e.key,
-                    path: '${widget.path}/${e.key}',
-                    search: widget.search,
-                    matches: widget.matches,
+                    path: '$path/${e.key}',
+                    search: search,
+                    matches: matches,
                   ),
               ],
             ),
@@ -136,14 +181,31 @@ class _JsonNodeState extends State<JsonNode> {
       ],
     );
   }
+}
 
-  Widget _leaf(Object? v) {
-    final (label, color) = _leafStyle(v);
-    final search = widget.search;
+/// A primitive: its key and its value, coloured by type.
+class _JsonLeaf extends StatelessWidget {
+  final Object? value;
+  final String label;
+  final JsonSearch? search;
+
+  /// Global indexes of this node's key and value matches, or -1.
+  final int keyIndex;
+  final int valueIndex;
+
+  const _JsonLeaf({
+    required this.value,
+    required this.label,
+    required this.search,
+    required this.keyIndex,
+    required this.valueIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final search = this.search;
+    final (text, color) = _style(value);
     final accent = Theme.of(context).colorScheme.primary;
-
-    final keyIndex = _matchIndex(isKey: true);
-    final valueIndex = _matchIndex(isKey: false);
     final keyActive = search != null && keyIndex == search.activeIndex;
     final valueActive = search != null && valueIndex == search.activeIndex;
 
@@ -155,33 +217,33 @@ class _JsonNodeState extends State<JsonNode> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Reserve the same indent as the composite chevron so siblings line
+          // Reserve the same indent as the branch chevron so siblings line
           // up vertically whether they're leaves or branches.
           const SizedBox(width: 16),
-          if (widget.label.isNotEmpty)
+          if (label.isNotEmpty)
             (keyIndex >= 0)
                 ? Text.rich(
                     highlightSpan(
-                      '${widget.label}: ',
+                      '$label: ',
                       search!.query,
                       labelStyle,
                       active: keyActive,
                       accent: accent,
                     ),
                   )
-                : Text('${widget.label}: ', style: labelStyle),
+                : Text('$label: ', style: labelStyle),
           Expanded(
             child: (valueIndex >= 0)
                 ? SelectableText.rich(
                     highlightSpan(
-                      label,
+                      text,
                       search!.query,
                       valueStyle,
                       active: valueActive,
                       accent: accent,
                     ),
                   )
-                : SelectableText(label, style: valueStyle),
+                : SelectableText(text, style: valueStyle),
           ),
         ],
       ),
@@ -193,7 +255,7 @@ class _JsonNodeState extends State<JsonNode> {
 
   /// Colors mirror common JSON syntax-highlighting conventions so types are
   /// easy to scan at a glance.
-  (String, Color) _leafStyle(Object? v) {
+  static (String, Color) _style(Object? v) {
     if (v == null) {
       return ('null', DebugColors.textMuted);
     }

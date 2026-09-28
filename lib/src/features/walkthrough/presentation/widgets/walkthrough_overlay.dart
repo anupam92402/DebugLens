@@ -24,7 +24,7 @@ class WalkthroughOverlay extends StatefulWidget {
 class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
   int _index = 0;
 
-  /// The dashboard's own accent, so the tour reads as part of the panel rather
+  /// The panel's own accent, so the tour reads as part of the panel rather
   /// than as a stock Material dialog dropped on top of it.
   static const Color _accent = DebugColors.base;
 
@@ -64,16 +64,44 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
               ),
             ),
           ),
-          _caption(media.size, media.padding, hole),
+          _Caption(
+            screen: media.size,
+            safeArea: media.padding,
+            hole: hole,
+            card: _CaptionCard(
+              step: step,
+              index: _index,
+              count: widget.steps.length,
+              isLast: _isLast,
+              onSkip: widget.onFinish,
+              onNext: _next,
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  /// Placed on whichever side of the hole has more room, and centred when this
-  /// step has nothing to point at.
-  Widget _caption(Size screen, EdgeInsets safeArea, Rect? hole) {
-    if (hole == null) return Center(child: _card());
+/// The caption, placed on whichever side of [hole] has more room, and centred
+/// when the step has nothing to point at.
+class _Caption extends StatelessWidget {
+  final Size screen;
+  final EdgeInsets safeArea;
+  final Rect? hole;
+  final Widget card;
+
+  const _Caption({
+    required this.screen,
+    required this.safeArea,
+    required this.hole,
+    required this.card,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hole = this.hole;
+    if (hole == null) return Center(child: card);
 
     final below = screen.height - hole.bottom - safeArea.bottom;
     final above = hole.top - safeArea.top;
@@ -81,38 +109,65 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
     return Positioned(
       left: 0,
       right: 0,
-      top: preferBelow ? hole.bottom + _gap : safeArea.top + _gap,
+      top: preferBelow
+          ? hole.bottom + _WalkthroughOverlayState._gap
+          : safeArea.top + _WalkthroughOverlayState._gap,
       bottom: preferBelow
-          ? safeArea.bottom + _gap
-          : screen.height - hole.top + _gap,
+          ? safeArea.bottom + _WalkthroughOverlayState._gap
+          : screen.height - hole.top + _WalkthroughOverlayState._gap,
       child: Align(
         alignment: preferBelow ? Alignment.topCenter : Alignment.bottomCenter,
-        child: SingleChildScrollView(child: _card()),
+        child: SingleChildScrollView(child: card),
       ),
     );
   }
+}
 
-  Widget _card() {
-    final step = widget.steps[_index];
+/// The step's title, body and Skip / Next, with progress dots on top.
+class _CaptionCard extends StatelessWidget {
+  final WalkthroughStep step;
+  final int index;
+  final int count;
+  final bool isLast;
+  final VoidCallback onSkip;
+  final VoidCallback onNext;
+
+  const _CaptionCard({
+    required this.step,
+    required this.index,
+    required this.count,
+    required this.isLast,
+    required this.onSkip,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          // Accent bleeding in from the top-left — the same treatment the
-          // dashboard tiles get, so the card belongs to the panel.
+          // Accent bleeding in from the top-left, so the card belongs to the
+          // panel.
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color.lerp(DebugColors.surface, _accent, 0.20)!,
+              Color.lerp(
+                DebugColors.surface,
+                _WalkthroughOverlayState._accent,
+                0.20,
+              )!,
               DebugColors.surface,
             ],
           ),
-          border: Border.all(color: _accent.withValues(alpha: 0.45)),
+          border: Border.all(
+            color: _WalkthroughOverlayState._accent.withValues(alpha: 0.45),
+          ),
           boxShadow: [
             BoxShadow(
-              color: _accent.withValues(alpha: 0.20),
+              color: _WalkthroughOverlayState._accent.withValues(alpha: 0.20),
               blurRadius: 28,
               spreadRadius: -6,
             ),
@@ -124,7 +179,7 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _dots(),
+              _Dots(count: count, index: index),
               const SizedBox(height: 12),
               Text(
                 step.title,
@@ -143,7 +198,7 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
               Row(
                 children: [
                   TextButton(
-                    onPressed: widget.onFinish,
+                    onPressed: onSkip,
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       minimumSize: Size.zero,
@@ -155,18 +210,18 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
                   ),
                   const Spacer(),
                   FilledButton(
-                    onPressed: _next,
+                    onPressed: onNext,
                     // Styled explicitly: the default Material lavender belongs
                     // to no part of this palette.
                     style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
+                      backgroundColor: _WalkthroughOverlayState._accent,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 22,
                         vertical: 12,
                       ),
                     ),
                     child: Text(
-                      _isLast
+                      isLast
                           ? DebugStrings.walkthroughDone
                           : DebugStrings.walkthroughNext,
                       style: monoStyle(
@@ -184,21 +239,29 @@ class _WalkthroughOverlayState extends State<WalkthroughOverlay> {
       ),
     );
   }
+}
 
-  /// Progress as pills — the current step stretched, the rest dim. Reads at a
-  /// glance where "2 of 3" needed reading.
-  Widget _dots() {
+/// Progress as pills — the current step stretched, the rest dim. Reads at a
+/// glance where "2 of 3" needed reading.
+class _Dots extends StatelessWidget {
+  final int count;
+  final int index;
+
+  const _Dots({required this.count, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        for (var i = 0; i < widget.steps.length; i++)
+        for (var i = 0; i < count; i++)
           Container(
             margin: const EdgeInsets.only(right: 5),
-            width: i == _index ? 18 : 6,
+            width: i == index ? 18 : 6,
             height: 6,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(3),
-              color: i == _index
-                  ? _accent
+              color: i == index
+                  ? _WalkthroughOverlayState._accent
                   : DebugColors.textMuted.withValues(alpha: 0.30),
             ),
           ),

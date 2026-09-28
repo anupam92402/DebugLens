@@ -16,9 +16,35 @@ import '../features/services/data/debug_trace_store.dart';
 import '../features/settings/data/debug_limits_store.dart';
 import '../features/settings/domain/debug_limit.dart';
 
+/// A feed [DebugStore] holds, each with its own revision.
+enum DebugFeed {
+  network,
+  apiHistory,
+  bloc,
+  navEvents,
+  navStacks,
+  notifications,
+  deeplinks,
+}
+
 /// Holds all captured debug data in memory.
 class DebugStore extends ChangeNotifier with DeferredNotifier {
   DebugStore._();
+
+  final Map<DebugFeed, int> _revisions = {
+    for (final feed in DebugFeed.values) feed: 0,
+  };
+
+  /// Bumped on every change to [feed]; select on it to rebuild for that feed
+  /// only.
+  int revisionOf(DebugFeed feed) => _revisions[feed]!;
+
+  void _changed(List<DebugFeed> feeds) {
+    for (final feed in feeds) {
+      _revisions[feed] = _revisions[feed]! + 1;
+    }
+    scheduleNotification();
+  }
 
   /// Shared instance: capture sources (observers, interceptors, loggers) write
   /// here, and the UI reads this same instance via Provider `.value`.
@@ -31,9 +57,8 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
   static int _cap(DebugLimit limit) => DebugLimits.instance.of(limit);
 
   /// Session-scoped call counts per endpoint (method + path), surfaced on the
-  /// Network → History screen. Independent of [network]: [clearNetwork] does
-  /// not reset it, so the history reflects the whole session until the app is
-  /// killed. Keyed by [_historyKey].
+  /// Network → History screen. Outlives [network]'s trimming; reset by
+  /// [clearNetwork]. Keyed by [_historyKey].
   final Map<String, ApiCallStat> _apiStats = {};
 
   /// Last status counted for each entry id, so [updateNetwork] can move a call
@@ -115,7 +140,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
       ),
     );
     if (navEvents.length > _cap(DebugLimit.navigation)) navEvents.removeAt(0);
-    scheduleNotification();
+    _changed(const [DebugFeed.navEvents]);
   }
 
   /// Replaces the live stack snapshot for [navigator] (bottom → top). An empty
@@ -128,14 +153,16 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     } else {
       navStacks[navigator] = List.of(routes);
     }
-    scheduleNotification();
+    _changed(const [DebugFeed.navStacks]);
   }
 
   /// Drops a navigator's stack snapshot — call when a nested navigator is
   /// disposed (see `DebugLensNavigatorObserver.detach`).
   void removeNavStack(String navigator) {
     if (!DebugLensConfig.enabled) return;
-    if (navStacks.remove(navigator) != null) scheduleNotification();
+    if (navStacks.remove(navigator) != null) {
+      _changed(const [DebugFeed.navStacks]);
+    }
   }
 
   /// Returns a deep copy of [args] decoupled from the app's live object graph,
@@ -154,7 +181,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     network.add(entry);
     if (network.length > _cap(DebugLimit.network)) network.removeAt(0);
     _recordHistory(entry);
-    scheduleNotification();
+    _changed(const [DebugFeed.network, DebugFeed.apiHistory]);
   }
 
   /// Replaces the entry with id [entry.id] (typically a pending request being
@@ -168,7 +195,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
       network[idx] = entry;
     }
     _updateHistory(entry);
-    scheduleNotification();
+    _changed(const [DebugFeed.network, DebugFeed.apiHistory]);
   }
 
   /// Marks a still-pending entry (by [id]) as errored — used by the
@@ -179,14 +206,15 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     if (idx == -1 || !network[idx].isPending) return;
     network[idx] = network[idx].copyWith(error: message);
     _updateHistory(network[idx]);
-    scheduleNotification();
+    _changed(const [DebugFeed.network, DebugFeed.apiHistory]);
   }
 
-  /// Clears the captured network entries. Intentionally does **not** touch the
-  /// session call history ([apiHistory]) — that survives until app restart.
+  /// Clears the captured network entries and the call history ([apiHistory]).
   void clearNetwork() {
     network.clear();
-    scheduleNotification();
+    _apiStats.clear();
+    _entryStatus.clear();
+    _changed(const [DebugFeed.network, DebugFeed.apiHistory]);
   }
 
   // --- Session call history (History screen) -------------------------------
@@ -212,6 +240,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
       _historyKey(entry),
       () => ApiCallStat(
         method: entry.method,
+        rawMethod: entry.rawMethod,
         path: entry.path,
         lastCalled: entry.requestTime,
       ),
@@ -249,7 +278,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
   void clearNavigation() {
     navEvents.clear();
     _navSeq = 0;
-    scheduleNotification();
+    _changed(const [DebugFeed.navEvents]);
   }
 
   /// Appends a Bloc lifecycle event (called from `DebugLensBlocObserver`).
@@ -279,14 +308,14 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
       ),
     );
     if (blocEvents.length > _cap(DebugLimit.bloc)) blocEvents.removeAt(0);
-    scheduleNotification();
+    _changed(const [DebugFeed.bloc]);
   }
 
   /// Clears only the Bloc events list.
   void clearBlocEvents() {
     blocEvents.clear();
     _blocSeq = 0;
-    scheduleNotification();
+    _changed(const [DebugFeed.bloc]);
   }
 
   /// Deep-copies a notification [payload] so the logged entry is decoupled from
@@ -309,7 +338,7 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     if (notifications.length > _cap(DebugLimit.notifications)) {
       notifications.removeLast();
     }
-    scheduleNotification();
+    _changed(const [DebugFeed.notifications]);
   }
 
   /// Records a captured deep-link (called from `DebugLens.recordDeeplink`).
@@ -317,19 +346,19 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     if (!DebugLensConfig.enabled) return;
     deeplinks.insert(0, entry);
     if (deeplinks.length > _cap(DebugLimit.deeplinks)) deeplinks.removeLast();
-    scheduleNotification();
+    _changed(const [DebugFeed.deeplinks]);
   }
 
   /// Clears the captured notifications (Notifications tab).
   void clearNotifications() {
     notifications.clear();
-    scheduleNotification();
+    _changed(const [DebugFeed.notifications]);
   }
 
   /// Clears the captured deep-links (Deep-links tab).
   void clearDeeplinks() {
     deeplinks.clear();
-    scheduleNotification();
+    _changed(const [DebugFeed.deeplinks]);
   }
 
   /// Wipes every captured feed — not just the ones this store owns.
@@ -343,7 +372,14 @@ class DebugStore extends ChangeNotifier with DeferredNotifier {
     deeplinks.clear();
     navEvents.clear();
     _navSeq = 0;
-    scheduleNotification();
+    _changed(const [
+      DebugFeed.network,
+      DebugFeed.apiHistory,
+      DebugFeed.bloc,
+      DebugFeed.notifications,
+      DebugFeed.deeplinks,
+      DebugFeed.navEvents,
+    ]);
 
     // Each notifies its own listeners.
     DebugLensLogger().clear();

@@ -22,6 +22,9 @@ import '../widgets/error_screen_dialog.dart';
 import '../widgets/limits_sheet.dart';
 import '../widgets/role_sheet.dart';
 import '../widgets/tester_access_sheet.dart';
+import '../../../../shell/debug_app_bar.dart';
+import '../../../../shell/tab_usage_store.dart';
+import '../widgets/bubble_glyph.dart';
 
 /// Panel settings: the access role, what a tester may open, how much of each
 /// feed is retained, and the one destructive action.
@@ -32,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final role = context.watch<DebugRoleController>();
     return Scaffold(
-      appBar: AppBar(title: const Text(DebugStrings.settingsTitle)),
+      appBar: DebugAppBar(title: const Text(DebugStrings.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 6),
         children: [
@@ -41,7 +44,7 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _tile(
+                _SettingsTile(
                   icon: Icons.badge_outlined,
                   title: DebugStrings.settingsMode,
                   value: role.isDeveloper
@@ -53,7 +56,7 @@ class SettingsScreen extends StatelessWidget {
                 // to tester, and granting access is not a tester's call.
                 if (role.isDeveloper) ...[
                   const Divider(height: 1, color: DebugColors.border),
-                  _tile(
+                  _SettingsTile(
                     icon: Icons.lock_open_outlined,
                     title: DebugStrings.settingsTesterAccess,
                     value: DebugStrings.settingsTesterAccessCount(
@@ -76,7 +79,7 @@ class SettingsScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: ListenableBuilder(
               listenable: DebugLimits.instance,
-              builder: (context, _) => _tile(
+              builder: (context, _) => _SettingsTile(
                 icon: Icons.data_usage,
                 title: DebugStrings.settingsLimits,
                 value: DebugStrings.settingsLimitsCount(
@@ -95,11 +98,12 @@ class SettingsScreen extends StatelessWidget {
                   listenable: BubbleStore.instance,
                   builder: (context, _) {
                     final bubble = BubbleStore.instance;
-                    return _tile(
+                    return _SettingsTile(
                       icon: Icons.adjust,
                       // The chosen mark itself, which for the Flutter logo
                       // isn't an `IconData` at all.
-                      leading: bubble.icon.glyph(
+                      leading: BubbleGlyph(
+                        icon: bubble.icon,
                         size: 20,
                         color: DebugColors.textPrimary,
                       ),
@@ -111,10 +115,49 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const Divider(height: 1, color: DebugColors.border),
                 ListenableBuilder(
+                  listenable: TabUsageStore.instance,
+                  builder: (context, _) => SwitchListTile(
+                    secondary: const Icon(
+                      Icons.swap_horiz,
+                      size: 20,
+                      color: DebugColors.textPrimary,
+                    ),
+                    title: Text(
+                      DebugStrings.settingsTabAdaptive,
+                      style: monoStyle(size: 13),
+                    ),
+                    subtitle: Text(
+                      DebugStrings.settingsTabAdaptiveHint,
+                      style: monoStyle(size: 11, color: DebugColors.textMuted),
+                    ),
+                    value: TabUsageStore.instance.adaptive,
+                    onChanged: TabUsageStore.instance.setAdaptive,
+                  ),
+                ),
+                const Divider(height: 1, color: DebugColors.border),
+                ListenableBuilder(
+                  listenable: TabUsageStore.instance,
+                  builder: (context, _) => _SettingsTile(
+                    icon: Icons.restart_alt,
+                    title: DebugStrings.settingsTabOrder,
+                    value: TabUsageStore.instance.isCustom
+                        ? DebugStrings.settingsTabOrderLearned
+                        : DebugStrings.settingsTabOrderDefault,
+                    onTap: () {
+                      TabUsageStore.instance.reset();
+                      DebugToast.show(
+                        context,
+                        DebugStrings.settingsTabOrderResetToast,
+                      );
+                    },
+                  ),
+                ),
+                const Divider(height: 1, color: DebugColors.border),
+                ListenableBuilder(
                   listenable: AppVersionStore.instance,
                   builder: (context, _) {
                     final store = AppVersionStore.instance;
-                    return _tile(
+                    return _SettingsTile(
                       icon: Icons.info_outline,
                       title: DebugStrings.settingsAppVersion,
                       // The version in force now — an edit shows in the
@@ -133,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
                 const Divider(height: 1, color: DebugColors.border),
                 // Documents the hook rather than toggling it — installing
                 // `ErrorWidget.builder` is the host's call, not the panel's.
-                _tile(
+                _SettingsTile(
                   icon: Icons.report_gmailerrorred_outlined,
                   title: DebugStrings.settingsErrorScreen,
                   value: DebugStrings.settingsErrorScreenSetup,
@@ -150,7 +193,7 @@ class SettingsScreen extends StatelessWidget {
                     final startedAt = health.startedAt;
                     return Column(
                       children: [
-                        _tile(
+                        _SettingsTile(
                           icon: startedAt == null
                               ? Icons.monitor_heart_outlined
                               : Icons.stop_circle_outlined,
@@ -169,7 +212,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         if (health.hasReports) ...[
                           const Divider(height: 1, color: DebugColors.border),
-                          _tile(
+                          _SettingsTile(
                             icon: Icons.history,
                             title: DebugStrings.settingsHealthPrevious,
                             value: DebugStrings.settingsHealthPreviousCount(
@@ -228,18 +271,31 @@ class SettingsScreen extends StatelessWidget {
       context,
     ).pushNamed(DebugRoutes.healthReport, arguments: report);
   }
+}
 
-  /// Navigation-style row: what it is on the left, its current value on the
-  /// right, opening a sheet on tap.
-  Widget _tile({
-    required IconData icon,
-    required String title,
-    required String value,
-    String? subtitle,
-    VoidCallback? onTap,
-    bool enabled = true,
-    Widget? leading,
-  }) {
+/// Navigation-style row: what it is on the left, its current value on the
+/// right, opening a sheet on tap.
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final String? subtitle;
+  final VoidCallback? onTap;
+  final bool enabled;
+  final Widget? leading;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    this.subtitle,
+    this.onTap,
+    this.enabled = true,
+    this.leading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final tone = enabled ? DebugColors.textPrimary : DebugColors.textMuted;
     return ListTile(
       // [leading] wins when a row's mark isn't a font glyph.
@@ -248,7 +304,7 @@ class SettingsScreen extends StatelessWidget {
       subtitle: subtitle == null
           ? null
           : Text(
-              subtitle,
+              subtitle!,
               style: monoStyle(size: 11, color: DebugColors.textMuted),
             ),
       trailing: Row(

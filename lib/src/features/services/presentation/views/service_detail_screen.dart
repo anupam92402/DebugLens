@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/debug_service_source.dart';
@@ -12,6 +13,9 @@ import '../widgets/service_config_edit_dialog.dart';
 import '../widgets/service_config_view.dart';
 import '../widgets/service_config_value_dialog.dart';
 import '../widgets/service_entry_tile.dart';
+import '../../../../shell/debug_app_bar.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Shows one registered service. Read-only services render a flat,
 /// navigation-style list of expandable record rows; a service exposing a
@@ -223,8 +227,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
 
   /// Confirms the source switch. Returns true to apply, false/null to cancel.
   Future<bool?> _showRestartDialog() {
-    return showDialog<bool>(
-      context: context,
+    return showDebugDialog<bool>(
+      context,
+      name: DebugRoutes.serviceRestartDialog,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: DebugColors.surface,
         title: const Text(DebugStrings.serviceRestartTitle),
@@ -249,7 +254,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
   Widget build(BuildContext context) {
     final editor = _editor;
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: Text(widget.service.name, style: monoStyle(size: 15)),
         actions: [
           IconButton(
@@ -278,48 +283,96 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
               onPressed: _clear,
             ),
         ],
-        bottom: editor == null ? null : _sourceToggle(editor),
+        bottom: editor == null
+            ? null
+            : _SourceToggle(
+                editor: editor,
+                revision: _editorRevision,
+                onToggle: _toggleOverride,
+              ),
       ),
-      body: editor != null ? _buildEditor(editor) : _buildReadOnly(),
+      body: editor != null
+          ? _EditorBody(
+              editor: editor,
+              groups: _groups,
+              changes: Listenable.merge([_query, _sortAlpha, _editorRevision]),
+              onSearch: (v) => _query.value = v,
+              sortAlpha: _sortAlpha,
+              entries: () => _visibleEntries,
+              filtered: () => _q.isNotEmpty,
+              onEdit: _editEntry,
+            )
+          : _ReadOnlyBody(
+              loading: _loading,
+              empty: _groups.isEmpty,
+              changes: Listenable.merge([_query, _newestFirst]),
+              onSearch: (v) => _query.value = v,
+              newestFirst: _newestFirst,
+              visible: () => _visibleGroups,
+            ),
     );
   }
+}
 
-  PreferredSizeWidget _sourceToggle(DebugLensConfigEditor editor) {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(52),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        child: ValueListenableBuilder<int>(
-          valueListenable: _editorRevision,
-          builder: (_, _, _) => SegmentedButton<bool>(
-            segments: [
-              ButtonSegment(
-                value: false,
-                label: Text(editor.sourceLabel),
-                icon: const Icon(Icons.cloud_outlined, size: 16),
-                tooltip: DebugStrings.serviceSourceRemoteTooltip(
-                  editor.sourceLabel,
-                ),
+/// Remote / Custom switch under the app bar of an editable service.
+class _SourceToggle extends StatelessWidget implements PreferredSizeWidget {
+  final DebugLensConfigEditor editor;
+
+  /// Bumped when the editor's state moves.
+  final ValueListenable<int> revision;
+  final ValueChanged<bool> onToggle;
+
+  const _SourceToggle({
+    required this.editor,
+    required this.revision,
+    required this.onToggle,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(52);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: ValueListenableBuilder<int>(
+        valueListenable: revision,
+        builder: (_, _, _) => SegmentedButton<bool>(
+          segments: [
+            ButtonSegment(
+              value: false,
+              label: Text(editor.sourceLabel),
+              icon: const Icon(Icons.cloud_outlined, size: 16),
+              tooltip: DebugStrings.serviceSourceRemoteTooltip(
+                editor.sourceLabel,
               ),
-              const ButtonSegment(
-                value: true,
-                label: Text(DebugStrings.serviceSourceCustom),
-                icon: Icon(Icons.tune, size: 16),
-                tooltip: DebugStrings.serviceSourceCustomTooltip,
-              ),
-            ],
-            selected: {editor.overrideEnabled},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => _toggleOverride(s.first),
-          ),
+            ),
+            const ButtonSegment(
+              value: true,
+              label: Text(DebugStrings.serviceSourceCustom),
+              icon: Icon(Icons.tune, size: 16),
+              tooltip: DebugStrings.serviceSourceCustomTooltip,
+            ),
+          ],
+          selected: {editor.overrideEnabled},
+          showSelectedIcon: false,
+          onSelectionChanged: (s) => onToggle(s.first),
         ),
       ),
     );
   }
+}
 
-  /// Search plus [sortControl] — A–Z for config keys, newest/oldest for
-  /// records. The two modes sort different things, so each brings its own.
-  Widget _searchSortBar(Widget sortControl) {
+/// Search plus [sortControl] — A–Z for config keys, newest/oldest for
+/// records. The two modes sort different things, so each brings its own.
+class _SearchSortBar extends StatelessWidget {
+  final ValueChanged<String> onSearch;
+  final Widget sortControl;
+
+  const _SearchSortBar({required this.onSearch, required this.sortControl});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       child: Row(
@@ -327,7 +380,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
           Expanded(
             child: DebugSearchField(
               hint: DebugStrings.serviceSearchHint,
-              onChanged: (v) => _query.value = v,
+              onChanged: onSearch,
             ),
           ),
           sortControl,
@@ -335,43 +388,89 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       ),
     );
   }
+}
 
-  /// A–Z vs the order the editor lists its keys in.
-  Widget _alphaToggle() => ValueListenableBuilder<bool>(
-    valueListenable: _sortAlpha,
-    builder: (_, alpha, _) => SortToggle(
-      newestFirst: alpha,
-      onToggle: () => _sortAlpha.value = !alpha,
-      newestTooltip: DebugStrings.serviceSortAlpha,
-      oldestTooltip: DebugStrings.serviceSortOriginal,
-    ),
-  );
+/// A–Z vs the order the editor lists its keys in.
+class _AlphaToggle extends StatelessWidget {
+  final ValueNotifier<bool> alpha;
 
-  /// Newest/oldest over records — the Navigation events tab's control, with
-  /// `SortToggle`'s default tooltips.
-  Widget _orderToggle() => ValueListenableBuilder<bool>(
-    valueListenable: _newestFirst,
-    builder: (_, newest, _) => SortToggle(
-      newestFirst: newest,
-      onToggle: () => _newestFirst.value = !newest,
-    ),
-  );
+  const _AlphaToggle({required this.alpha});
 
-  // --- Editable (e.g. Remote Config) ----------------------------------------
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: alpha,
+      builder: (_, on, _) => SortToggle(
+        newestFirst: on,
+        onToggle: () => alpha.value = !on,
+        newestTooltip: DebugStrings.serviceSortAlpha,
+        oldestTooltip: DebugStrings.serviceSortOriginal,
+      ),
+    );
+  }
+}
 
-  Widget _buildEditor(DebugLensConfigEditor editor) {
+/// Newest/oldest over records — the Navigation events tab's control, with
+/// `SortToggle`'s default tooltips.
+class _OrderToggle extends StatelessWidget {
+  final ValueNotifier<bool> newestFirst;
+
+  const _OrderToggle({required this.newestFirst});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: newestFirst,
+      builder: (_, newest, _) => SortToggle(
+        newestFirst: newest,
+        onToggle: () => newestFirst.value = !newest,
+      ),
+    );
+  }
+}
+
+/// Body of an editable service (e.g. Remote Config): search, any status
+/// groups from `load()`, then the typed config rows.
+class _EditorBody extends StatelessWidget {
+  final DebugLensConfigEditor editor;
+  final List<DebugLensServiceGroup> groups;
+
+  /// Changes that re-filter the rows: query, sort and editor revision.
+  final Listenable changes;
+  final ValueChanged<String> onSearch;
+  final ValueNotifier<bool> sortAlpha;
+  final ValueGetter<List<DebugLensConfigEntry>> entries;
+  final ValueGetter<bool> filtered;
+  final void Function(DebugLensConfigEntry entry) onEdit;
+
+  const _EditorBody({
+    required this.editor,
+    required this.groups,
+    required this.changes,
+    required this.onSearch,
+    required this.sortAlpha,
+    required this.entries,
+    required this.filtered,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        _searchSortBar(_alphaToggle()),
+        _SearchSortBar(
+          onSearch: onSearch,
+          sortControl: _AlphaToggle(alpha: sortAlpha),
+        ),
         // Anything `load()` returned — e.g. last fetch time / status. Height-
         // capped and scrollable so a chatty service can't squeeze out the rows.
-        if (_groups.isNotEmpty)
+        if (groups.isNotEmpty)
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 220),
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  for (final g in _groups)
+                  for (final g in groups)
                     SectionCard(
                       title: g.subtitle == null
                           ? g.title
@@ -389,12 +488,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
           ),
         Expanded(
           child: ListenableBuilder(
-            listenable: Listenable.merge([_query, _sortAlpha, _editorRevision]),
+            listenable: changes,
             builder: (context, _) => ServiceConfigView(
-              entries: _visibleEntries,
+              entries: entries(),
               editable: editor.overrideEnabled,
-              filtered: _q.isNotEmpty,
-              onEdit: _editEntry,
+              filtered: filtered(),
+              onEdit: onEdit,
               onView: (entry) => showConfigValueDialog(context, entry),
             ),
           ),
@@ -402,14 +501,35 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
       ],
     );
   }
+}
 
-  // --- Read-only (e.g. Analytics / Performance / Crashlytics) ---------------
+/// Body of a read-only service (e.g. Analytics / Performance / Crashlytics):
+/// a spinner while loading, the empty state, or search over the records.
+class _ReadOnlyBody extends StatelessWidget {
+  final bool loading;
+  final bool empty;
 
-  Widget _buildReadOnly() {
-    if (_loading) {
+  /// Changes that re-filter the records: query and sort.
+  final Listenable changes;
+  final ValueChanged<String> onSearch;
+  final ValueNotifier<bool> newestFirst;
+  final ValueGetter<List<_NumberedGroup>> visible;
+
+  const _ReadOnlyBody({
+    required this.loading,
+    required this.empty,
+    required this.changes,
+    required this.onSearch,
+    required this.newestFirst,
+    required this.visible,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_groups.isEmpty) {
+    if (empty) {
       return const EmptyState(
         icon: Icons.cloud_off,
         message: DebugStrings.serviceEmpty,
@@ -417,19 +537,29 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen>
     }
     return Column(
       children: [
-        _searchSortBar(_orderToggle()),
+        _SearchSortBar(
+          onSearch: onSearch,
+          sortControl: _OrderToggle(newestFirst: newestFirst),
+        ),
         Expanded(
           child: ListenableBuilder(
-            listenable: Listenable.merge([_query, _newestFirst]),
-            builder: (context, _) => _buildList(),
+            listenable: changes,
+            builder: (context, _) => _GroupList(visible: visible()),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildList() {
-    final visible = _visibleGroups;
+/// The visible records, or "no matches" when the query hides them all.
+class _GroupList extends StatelessWidget {
+  final List<_NumberedGroup> visible;
+
+  const _GroupList({required this.visible});
+
+  @override
+  Widget build(BuildContext context) {
     if (visible.isEmpty) {
       return const EmptyState(
         icon: Icons.search_off,

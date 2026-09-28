@@ -6,8 +6,9 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import '../../../../core/debug_screen.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Bottom sheet for choosing which screens a tester may open.
 class TesterAccessSheet extends StatelessWidget {
@@ -15,6 +16,7 @@ class TesterAccessSheet extends StatelessWidget {
 
   static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
     context,
+    name: DebugRoutes.testerAccessSheet,
     builder: (_) => const TesterAccessSheet(),
   );
 
@@ -22,8 +24,7 @@ class TesterAccessSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final role = context.watch<DebugRoleController>();
     final granted = role.testerRoutes;
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: Column(

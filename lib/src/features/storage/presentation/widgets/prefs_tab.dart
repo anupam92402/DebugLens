@@ -58,7 +58,7 @@ class _PrefsTabState extends State<PrefsTab> {
     final hasEncrypted = widget.entries.any((e) => e.encrypted);
     return Column(
       children: [
-        if (hasEncrypted) _encryptedNote(context),
+        if (hasEncrypted) _EncryptedNote(revealed: _revealEncrypted),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
           child: DebugSearchField(
@@ -91,9 +91,16 @@ class _PrefsTabState extends State<PrefsTab> {
       ],
     );
   }
+}
 
-  /// "`*` marks an encrypted key" note + eye toggle to reveal masked values.
-  Widget _encryptedNote(BuildContext context) {
+/// Explains the encrypted marker, with a toggle to reveal those values.
+class _EncryptedNote extends StatelessWidget {
+  final ValueNotifier<bool> revealed;
+
+  const _EncryptedNote({required this.revealed});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
       child: Row(
@@ -114,7 +121,7 @@ class _PrefsTabState extends State<PrefsTab> {
             ),
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: _revealEncrypted,
+            valueListenable: revealed,
             builder: (_, reveal, _) => IconButton(
               tooltip: reveal
                   ? DebugStrings.storageHideEncrypted
@@ -125,7 +132,7 @@ class _PrefsTabState extends State<PrefsTab> {
                 size: 18,
                 color: DebugColors.textMuted,
               ),
-              onPressed: () => _revealEncrypted.value = !reveal,
+              onPressed: () => revealed.value = !reveal,
             ),
           ),
         ],

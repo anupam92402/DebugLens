@@ -81,6 +81,9 @@ class PlaygroundBloc extends Bloc<PlaygroundEvent, PlaygroundState> {
       case ApiAction.deletePost:
         await _repository.deletePost();
         return 'Deleted';
+      case ApiAction.searchPosts:
+        final method = await _repository.searchPosts();
+        return 'Server saw $method';
       case ApiAction.missingPost:
         await _repository.fetchMissingPost();
         return 'OK';

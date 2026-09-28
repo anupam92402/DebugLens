@@ -7,6 +7,8 @@ import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'pref_detail_dialog.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// One SharedPreferences row — key (with a `*` for encrypted entries), type
 /// chip, value, a copy+share action, and tap-to-open detail dialog. Encrypted
@@ -26,8 +28,9 @@ class PrefTile extends StatelessWidget {
   bool get _masked => entry.encrypted && !revealEncrypted;
 
   void _openDetail(BuildContext context) {
-    showDialog<void>(
-      context: context,
+    showDebugDialog<void>(
+      context,
+      name: DebugRoutes.prefDetailDialog,
       builder: (_) => PrefDetailDialog(entry: entry, onCopyShare: onCopyShare),
     );
   }

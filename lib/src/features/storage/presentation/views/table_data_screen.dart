@@ -5,6 +5,7 @@ import '../../domain/table_data.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Route arguments for [TableDataScreen] — the database to read from and the
 /// table within it.
@@ -88,7 +89,7 @@ class _TableDataScreenState extends State<TableDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: Text(widget.table, style: monoStyle(size: 15)),
         actions: [
           IconButton(
@@ -136,7 +137,13 @@ class _TableDataScreenState extends State<TableDataScreen> {
                       _sortColumn,
                       _ascending,
                     ]),
-                    builder: (context, _) => _table(data),
+                    builder: (context, _) => _TableView(
+                      data: data,
+                      rows: _view(data),
+                      sortColumn: _sortColumn.value,
+                      ascending: _ascending.value,
+                      onSort: _onSort,
+                    ),
                   ),
                 ),
               ],
@@ -146,9 +153,26 @@ class _TableDataScreenState extends State<TableDataScreen> {
       ),
     );
   }
+}
 
-  Widget _table(DebugLensTableData data) {
-    final rows = _view(data);
+/// Row count over a scrollable, sortable table of [rows].
+class _TableView extends StatelessWidget {
+  final DebugLensTableData data;
+  final List<List<String>> rows;
+  final int? sortColumn;
+  final bool ascending;
+  final DataColumnSortCallback onSort;
+
+  const _TableView({
+    required this.data,
+    required this.rows,
+    this.sortColumn,
+    required this.ascending,
+    required this.onSort,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,13 +196,13 @@ class _TableDataScreenState extends State<TableDataScreen> {
                   scrollDirection: Axis.horizontal,
                   child: SingleChildScrollView(
                     child: DataTable(
-                      sortColumnIndex: _sortColumn.value,
-                      sortAscending: _ascending.value,
+                      sortColumnIndex: sortColumn,
+                      sortAscending: ascending,
                       columns: [
                         for (final c in data.columns)
                           DataColumn(
                             label: Text(c, style: monoStyle(size: 11)),
-                            onSort: _onSort,
+                            onSort: onSort,
                           ),
                       ],
                       rows: [

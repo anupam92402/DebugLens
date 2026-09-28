@@ -1,7 +1,7 @@
 import 'network_entry.dart';
 
 /// Session-scoped call stats for one endpoint (method + path), shown on the
-/// Network → History screen. Independent of the log — survives clearing it.
+/// Network → History screen. Reset when the network log is cleared.
 class ApiCallStat {
   final HttpMethod method;
 

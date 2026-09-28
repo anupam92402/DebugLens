@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../data/debug_analytics_store.dart';
 import '../../data/debug_service_source.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Services aggregator. Shows a vertical list of the registered services
-/// (Remote Config, Crashlytics, Performance, Analytics, …); tapping one opens
+/// (Remote Config, Crashlytics, Performance, …) except Analytics, which has its
+/// own tab; tapping one opens
 /// its own screen. Services come from the host-registered
 /// [DebugLensServices.services]; DebugLens keeps no copy.
 class ServicesScreen extends StatelessWidget {
@@ -16,12 +19,15 @@ class ServicesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(DebugStrings.servicesTitle)),
+      appBar: DebugAppBar(title: const Text(DebugStrings.servicesTitle)),
       // Listen to the registry so services registered after this screen is
       // built (e.g. during async startup) appear without a manual refresh.
       body: ValueListenableBuilder<List<DebugLensService>>(
         valueListenable: DebugLensServices.listenable,
-        builder: (context, services, _) {
+        builder: (context, registered, _) {
+          final services = registered
+              .where((s) => s is! DebugAnalyticsService)
+              .toList();
           if (services.isEmpty) {
             return const EmptyState(
               icon: Icons.cloud_outlined,

@@ -10,6 +10,7 @@ import '../widgets/api_calls_sheet.dart';
 import '../widgets/api_history_tile.dart';
 import '../widgets/network_status_filter_row.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Network → History: every endpoint called this session with its call count.
 class NetworkHistoryScreen extends StatefulWidget {
@@ -60,10 +61,8 @@ class _NetworkHistoryScreenState extends State<NetworkHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final all = context.watch<DebugStore>().apiHistory;
-
     return Scaffold(
-      appBar: AppBar(title: const Text(DebugStrings.networkHistoryTitle)),
+      appBar: DebugAppBar(title: const Text(DebugStrings.networkHistoryTitle)),
       body: Column(
         children: [
           Padding(
@@ -100,7 +99,10 @@ class _NetworkHistoryScreenState extends State<NetworkHistoryScreen> {
             child: ListenableBuilder(
               listenable: Listenable.merge([_query, _filter, _descending]),
               builder: (context, _) {
-                final items = _view(all);
+                context.select<DebugStore, int>(
+                  (s) => s.revisionOf(DebugFeed.apiHistory),
+                );
+                final items = _view(context.read<DebugStore>().apiHistory);
                 if (items.isEmpty) {
                   return const EmptyState(
                     icon: Icons.history,

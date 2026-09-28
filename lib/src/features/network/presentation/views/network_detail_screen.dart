@@ -9,11 +9,13 @@ import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/network_body_tab.dart';
+import '../widgets/network_headers_tab.dart';
 import '../widgets/network_overview_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Tabbed view of a single network entry: AppBar (method, path, copy+share)
-/// and three tabs (Overview / Request / Response).
+/// and four tabs (Overview / Request / Response / Headers).
 class NetworkDetailScreen extends StatelessWidget {
   final NetworkEntry entry;
 
@@ -44,9 +46,9 @@ class NetworkDetailScreen extends StatelessWidget {
     final methodTone = toneForMethod(entry.method);
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: DebugAppBar(
           title: Row(
             children: [
               StatusChip(entry.methodLabel, color: methodTone),
@@ -88,6 +90,7 @@ class NetworkDetailScreen extends StatelessWidget {
               Tab(text: DebugStrings.networkTabOverview),
               Tab(text: DebugStrings.networkTabRequest),
               Tab(text: DebugStrings.networkTabResponse),
+              Tab(text: DebugStrings.networkTabHeaders),
             ],
           ),
         ),
@@ -108,6 +111,10 @@ class NetworkDetailScreen extends StatelessWidget {
               emptyMessage: DebugStrings.networkNoResponseBody,
               error: entry.error,
               copyLabel: DebugStrings.networkTabResponse,
+              onCopy: (text, label) => _copy(context, text, label),
+            ),
+            NetworkHeadersTab(
+              entry: entry,
               onCopy: (text, label) => _copy(context, text, label),
             ),
           ],

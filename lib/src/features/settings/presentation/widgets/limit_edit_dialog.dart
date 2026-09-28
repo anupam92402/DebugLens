@@ -5,11 +5,14 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../data/debug_limits_store.dart';
 import '../../domain/debug_limit.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Prompts for a new cap for [limit] and applies it.
 Future<void> showLimitEditDialog(BuildContext context, DebugLimit limit) {
-  return showDialog<void>(
-    context: context,
+  return showDebugDialog<void>(
+    context,
+    name: DebugRoutes.limitEditDialog,
     builder: (_) => _LimitEditDialog(limit: limit),
   );
 }

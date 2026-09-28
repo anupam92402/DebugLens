@@ -6,6 +6,7 @@ import '../../../../shared/util/connectivity_label.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../data/device_info_source.dart';
 import '../../domain/device_app_info.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Read-only App / Device / Screen / Network facts.
 class DeviceInfoScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _DeviceInfoScreenState extends State<DeviceInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(DebugStrings.deviceTitle)),
+      appBar: DebugAppBar(title: const Text(DebugStrings.deviceTitle)),
       body: FutureBuilder<List<InfoSection>>(
         future: _platform,
         builder: (context, platform) {

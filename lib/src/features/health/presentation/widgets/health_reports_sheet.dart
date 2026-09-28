@@ -4,7 +4,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import '../../../../shared/widgets/sequence_badge.dart';
 import '../../../../shell/debug_routes.dart';
 import '../../data/health_check_store.dart';
@@ -16,14 +16,14 @@ class HealthReportsSheet extends StatelessWidget {
 
   static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
     context,
+    name: DebugRoutes.healthReportsSheet,
     builder: (_) => const HealthReportsSheet(),
   );
 
   @override
   Widget build(BuildContext context) {
     final reports = HealthCheckStore.instance.reports;
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: Column(

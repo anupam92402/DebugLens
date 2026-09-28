@@ -11,6 +11,7 @@ import '../widgets/connectivity_indicator.dart';
 import '../widgets/network_status_filter_row.dart';
 import '../widgets/network_tile.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Top-level list of captured HTTP transactions. Owns the search/filter/sort
 /// state (as notifiers, so only the list rebuilds) and delegates rendering to
@@ -61,10 +62,8 @@ class _NetworkListScreenState extends State<NetworkListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final all = context.watch<DebugStore>().network;
-
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.networkTitle),
         actions: [
           const ConnectivityIndicator(),
@@ -115,7 +114,10 @@ class _NetworkListScreenState extends State<NetworkListScreen> {
             child: ListenableBuilder(
               listenable: Listenable.merge([_query, _filter, _newestFirst]),
               builder: (context, _) {
-                final items = _filtered(all);
+                context.select<DebugStore, int>(
+                  (s) => s.revisionOf(DebugFeed.network),
+                );
+                final items = _filtered(context.read<DebugStore>().network);
                 if (items.isEmpty) {
                   return const EmptyState(
                     icon: Icons.cloud_off,

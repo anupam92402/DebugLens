@@ -6,6 +6,7 @@ import '../../../../shared/widgets/debug_widgets.dart';
 import '../../data/health_log_share.dart';
 import '../../domain/health_report.dart';
 import '../widgets/health_entry_tile.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// What a health check found: every crash and error log recorded between the
 /// start and stop taps, newest first, with the whole thing shareable.
@@ -25,7 +26,7 @@ class HealthReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: Text(DebugStrings.healthTitleNumbered(report.number)),
         actions: [
           IconButton(
@@ -37,7 +38,7 @@ class HealthReportScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          _header(),
+          _ReportHeader(report: report),
           const Divider(height: 1, color: DebugColors.border),
           Expanded(
             child: report.isClean
@@ -57,9 +58,16 @@ class HealthReportScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  /// The window that was watched, and the tally inside it.
-  Widget _header() {
+/// The report's window and its crash and log counts.
+class _ReportHeader extends StatelessWidget {
+  final HealthReport report;
+
+  const _ReportHeader({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(

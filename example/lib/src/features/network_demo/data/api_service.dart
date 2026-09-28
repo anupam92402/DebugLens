@@ -14,6 +14,9 @@ class ApiService {
 
   static const _jsonPlaceholder = 'https://jsonplaceholder.typicode.com';
 
+  /// Echo server that accepts any method and returns what it received.
+  static const _httpbingo = 'https://httpbingo.org';
+
   Future<Response<dynamic>> getPosts() => _dio.get('$_jsonPlaceholder/posts');
 
   Future<Response<dynamic>> getCatFact() =>
@@ -34,4 +37,16 @@ class ApiService {
 
   Future<Response<dynamic>> deletePost() =>
       _dio.delete('$_jsonPlaceholder/posts/1');
+
+  /// An HTTP QUERY request (RFC 10008): a safe, idempotent read that carries
+  /// its filter in the body. `dio.request` with the method name, since
+  /// `dio.query()` only exists in newer Dio releases.
+  Future<Response<dynamic>> searchPosts() => _dio.request(
+    '$_httpbingo/anything/posts/search',
+    data: {
+      'filter': {'userId': 1, 'title': 'debug'},
+      'limit': 5,
+    },
+    options: Options(method: 'QUERY', contentType: Headers.jsonContentType),
+  );
 }

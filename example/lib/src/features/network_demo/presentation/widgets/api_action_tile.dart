@@ -16,6 +16,7 @@ class ApiActionTile extends StatelessWidget {
     'POST': Color(0xFF4F46E5),
     'PUT': Color(0xFFD97706),
     'DELETE': Color(0xFFDC2626),
+    'QUERY': Color(0xFF0D9488),
   };
 
   @override

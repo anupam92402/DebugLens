@@ -1,10 +1,23 @@
-enum HttpMethod { get, post, put, patch, delete, head, options }
+/// Request methods the Network screen knows. [query] is RFC 10008's QUERY — a
+/// safe, idempotent read that carries a body. [other] is any unrecognised
+/// verb; its real name is kept on the entry.
+enum HttpMethod { get, post, put, patch, delete, head, options, query, other }
+
+/// Chip label for [method], using [rawMethod] when it is [HttpMethod.other].
+String httpMethodLabel(HttpMethod method, String? rawMethod) =>
+    method == HttpMethod.other && rawMethod != null
+    ? rawMethod.toUpperCase()
+    : method.name.toUpperCase();
 
 enum NetworkStatusKind { success, error, pending }
 
 class NetworkEntry {
   final String id;
   final HttpMethod method;
+
+  /// The verb as sent, kept for [HttpMethod.other] so its label stays true.
+  final String? rawMethod;
+
   final String url;
 
   /// Base URL the request was issued against; null for manually-built entries
@@ -38,6 +51,7 @@ class NetworkEntry {
   const NetworkEntry({
     required this.id,
     required this.method,
+    this.rawMethod,
     required this.url,
     required this.requestTime,
     this.baseUrl,
@@ -71,6 +85,7 @@ class NetworkEntry {
     return NetworkEntry(
       id: id,
       method: method,
+      rawMethod: rawMethod,
       url: url,
       baseUrl: baseUrl,
       queryParameters: queryParameters,
@@ -109,5 +124,5 @@ class NetworkEntry {
     return NetworkStatusKind.success;
   }
 
-  String get methodLabel => method.name.toUpperCase();
+  String get methodLabel => httpMethodLabel(method, rawMethod);
 }

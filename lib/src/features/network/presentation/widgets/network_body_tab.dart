@@ -111,7 +111,15 @@ class _NetworkBodyTabState extends State<NetworkBodyTab> {
 
     return Column(
       children: [
-        if (widget.body != null) _searchBar(count, activeIndex),
+        if (widget.body != null)
+          _BodySearchBar(
+            label: widget.copyLabel,
+            searching: _query.isNotEmpty,
+            count: count,
+            activeIndex: activeIndex,
+            onChanged: _onQueryChanged,
+            onStep: _step,
+          ),
         Expanded(
           child: ListView(
             controller: _scroll,
@@ -142,17 +150,37 @@ class _NetworkBodyTabState extends State<NetworkBodyTab> {
       ],
     );
   }
+}
 
-  Widget _searchBar(int count, int activeIndex) {
-    final searching = _query.isNotEmpty;
+/// Search field over a body, with match count and previous / next once a
+/// query is typed.
+class _BodySearchBar extends StatelessWidget {
+  final String label;
+  final bool searching;
+  final int count;
+  final int activeIndex;
+  final ValueChanged<String> onChanged;
+  final ValueChanged<int> onStep;
+
+  const _BodySearchBar({
+    required this.label,
+    required this.searching,
+    required this.count,
+    required this.activeIndex,
+    required this.onChanged,
+    required this.onStep,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
       child: Row(
         children: [
           Expanded(
             child: DebugSearchField(
-              hint: DebugStrings.networkSearchBody(widget.copyLabel),
-              onChanged: _onQueryChanged,
+              hint: DebugStrings.networkSearchBody(label),
+              onChanged: onChanged,
             ),
           ),
           if (searching) ...[
@@ -171,14 +199,14 @@ class _NetworkBodyTabState extends State<NetworkBodyTab> {
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.keyboard_arrow_up, size: 20),
               color: DebugColors.textMuted,
-              onPressed: count == 0 ? null : () => _step(-1),
+              onPressed: count == 0 ? null : () => onStep(-1),
             ),
             IconButton(
               tooltip: DebugStrings.networkNextMatch,
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.keyboard_arrow_down, size: 20),
               color: DebugColors.textMuted,
-              onPressed: count == 0 ? null : () => _step(1),
+              onPressed: count == 0 ? null : () => onStep(1),
             ),
           ],
         ],

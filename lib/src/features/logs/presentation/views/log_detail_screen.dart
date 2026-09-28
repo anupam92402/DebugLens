@@ -8,6 +8,7 @@ import '../widgets/error_card.dart';
 import '../widgets/message_card.dart';
 import '../widgets/stack_card.dart';
 import '../widgets/summary_card.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Drill-down view for a single [DebugLogRecord].
 class LogDetailScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class LogDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: Row(
           children: [
             StatusChip(

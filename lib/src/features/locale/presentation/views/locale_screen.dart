@@ -8,6 +8,7 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../widgets/locale_category_section.dart';
 import 'active_locale_label.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Localized-strings inspector. Reads the app's live locale strings from the
 /// host-registered [DebugLensLocale.source] each build (no copy kept), grouped
@@ -136,7 +137,7 @@ class _LocaleScreenState extends State<LocaleScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.localeTitle),
         actions: [
           IconButton(
@@ -238,7 +239,12 @@ class _LocaleScreenState extends State<LocaleScreen>
                         },
                       ),
                     ),
-                    if (pageCount > 1) _pager(page, pageCount),
+                    if (pageCount > 1)
+                      _Pager(
+                        page: page,
+                        pageCount: pageCount,
+                        onPage: (p) => _page.value = p,
+                      ),
                   ],
                 );
               },
@@ -248,8 +254,22 @@ class _LocaleScreenState extends State<LocaleScreen>
       ),
     );
   }
+}
 
-  Widget _pager(int page, int pageCount) {
+/// Previous / next controls under a paged list, with the page count.
+class _Pager extends StatelessWidget {
+  final int page;
+  final int pageCount;
+  final ValueChanged<int> onPage;
+
+  const _Pager({
+    required this.page,
+    required this.pageCount,
+    required this.onPage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: DebugColors.border)),
@@ -262,7 +282,7 @@ class _LocaleScreenState extends State<LocaleScreen>
             IconButton(
               tooltip: DebugStrings.localePrevPage,
               icon: const Icon(Icons.chevron_left),
-              onPressed: page == 0 ? null : () => _page.value = page - 1,
+              onPressed: page == 0 ? null : () => onPage(page - 1),
             ),
             Text(
               DebugStrings.localePageLabel(page + 1, pageCount),
@@ -271,9 +291,7 @@ class _LocaleScreenState extends State<LocaleScreen>
             IconButton(
               tooltip: DebugStrings.localeNextPage,
               icon: const Icon(Icons.chevron_right),
-              onPressed: page >= pageCount - 1
-                  ? null
-                  : () => _page.value = page + 1,
+              onPressed: page >= pageCount - 1 ? null : () => onPage(page + 1),
             ),
           ],
         ),

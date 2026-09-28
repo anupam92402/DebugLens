@@ -35,6 +35,11 @@ class BlocEventTile extends StatelessWidget {
         return '${event.currentState ?? DebugConstants.unknownValue} → ${event.nextState ?? DebugConstants.unknownValue}';
       case BlocActionKind.transition:
         return '${event.currentState ?? DebugConstants.unknownValue} → ${event.nextState ?? DebugConstants.unknownValue}';
+      case BlocActionKind.done:
+        return DebugStrings.blocSummaryDone(
+          event.event,
+          failed: event.error != null,
+        );
       case BlocActionKind.error:
         return event.error ?? DebugStrings.blocSummaryError;
     }

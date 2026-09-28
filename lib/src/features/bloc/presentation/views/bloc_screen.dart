@@ -11,6 +11,7 @@ import '../widgets/bloc_kind_filter_row.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Live feed of Bloc/Cubit lifecycle events recorded by
 /// `DebugLensBlocObserver` — chip filters, sort toggle, expandable rows.
@@ -69,10 +70,8 @@ class _BlocScreenState extends State<BlocScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final stored = context.watch<DebugStore>().blocEvents;
-
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.blocTitle),
         actions: [
           IconButton(
@@ -123,6 +122,10 @@ class _BlocScreenState extends State<BlocScreen> {
             child: ListenableBuilder(
               listenable: Listenable.merge([_newestFirst, _kinds, _blocFilter]),
               builder: (context, _) {
+                context.select<DebugStore, int>(
+                  (s) => s.revisionOf(DebugFeed.bloc),
+                );
+                final stored = context.read<DebugStore>().blocEvents;
                 final events = _visible(stored);
                 final filterActive =
                     _kinds.value.isNotEmpty || _blocFilter.value.isNotEmpty;

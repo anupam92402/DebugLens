@@ -11,6 +11,7 @@ import '../../../../shell/debug_routes.dart';
 import '../widgets/log_capture_sheet.dart';
 import '../widgets/log_filter_row.dart';
 import '../widgets/log_tile.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Live feed of everything in [DebugLensLogger] — the host's own calls and
 /// DebugLens's internal observers.
@@ -71,7 +72,7 @@ class _LogsScreenState extends State<LogsScreen> {
   Widget build(BuildContext context) {
     final logger = DebugLensLogger();
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.logsTitle),
         actions: [
           IconButton(
@@ -140,16 +141,24 @@ class _LogsScreenState extends State<LogsScreen> {
                 _levels,
                 _newestFirst,
               ]),
-              builder: (context, _) => _buildList(logger.history),
+              builder: (context, _) =>
+                  _LogList(items: _filtered(logger.history)),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildList(List<DebugLogRecord> all) {
-    final items = _filtered(all);
+/// The filtered records, or the empty state when none match.
+class _LogList extends StatelessWidget {
+  final List<DebugLogRecord> items;
+
+  const _LogList({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const EmptyState(
         icon: Icons.notes,

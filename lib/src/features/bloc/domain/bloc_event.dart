@@ -1,5 +1,6 @@
-/// The six `BlocObserver` lifecycle hooks, captured by [DebugLensBlocObserver].
-enum BlocActionKind { create, event, change, transition, error, close }
+/// The `BlocObserver` lifecycle hooks, captured by [DebugLensBlocObserver].
+/// [done] needs bloc 9.1+; on earlier versions it never fires.
+enum BlocActionKind { create, event, change, transition, done, error, close }
 
 /// One captured BlocObserver event.
 class BlocEvent {
@@ -11,7 +12,7 @@ class BlocEvent {
   final String blocName;
   final DateTime time;
 
-  /// Event `toString()` for [BlocActionKind.event] / [transition].
+  /// Event `toString()` for [BlocActionKind.event] / [transition] / [done].
   final String? event;
 
   /// State before the change. Set for [change] / [transition].
@@ -20,10 +21,11 @@ class BlocEvent {
   /// State after the change. Set for [change] / [transition].
   final String? nextState;
 
-  /// `toString()` of the thrown object. Set for [error].
+  /// `toString()` of the thrown object. Set for [error], and for [done] when
+  /// the handler threw.
   final String? error;
 
-  /// Stack trace as text. Set for [error].
+  /// Stack trace as text. Set alongside [error].
   final String? stackTrace;
 
   const BlocEvent({

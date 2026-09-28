@@ -65,7 +65,6 @@ class _NavEventsTabState extends State<NavEventsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final stored = context.watch<DebugStore>().navEvents;
     return Column(
       children: [
         Padding(
@@ -105,6 +104,10 @@ class _NavEventsTabState extends State<NavEventsTab> {
           child: ListenableBuilder(
             listenable: Listenable.merge([_newestFirst, _kinds, _query]),
             builder: (context, _) {
+              context.select<DebugStore, int>(
+                (s) => s.revisionOf(DebugFeed.navEvents),
+              );
+              final stored = context.read<DebugStore>().navEvents;
               final events = _visible(stored);
               final narrowed =
                   _kinds.value.isNotEmpty ||

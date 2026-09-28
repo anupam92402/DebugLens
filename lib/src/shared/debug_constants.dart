@@ -25,13 +25,49 @@ class DebugConstants {
   static const String trueValue = 'true';
   static const String falseValue = 'false';
 
+  /// Tabs shown directly in the panel's bottom bar before the rest move
+  /// behind More.
+  static const int panelBarTabs = 4;
+
+  /// Factor every tab's usage score fades by at each panel open.
+  static const double tabUsageDecay = 0.9;
+
+  /// Usage scores below this are dropped.
+  static const double tabUsageFloor = 0.05;
+
+  /// Score a More tab needs before it can take a bar slot.
+  static const double tabPromoteMinScore = 3;
+
+  /// Multiple of the weakest bar tab's score a More tab must reach to take its
+  /// slot.
+  static const double tabPromoteRatio = 1.25;
+
   // SharedPreferences keys DebugLens persists its own state under.
+
+  /// Tag prefix on the Logs lines the navigator observer mirrors.
+  static const String navLogTagPrefix = 'nav.';
+
+  /// Per-tab usage scores behind the adaptive bottom bar, as JSON.
+  static const String tabUsagePrefsKey = 'debug_lens_tab_usage';
+
+  /// Whether the bottom bar adapts to usage (`'true'` / `'false'`).
+  static const String tabAdaptivePrefsKey = 'debug_lens_tab_adaptive';
+
+  /// The bottom bar's slots after Network, as a JSON list of routes.
+  static const String tabSlotsPrefsKey = 'debug_lens_tab_slots';
+
+  /// Prefix on every SharedPreferences key DebugLens writes.
+  static const String prefsKeyPrefix = 'debug_lens_';
 
   /// Access role for the panel (see `DebugRoleController`).
   static const String rolePrefsKey = 'debug_lens_role';
 
   /// Navigation screen's eye toggle (hide `debug_lens/` routes).
   static const String navHideInternalPrefsKey = 'debug_lens_nav_hide_internal';
+
+  /// Storage screen's eye toggle (hide DebugLens's own prefs keys).
+  static const String storageHideInternalPrefsKey =
+      'debug_lens_storage_hide_internal';
 
   /// Routes a tester may open, as a JSON list of route names.
   static const String testerRoutesPrefsKey = 'debug_lens_tester_routes';

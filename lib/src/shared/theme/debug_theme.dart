@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import '../../features/logs/domain/log_record.dart';
@@ -23,6 +24,14 @@ class DebugTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(
+            backgroundColor: DebugColors.bg,
+          ),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       dividerColor: DebugColors.border,
       iconTheme: const IconThemeData(color: DebugColors.textPrimary),
       appBarTheme: const AppBarTheme(
@@ -89,8 +98,11 @@ Color toneForMethod(HttpMethod m) {
       return DebugColors.warning;
     case HttpMethod.delete:
       return DebugColors.error;
+    case HttpMethod.query:
+      return DebugColors.storage;
     case HttpMethod.head:
     case HttpMethod.options:
+    case HttpMethod.other:
       return DebugColors.textMuted;
   }
 }
@@ -155,7 +167,7 @@ Color toneForNavAction(NavAction a) {
 
 /// Tint for a Bloc lifecycle event chip — create (lifecycle start), close
 /// (end), event (incoming), change (state moved), transition (event-driven
-/// state move), error.
+/// state move), done (handler finished), error.
 Color toneForBlocKind(BlocActionKind k) {
   switch (k) {
     case BlocActionKind.create:
@@ -168,6 +180,8 @@ Color toneForBlocKind(BlocActionKind k) {
       return DebugColors.success;
     case BlocActionKind.transition:
       return DebugColors.navigation;
+    case BlocActionKind.done:
+      return DebugColors.storage;
     case BlocActionKind.error:
       return DebugColors.error;
   }

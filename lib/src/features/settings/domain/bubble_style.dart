@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/debug_constants.dart';
 import '../../../shared/theme/debug_colors.dart';
 
 /// Icon shown on the bubble that opens the panel.
@@ -17,25 +16,11 @@ enum BubbleIcon {
   final String label;
 
   /// Null for the two marks that aren't font glyphs — [dashArt] and [flutter].
-  /// Use [glyph] rather than reading this directly.
+  /// Render with `BubbleGlyph` rather than reading this directly.
   final IconData? icon;
 
-  /// Fixed colour for a brand mark; [glyph] uses it instead of the caller's.
+  /// Fixed colour for a brand mark, used instead of the caller's.
   final Color? tint;
-
-  /// The mark to render at [size].
-  Widget glyph({required double size, required Color color}) => switch (this) {
-    BubbleIcon.flutter => FlutterLogo(size: size),
-    // `package:` — the path must resolve against this package's assets.
-    BubbleIcon.dashArt => Image.asset(
-      DebugConstants.dashAssetPath,
-      package: DebugConstants.packageName,
-      width: size,
-      height: size,
-    ),
-    // Safe: every remaining value declares an icon.
-    _ => Icon(icon!, size: size, color: tint ?? color),
-  };
 
   /// The shipped default, and the fallback for an unrecognised saved value.
   static const BubbleIcon fallback = dashArt;

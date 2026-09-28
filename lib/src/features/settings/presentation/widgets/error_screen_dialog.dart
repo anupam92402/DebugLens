@@ -5,11 +5,14 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_toast.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Shows how to install `CustomErrorScreen`, with the one line to copy.
 Future<void> showErrorScreenDialog(BuildContext context) {
-  return showDialog<void>(
-    context: context,
+  return showDebugDialog<void>(
+    context,
+    name: DebugRoutes.errorScreenDialog,
     builder: (_) => const _ErrorScreenDialog(),
   );
 }

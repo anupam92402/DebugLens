@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
+import '../../../../shared/widgets/debug_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Confirms wiping every captured feed. Resolves to true to proceed, and to
 /// false or null on cancel or dismiss.
 Future<bool?> showClearDataDialog(BuildContext context) {
-  return showDialog<bool>(
-    context: context,
+  return showDebugDialog<bool>(
+    context,
+    name: DebugRoutes.clearDataDialog,
     builder: (dialogContext) => AlertDialog(
       backgroundColor: DebugColors.surface,
       title: Text(DebugStrings.settingsClearAll, style: monoStyle(size: 14)),

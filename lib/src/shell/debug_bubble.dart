@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../features/settings/data/bubble_store.dart';
+import '../features/settings/presentation/widgets/bubble_glyph.dart';
 
 /// A draggable, edge-floating button that opens the DebugLens panel.
 class DebugBubble extends StatefulWidget {
@@ -70,7 +71,11 @@ class _DebugBubbleState extends State<DebugBubble> {
                 width: _size,
                 height: _size,
                 child: Center(
-                  child: store.icon.glyph(size: 24, color: Colors.black),
+                  child: BubbleGlyph(
+                    icon: store.icon,
+                    size: 24,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),

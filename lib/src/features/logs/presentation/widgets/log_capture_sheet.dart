@@ -6,8 +6,9 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import 'log_capture_switch.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Bottom sheet listing DebugLens's own log producers with a switch each, so
 /// the user can silence a noisy one mid-session.
@@ -17,14 +18,14 @@ class LogCaptureSheet extends StatelessWidget {
   /// Opens the sheet over [context]'s navigator.
   static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
     context,
+    name: DebugRoutes.logCaptureSheet,
     builder: (_) => const LogCaptureSheet(),
   );
 
   @override
   Widget build(BuildContext context) {
     final logger = DebugLensLogger();
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: Padding(

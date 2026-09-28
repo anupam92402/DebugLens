@@ -51,9 +51,12 @@ class NetworkTile extends StatelessWidget {
 
     return Dismissible(
       key: ObjectKey(entry),
-      background: _swipeLabel(DebugStrings.networkSwipeCurl, alignStart: true),
-      secondaryBackground: _swipeLabel(
-        DebugStrings.networkSwipeCurlResponse,
+      background: _SwipeLabel(
+        label: DebugStrings.networkSwipeCurl,
+        alignStart: true,
+      ),
+      secondaryBackground: _SwipeLabel(
+        label: DebugStrings.networkSwipeCurlResponse,
         alignStart: false,
       ),
       confirmDismiss: (direction) async {
@@ -106,10 +109,17 @@ class NetworkTile extends StatelessWidget {
       ),
     );
   }
+}
 
-  /// Green reveal shown while swiping, labelled [label]. [alignStart] left-
-  /// aligns for a left→right swipe; otherwise it right-aligns.
-  Widget _swipeLabel(String label, {required bool alignStart}) {
+/// Green strip revealed behind a row while it is swiped.
+class _SwipeLabel extends StatelessWidget {
+  final String label;
+  final bool alignStart;
+
+  const _SwipeLabel({required this.label, required this.alignStart});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: DebugColors.success,
       alignment: alignStart ? Alignment.centerLeft : Alignment.centerRight,

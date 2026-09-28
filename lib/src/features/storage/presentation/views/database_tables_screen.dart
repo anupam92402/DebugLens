@@ -6,6 +6,7 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import 'table_data_screen.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Lists a database's tables (name search); tapping one opens [TableDataScreen].
 /// The refresh action re-reads the table list.
@@ -42,7 +43,7 @@ class _DatabaseTablesScreenState extends State<DatabaseTablesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: Text(widget.database.name, style: monoStyle(size: 15)),
         actions: [
           IconButton(

@@ -45,4 +45,12 @@ class ApiRepository {
   }
 
   Future<void> deletePost() => _service.deletePost();
+
+  /// Returns the method the echo server saw, to confirm QUERY went out as-is.
+  Future<String> searchPosts() async {
+    final res = await _service.searchPosts();
+    final method = (res.data as Map<String, dynamic>)['method'] as String?;
+    DebugLensLogger().i('QUERY search echoed as $method', name: 'api');
+    return method ?? '';
+  }
 }

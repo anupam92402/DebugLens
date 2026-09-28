@@ -37,14 +37,32 @@ class NetworkHeadersCard extends StatelessWidget {
       onCopy: (copy == null || headers.isEmpty)
           ? null
           : () => copy(_asBlock(), title),
-      child: _content(),
+      child: _HeadersContent(
+        headers: headers,
+        renderAsBlock: renderAsBlock,
+        block: _asBlock(),
+      ),
     );
   }
+}
 
-  Widget _content() {
+/// The card's body: a copyable block, or one row per header.
+class _HeadersContent extends StatelessWidget {
+  final Map<String, String> headers;
+  final bool renderAsBlock;
+  final String block;
+
+  const _HeadersContent({
+    required this.headers,
+    required this.renderAsBlock,
+    required this.block,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     if (renderAsBlock) {
       return SelectableText(
-        _asBlock(),
+        block,
         style: monoStyle(
           size: 12,
           color: headers.isEmpty ? DebugColors.textMuted : null,

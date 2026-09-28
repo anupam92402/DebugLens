@@ -37,6 +37,7 @@ import 'src/features/notifications/domain/deeplink_entry.dart';
 import 'src/features/navigation/data/debug_lens_navigator_observer.dart';
 import 'src/shell/debug_bubble.dart';
 import 'src/shell/debug_panel.dart';
+import 'src/shell/tab_usage_store.dart';
 
 export 'src/features/storage/data/debug_database_source.dart'
     show DebugLensDatabase;
@@ -147,8 +148,10 @@ class DebugLens {
 
   /// Pull-based source for the Locale screen, called on each build. Keeps no
   /// copy; pass `null` to clear.
-  static set localeSource(DebugLensLocaleSource? source) =>
-      DebugLensLocale.source = source;
+  static set localeSource(DebugLensLocaleSource? source) {
+    if (!DebugLensConfig.enabled) return;
+    DebugLensLocale.source = source;
+  }
 
   /// The registered Locale screen source, or null when none is set.
   static DebugLensLocaleSource? get localeSource => DebugLensLocale.source;
@@ -156,6 +159,7 @@ class DebugLens {
   /// Pull-based source for the Storage screen's SharedPrefs tab, called on each
   /// build. Keeps no copy; pass `null` to clear.
   static set sharedPrefsSource(DebugLensSharedPrefsSource? source) {
+    if (!DebugLensConfig.enabled) return;
     DebugLensSharedPrefs.source = source;
     _mirrorToLogs(
       DebugLogOrigin.storage,
@@ -171,6 +175,7 @@ class DebugLens {
   /// Registers a database for the Storage screen's Database tab. Read on
   /// demand; idempotent by [DebugLensDatabase.name].
   static void registerDatabase(DebugLensDatabase database) {
+    if (!DebugLensConfig.enabled) return;
     DebugLensDatabases.register(database);
     _mirrorToLogs(
       DebugLogOrigin.storage,
@@ -185,6 +190,7 @@ class DebugLens {
   /// Registers a service for the Services screen. Its `load()` is called on
   /// demand; idempotent by [DebugLensService.name].
   static void registerService(DebugLensService service) {
+    if (!DebugLensConfig.enabled) return;
     DebugLensServices.register(service);
     _mirrorToLogs(
       DebugLogOrigin.services,
@@ -208,6 +214,7 @@ class DebugLens {
     String name = DebugStrings.serviceConfigName,
   }) async {
     await DebugConfigStore.instance.load(values, sourceLabel);
+    if (!DebugLensConfig.enabled) return;
     DebugLensServices.register(DebugConfigService(name: name));
     _mirrorToLogs(
       DebugLogOrigin.services,
@@ -253,6 +260,7 @@ class DebugLens {
   /// Adds the crash service to the Services screen under [name], so it is there
   /// from startup. Optional: [recordCrash] registers it on first use.
   void initCrashReporting({String name = DebugStrings.serviceCrashName}) {
+    if (!DebugLensConfig.enabled) return;
     _crashReportingStarted = true;
     DebugLensServices.register(DebugCrashService(name: name));
   }
@@ -260,6 +268,7 @@ class DebugLens {
   /// Records a crash or non-fatal. Call from your crash reporter's wrapper with
   /// the payload you send upstream; the event stays on the device.
   void recordCrash(DebugLensCrashEvent event) {
+    if (!DebugLensConfig.enabled) return;
     if (!_crashReportingStarted) initCrashReporting();
     DebugCrashStore.instance.record(event);
     final logger = DebugLensLogger();
@@ -276,9 +285,10 @@ class DebugLens {
   /// Whether the analytics service is on the Services screen yet.
   static bool _analyticsStarted = false;
 
-  /// Adds the analytics service to the Services screen under [name], so it is
-  /// there from startup.
+  /// Titles the Analytics screen [name]. Optional: [recordAnalyticsEvent]
+  /// calls it on first use.
   void initAnalytics({String name = DebugStrings.serviceAnalyticsName}) {
+    if (!DebugLensConfig.enabled) return;
     _analyticsStarted = true;
     DebugLensServices.register(DebugAnalyticsService(name: name));
   }
@@ -289,6 +299,7 @@ class DebugLens {
     String name, {
     Map<String, Object?> parameters = const {},
   }) {
+    if (!DebugLensConfig.enabled) return;
     if (!_analyticsStarted) initAnalytics();
     DebugAnalyticsStore.instance.record(
       DebugLensAnalyticsEvent(name: name, parameters: parameters),
@@ -306,6 +317,7 @@ class DebugLens {
   /// Adds the performance service to the Services screen under [name], so it is
   /// there from startup.
   void initPerformance({String name = DebugStrings.servicePerformanceName}) {
+    if (!DebugLensConfig.enabled) return;
     _performanceStarted = true;
     DebugLensServices.register(DebugTraceService(name: name));
   }
@@ -317,6 +329,7 @@ class DebugLens {
     Duration duration, {
     Map<String, Object?> attributes = const {},
   }) {
+    if (!DebugLensConfig.enabled) return;
     if (!_performanceStarted) initPerformance();
     DebugTraceStore.instance.record(
       DebugLensTraceEvent(
@@ -350,6 +363,7 @@ class DebugLens {
     String source = 'FCM',
     bool tapped = false,
   }) {
+    if (!DebugLensConfig.enabled) return;
     DebugStore.instance.recordNotification(
       NotificationEntry(
         id: _nextRecordId('ntf'),
@@ -377,6 +391,7 @@ class DebugLens {
   /// Records a captured deep link. [source] labels the origin, e.g. `push`,
   /// `browser` or `in-app`.
   static void recordDeeplink(String uri, {String? source}) {
+    if (!DebugLensConfig.enabled) return;
     DebugStore.instance.recordDeeplink(
       DeeplinkEntry(
         id: _nextRecordId('dl'),
@@ -395,6 +410,7 @@ class DebugLens {
   /// Mirrors a pushed record into the Logs feed, unless [origin]'s capture
   /// switch is off.
   static void _mirrorToLogs(DebugLogOrigin origin, String message, String tag) {
+    if (!DebugLensConfig.enabled) return;
     final logger = DebugLensLogger();
     if (!logger.isCapturing(origin)) return;
     logger.d(message, name: tag);
@@ -418,6 +434,7 @@ class DebugLens {
     DebugLensLogger().restoreCaptureSettings();
     DebugLimits.instance.restore();
     BubbleStore.instance.restore();
+    TabUsageStore.instance.restore();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DebugLensController()),
@@ -433,6 +450,7 @@ class DebugLens {
   /// it. No-op when already open or the navigator isn't ready. [context] must
   /// be below [wrap].
   static void show(BuildContext context) {
+    if (!DebugLensConfig.enabled) return;
     final controller = context.read<DebugLensController>();
     if (controller.isOpen) return;
     final navigator = navigatorObserver.navigator;

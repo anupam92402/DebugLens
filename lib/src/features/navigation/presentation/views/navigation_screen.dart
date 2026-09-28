@@ -10,6 +10,7 @@ import '../../../../shared/widgets/debug_toast.dart';
 import '../widgets/nav_events_tab.dart';
 import '../widgets/nav_stack_tab.dart';
 import '../../../../shared/theme/debug_colors.dart';
+import '../../../../shell/debug_app_bar.dart';
 
 /// Two-tab view (Events + Stack) of the navigator observer's captures.
 class NavigationScreen extends StatefulWidget {
@@ -66,7 +67,7 @@ class _NavigationScreenState extends State<NavigationScreen>
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: AppBar(
+      appBar: DebugAppBar(
         title: const Text(DebugStrings.navigationTitle),
         actions: [
           ValueListenableBuilder<bool>(

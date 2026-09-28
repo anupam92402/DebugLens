@@ -4,22 +4,26 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import '../../data/bubble_store.dart';
 import '../../domain/bubble_style.dart';
+import '../../../../shell/debug_routes.dart';
+import 'bubble_glyph.dart';
 
 /// Bottom sheet for the bubble that opens the panel: which icon it shows, and
 /// which edge anchor it rests at.
 class BubbleSheet extends StatelessWidget {
   const BubbleSheet({super.key});
 
-  static Future<void> show(BuildContext context) =>
-      showDebugBottomSheet<void>(context, builder: (_) => const BubbleSheet());
+  static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
+    context,
+    name: DebugRoutes.bubbleSheet,
+    builder: (_) => const BubbleSheet(),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: ListenableBuilder(
@@ -39,7 +43,7 @@ class BubbleSheet extends StatelessWidget {
                     style: monoStyle(size: 11, color: DebugColors.textMuted),
                   ),
                   const SizedBox(height: 16),
-                  _header(DebugStrings.bubbleIconHeader),
+                  _SectionHeader(text: DebugStrings.bubbleIconHeader),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 10,
@@ -54,7 +58,7 @@ class BubbleSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  _header(DebugStrings.bubblePositionHeader),
+                  _SectionHeader(text: DebugStrings.bubblePositionHeader),
                   const SizedBox(height: 8),
                   // Two columns mirroring the screen's left and right edges, so
                   // the layout of the choices matches what they do.
@@ -90,15 +94,6 @@ class BubbleSheet extends StatelessWidget {
       ),
     );
   }
-
-  Widget _header(String text) => Text(
-    text,
-    style: monoStyle(
-      size: 11,
-      weight: FontWeight.w700,
-      color: DebugColors.textMuted,
-    ),
-  );
 }
 
 /// One icon in the picker, ringed when selected.
@@ -132,7 +127,8 @@ class _IconChoice extends StatelessWidget {
             ),
           ),
           child: Center(
-            child: option.glyph(
+            child: BubbleGlyph(
+              icon: option,
               size: 22,
               color: selected ? Colors.black : DebugColors.textMuted,
             ),
@@ -203,6 +199,25 @@ class _CornerChoice extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Small muted caption above a group of choices.
+class _SectionHeader extends StatelessWidget {
+  final String text;
+
+  const _SectionHeader({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: monoStyle(
+        size: 11,
+        weight: FontWeight.w700,
+        color: DebugColors.textMuted,
       ),
     );
   }

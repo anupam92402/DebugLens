@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/debug_store.dart';
 import '../../domain/api_call_stat.dart';
@@ -7,8 +8,9 @@ import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/theme/debug_theme.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import 'api_call_row.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Bottom sheet listing every retained call to one endpoint, newest at the top.
 class ApiCallsSheet extends StatelessWidget {
@@ -20,25 +22,28 @@ class ApiCallsSheet extends StatelessWidget {
   static Future<void> show(BuildContext context, ApiCallStat stat) =>
       showDebugBottomSheet<void>(
         context,
+        name: DebugRoutes.apiCallsSheet,
         builder: (_) => ApiCallsSheet(stat: stat),
       );
 
   @override
   Widget build(BuildContext context) {
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
-        child: ListenableBuilder(
-          listenable: DebugStore.instance,
-          builder: (context, _) {
+        child: Builder(
+          builder: (context) {
+            context.select<DebugStore, int>(
+              (s) => s.revisionOf(DebugFeed.apiHistory),
+            );
+
             /// Newest first — the store keeps them oldest first.
             final times = stat.callTimes.reversed.toList(growable: false);
             return Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _header(times.length),
+                _CallsHeader(stat: stat, shown: times.length),
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
@@ -69,9 +74,17 @@ class ApiCallsSheet extends StatelessWidget {
       ),
     );
   }
+}
 
-  /// Endpoint identity plus how many calls the list is showing.
-  Widget _header(int shown) {
+/// The endpoint and how many of its calls are listed.
+class _CallsHeader extends StatelessWidget {
+  final ApiCallStat stat;
+  final int shown;
+
+  const _CallsHeader({required this.stat, required this.shown});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(

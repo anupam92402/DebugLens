@@ -4,6 +4,10 @@ import 'network_entry.dart';
 /// Network → History screen. Independent of the log — survives clearing it.
 class ApiCallStat {
   final HttpMethod method;
+
+  /// The verb as sent, kept for [HttpMethod.other].
+  final String? rawMethod;
+
   final String path;
 
   /// Total number of times this endpoint was called this session.
@@ -32,6 +36,7 @@ class ApiCallStat {
 
   ApiCallStat({
     required this.method,
+    this.rawMethod,
     required this.path,
     required this.lastCalled,
     this.total = 0,
@@ -40,7 +45,7 @@ class ApiCallStat {
     this.pending = 0,
   });
 
-  String get methodLabel => method.name.toUpperCase();
+  String get methodLabel => httpMethodLabel(method, rawMethod);
 
   /// Registers one call at [at]. Bumps [total], moves [lastCalled] and keeps
   /// the timestamp — grouped so the three can't drift apart.

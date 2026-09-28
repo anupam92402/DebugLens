@@ -1,6 +1,13 @@
 /// The one-shot API calls the playground runs inline (result shown on the
 /// tile). The posts GET is handled separately because it opens a screen.
-enum ApiAction { catFact, createPost, updatePost, deletePost, missingPost }
+enum ApiAction {
+  catFact,
+  createPost,
+  updatePost,
+  deletePost,
+  searchPosts,
+  missingPost,
+}
 
 extension ApiActionInfo on ApiAction {
   String get title => switch (this) {
@@ -8,6 +15,7 @@ extension ApiActionInfo on ApiAction {
     ApiAction.createPost => 'Create post',
     ApiAction.updatePost => 'Update post',
     ApiAction.deletePost => 'Delete post',
+    ApiAction.searchPosts => 'Search posts (QUERY)',
     ApiAction.missingPost => 'Missing post (404)',
   };
 
@@ -16,6 +24,7 @@ extension ApiActionInfo on ApiAction {
     ApiAction.createPost => 'POST jsonplaceholder /posts',
     ApiAction.updatePost => 'PUT jsonplaceholder /posts/1',
     ApiAction.deletePost => 'DELETE jsonplaceholder /posts/1',
+    ApiAction.searchPosts => 'QUERY httpbingo /anything/posts/search',
     ApiAction.missingPost => 'GET jsonplaceholder /posts/999999',
   };
 
@@ -24,5 +33,6 @@ extension ApiActionInfo on ApiAction {
     ApiAction.createPost => 'POST',
     ApiAction.updatePost => 'PUT',
     ApiAction.deletePost => 'DELETE',
+    ApiAction.searchPosts => 'QUERY',
   };
 }

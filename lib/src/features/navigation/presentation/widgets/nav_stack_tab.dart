@@ -17,7 +17,8 @@ class NavStackTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
-    final raw = context.watch<DebugStore>().navStacks;
+    context.select<DebugStore, int>((s) => s.revisionOf(DebugFeed.navStacks));
+    final raw = context.read<DebugStore>().navStacks;
 
     final stacks = <String, List<String>>{};
     for (final entry in raw.entries) {
@@ -38,24 +39,34 @@ class NavStackTab extends StatelessWidget {
       children: [
         for (final entry in stacks.entries) ...[
           if (showHeaders) StackSectionHeader(label: entry.key, color: accent),
-          ..._stackRows(accent, entry.value),
+          _StackRows(accent: accent, stack: entry.value),
         ],
       ],
     );
   }
+}
 
-  /// Rows for one navigator's stack, top first, level-numbered.
-  List<Widget> _stackRows(Color accent, List<String> stack) {
+/// Rows for one navigator's stack, top first, level-numbered.
+class _StackRows extends StatelessWidget {
+  final Color accent;
+  final List<String> stack;
+
+  const _StackRows({required this.accent, required this.stack});
+
+  @override
+  Widget build(BuildContext context) {
     /// top first = current screen
     final display = stack.reversed.toList();
-    return [
-      for (var i = 0; i < display.length; i++)
-        StackRow(
-          level: stack.length - i,
-          routeName: display[i],
-          isCurrent: i == 0,
-          accent: accent,
-        ),
-    ];
+    return Column(
+      children: [
+        for (var i = 0; i < display.length; i++)
+          StackRow(
+            level: stack.length - i,
+            routeName: display[i],
+            isCurrent: i == 0,
+            accent: accent,
+          ),
+      ],
+    );
   }
 }

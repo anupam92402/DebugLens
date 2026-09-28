@@ -4,24 +4,27 @@ import '../../../../shared/debug_strings.dart';
 import '../../../../shared/theme/debug_colors.dart';
 import '../../../../shared/widgets/debug_bottom_sheet.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/widgets/debug_sheet_surface.dart';
 import '../../data/debug_limits_store.dart';
 import '../../domain/debug_limit.dart';
 import 'limit_edit_dialog.dart';
+import '../../../../shell/debug_routes.dart';
 
 /// Bottom sheet listing every retained feed and the cap it is trimmed to.
 /// Tapping a row opens [showLimitEditDialog] to change it.
 class LimitsSheet extends StatelessWidget {
   const LimitsSheet({super.key});
 
-  static Future<void> show(BuildContext context) =>
-      showDebugBottomSheet<void>(context, builder: (_) => const LimitsSheet());
+  static Future<void> show(BuildContext context) => showDebugBottomSheet<void>(
+    context,
+    name: DebugRoutes.limitsSheet,
+    builder: (_) => const LimitsSheet(),
+  );
 
   @override
   Widget build(BuildContext context) {
     final limits = DebugLimits.instance;
-    return GlassSurface(
-      squareBottom: true,
+    return DebugSheetSurface(
       child: SafeArea(
         top: false,
         child: ListenableBuilder(

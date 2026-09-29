@@ -17,7 +17,7 @@ is saved anywhere but the device.
 
 ```yaml
 dependencies:
-  debug_lens: ^0.0.2
+  debug_lens: ^0.1.0
 ```
 
 | Dashboard | More | Bubble |
@@ -39,8 +39,9 @@ MaterialApp(
 
 `DebugLens.debugLensEnabled` determines whether DebugLens is enabled. It defaults to **`true`**.
 When set to `false`, `wrap` becomes a no-op: nothing is captured, and no overrides are applied. 
-Set this value in `main()` before `wrap` is first built, and base it on your own flavor or build 
-configuration to control who can use DebugLens.
+Set this value in `main()` before any other DebugLens call, such as `setAppVersion` or 
+`setRemoteConfigData`, and base it on your own flavor or build configuration to control who can 
+use DebugLens.
 
 
 ```dart
@@ -86,8 +87,8 @@ This lets you see your console logs directly inside DebugLens without changing t
 Use `DebugLensLogger()` to send logs from anywhere in your app:
 
 ```dart
-// Optional: Disable terminal output while keeping logs in DebugLens.
-DebugLensLogger().printToConsole = kDebugMode;
+// Optional: Disable terminal output while keeping logs in DebugLens (default: kDebugMode).
+DebugLensLogger().printToConsole = false;
 
 DebugLensLogger().i('Signed in', name: 'auth');
 DebugLensLogger().e('Upload failed', name: 'media', error: e, stackTrace: s);
@@ -232,7 +233,7 @@ DebugLens.recordDeeplink(uri.toString(), source: 'os');
 
 ### Services
 
-The **Services** screen lets you inspect data from integrations that are specific to your app. Use the built-in adapters for **Remote Config**, **Crash Reports**, **Analytics**, and **Performance**.
+The **Services** screen lets you inspect data from integrations that are specific to your app. Use the built-in adapters for **Remote Config**, **Crash Reports**, and **Performance**.
 
 ### Remote Config
 
@@ -365,6 +366,10 @@ since allowing testers to access Settings would let them modify their own permis
 | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_role.png" width="240"> | <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/settings_tester_access.png" width="240"> |
 
 <img src="https://raw.githubusercontent.com/anupam92402/DebugLens/master/doc/screenshots/role_switch.png" width="240">
+
+The bottom bar adapts to frequent use: each time the panel opens, the most-used tab in More
+replaces the least-used bar tab, one swap at a time, with Network always pinned. Toggle this
+with Adaptive tab order in Settings, or restore the default bar with Reset tab order.
 
 ---
 

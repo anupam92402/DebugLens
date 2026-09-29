@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../shared/debug_strings.dart';
@@ -54,11 +55,14 @@ enum DebugScreen {
   const DebugScreen(this.label, this.icon, this.route);
 
   /// Shown beside the switch in the Tester access sheet.
+  @internal
   final String label;
 
   /// Shown in the Tester access sheet.
+  @internal
   final IconData icon;
 
   /// The panel route this screen is reached by — what the grant is keyed on.
+  @internal
   final String route;
 }

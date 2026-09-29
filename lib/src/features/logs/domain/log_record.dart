@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../shared/debug_strings.dart';
 
 /// The level a log was recorded at. Deliberately a small three-tier scheme —
@@ -14,6 +16,7 @@ enum DebugLogLevel {
 
   /// Uppercase and padded to a fixed width, so console lines and exported
   /// files line up in columns whatever the level.
+  @internal
   String get paddedName => name.toUpperCase().padRight(5);
 }
 

@@ -51,7 +51,6 @@ export 'src/features/error/presentation/views/custom_error_screen.dart'
     show CustomErrorScreen;
 export 'src/features/logs/data/debug_lens_logger.dart'
     show DebugLensLogger, DebugLogObserver;
-export 'src/features/logs/domain/log_origin.dart' show DebugLogOrigin;
 export 'src/features/logs/domain/log_record.dart'
     show DebugLogLevel, DebugLogRecord;
 export 'src/features/locale/data/debug_locale_source.dart'

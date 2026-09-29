@@ -55,9 +55,8 @@ typedef DebugLogObserver =
 /// DebugLensLogger().printToConsole = false;
 /// ```
 ///
-/// Size the buffer with `DebugLens.initialLimits`; the shipped default is
-/// [defaultMaxHistory] and a tester can raise or lower it from the panel's
-/// Settings screen afterwards.
+/// Size the buffer with `DebugLens.initialLimits`; a tester can raise or lower
+/// it from the panel's Settings screen afterwards.
 ///
 /// Forward records elsewhere with [addLogObserver]. Extends [ChangeNotifier],
 /// so the Logs screen rebuilds as records land.
@@ -80,9 +79,9 @@ class DebugLensLogger extends ChangeNotifier with DeferredNotifier {
   bool printToConsole = kDebugMode;
 
   /// Buffer size when the host hasn't set [maxHistory].
-  static const int defaultMaxHistory = 1000;
+  static const int _defaultMaxHistory = 1000;
 
-  int _maxHistory = defaultMaxHistory;
+  int _maxHistory = _defaultMaxHistory;
 
   /// Cap on retained records, oldest dropped first. Lowering it trims now;
   /// values below 1 are ignored.

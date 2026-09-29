@@ -67,6 +67,7 @@ class DebugLensLimits {
       traces = limit;
 
   /// The limit set for [limit], or null to leave it at its shipped default.
+  @internal
   int? valueOf(DebugLimit limit) {
     final value = switch (limit) {
       DebugLimit.network => network,

@@ -26,6 +26,7 @@ abstract class DebugLensService {
 
   /// Optional editable-config capability (e.g. Remote Config overrides). When
   /// non-null the service screen renders a source toggle + editable rows.
+  @internal
   DebugLensConfigEditor? get editor => null;
 
   /// Optional signal that this service's data changed outside the inspector

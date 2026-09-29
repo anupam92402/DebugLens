@@ -24,6 +24,7 @@ class DebugLensLocaleData {
   /// Flattens [entries] to `key → value`. A nested category
   /// `{PAYMENT: {PAYMENT_ISSUES: "…"}}` becomes `PAYMENT.PAYMENT_ISSUES → "…"`;
   /// top-level scalars are kept as-is. Pure — no state is retained.
+  @internal
   Map<String, String> flatten() {
     final flat = <String, String>{};
     entries.forEach((category, value) {
@@ -42,6 +43,7 @@ class DebugLensLocaleData {
   /// view: `{ACTION: {ACTION_REQUIRED: "…", …}, PAYMENT: {…}}`. Each nested
   /// category maps to its own `key → value` block. Top-level scalars (no inner
   /// map) are collected under [scalarGroup]. Pure — no state is retained.
+  @internal
   Map<String, Map<String, String>> group() {
     final grouped = <String, Map<String, String>>{};
     entries.forEach((category, value) {
@@ -59,5 +61,6 @@ class DebugLensLocaleData {
 
   /// Bucket name used by [group] for top-level scalar entries that have no
   /// category map of their own.
+  @internal
   static const String scalarGroup = 'OTHER';
 }

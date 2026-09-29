@@ -22,6 +22,7 @@ enum DebugLensPrefType {
   unknown;
 
   /// Short label shown as the type chip.
+  @internal
   String get label => switch (this) {
     DebugLensPrefType.boolean => 'bool',
     DebugLensPrefType.integer => 'int',

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.0
+
+* Revamped the panel UI: the dashboard grid is replaced by a bottom tab bar and a bottom sheet, so
+  switching between inspectors takes a single tap instead of going back to the dashboard each time.
+* Adaptive bottom bar: it learns which tabs you open most, with a toggle and a reset in Settings.
+* Analytics moved out of Services into its own tab.
+* Bloc inspector now records `onDone` events.
+* Network inspector now supports the `QUERY` HTTP method.
+* Bug fixes and performance optimizations.
+* `printToConsole` now defaults to `kDebugMode`
+* Removed unnecessary exports and marked them internal.
+
 ## 0.0.3
 
 * Fixed heap memory full issue

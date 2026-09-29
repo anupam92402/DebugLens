@@ -64,13 +64,6 @@ class HealthCheckStore extends ChangeNotifier {
     return report;
   }
 
-  /// Abandons the window without producing a report.
-  void cancel() {
-    if (!isRunning) return;
-    _startedAt = null;
-    notifyListeners();
-  }
-
   Iterable<HealthEntry> _crashes(DateTime since) sync* {
     for (final event in DebugCrashStore.instance.events) {
       if (event.time.isBefore(since)) continue;

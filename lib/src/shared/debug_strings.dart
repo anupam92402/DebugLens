@@ -122,8 +122,6 @@ class DebugStrings {
   static const String settingsClearedToast = 'All in-memory data cleared';
 
   // --- Health check ---------------------------------------------------------
-  static const String healthTitle = 'Health check';
-
   static String healthNumber(int n) => '#$n';
 
   static String healthTitleNumbered(int n) => 'Health check #$n';
@@ -367,8 +365,6 @@ class DebugStrings {
   static const String logsSearchHint = 'Search message / name';
   static const String logsEmpty = 'No logs';
   static const String logsDetailTitle = 'Log detail';
-  static const String logsCopyFullTooltip = 'Copy full record';
-  static const String logsCopiedToast = 'Log copied to clipboard';
   static const String logsSummaryCard = 'Summary';
   static const String logsMessageCard = 'Message';
   static const String logsErrorCard = 'Error';
@@ -440,7 +436,6 @@ class DebugStrings {
   static const String networkAbandoned = 'No response — request abandoned';
   static const String networkCopyShareToast =
       'cURL + response copied — opening share…';
-  static const String networkCallsTitle = 'Calls';
   static const String networkFirstCall = 'first call';
 
   static String networkCallsTrimmed(int shown, int total) =>

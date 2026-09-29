@@ -16,10 +16,6 @@ class BubbleStore extends ChangeNotifier {
   BubbleIcon get icon => _icon;
   BubbleCorner get corner => _corner;
 
-  /// Whether either value has been changed from the shipped default.
-  bool get isCustom =>
-      _icon != BubbleIcon.fallback || _corner != BubbleCorner.fallback;
-
   /// Whether [restore] has already run this session.
   bool _restored = false;
 

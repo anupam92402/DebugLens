@@ -20,7 +20,4 @@ class DebugLensTableData {
     columns: [],
     rows: [],
   );
-
-  /// How many rows this snapshot holds.
-  int get rowCount => rows.length;
 }

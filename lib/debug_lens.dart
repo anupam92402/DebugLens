@@ -61,7 +61,6 @@ export 'src/features/storage/data/debug_shared_prefs_source.dart'
     show DebugLensSharedPrefsSource;
 export 'src/features/storage/domain/pref_entry.dart'
     show DebugLensPrefEntry, DebugLensPrefType;
-export 'src/core/debug_log_file_service.dart' show DebugLogFileService;
 export 'src/features/bloc/data/debug_lens_bloc_observer.dart'
     show DebugLensBlocObserver;
 export 'src/features/network/data/debug_lens_dio_interceptor.dart'
@@ -184,9 +183,6 @@ class DebugLens {
     );
   }
 
-  /// The registered databases shown in the Database tab.
-  static List<DebugLensDatabase> get databases => DebugLensDatabases.sources;
-
   /// Registers a service for the Services screen. Its `load()` is called on
   /// demand; idempotent by [DebugLensService.name].
   static void registerService(DebugLensService service) {
@@ -198,9 +194,6 @@ class DebugLens {
       'service',
     );
   }
-
-  /// The registered services shown on the Services screen.
-  static List<DebugLensService> get services => DebugLensServices.services;
 
   /// Registers fetched config values on the Services screen under [name],
   /// where a tester can override any of them. [sourceLabel] names the
@@ -382,12 +375,6 @@ class DebugLens {
     );
   }
 
-  /// Clears the captured notifications shown on the Notifications tab.
-  static void clearNotifications() => DebugStore.instance.clearNotifications();
-
-  /// Clears the captured deep-links shown on the Deep-links tab.
-  static void clearDeeplinks() => DebugStore.instance.clearDeeplinks();
-
   /// Records a captured deep link. [source] labels the origin, e.g. `push`,
   /// `browser` or `in-app`.
   static void recordDeeplink(String uri, {String? source}) {
@@ -440,7 +427,6 @@ class DebugLens {
         ChangeNotifierProvider(create: (_) => DebugLensController()),
         ChangeNotifierProvider(create: (_) => DebugRoleController()),
         ChangeNotifierProvider<DebugStore>.value(value: DebugStore.instance),
-        ChangeNotifierProvider<DebugLensLogger>.value(value: DebugLensLogger()),
       ],
       child: _DebugLensHost(child: child),
     );

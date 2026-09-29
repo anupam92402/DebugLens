@@ -105,6 +105,9 @@ class DebugConstants {
   /// long list scrolls inside the sheet instead of pushing it off the top.
   static const double bottomSheetMaxHeightFraction = 0.6;
 
+  /// Pause after the last keystroke before a debounced search runs.
+  static const Duration searchDebounce = Duration(milliseconds: 300);
+
   /// Whether the Services config editor is in device-override ("custom") mode.
   static const String configCustomPrefsKey = 'debug_lens_config_custom';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/debug_constants.dart';
 import '../../../../shared/debug_strings.dart';
 import '../../../../shared/widgets/debug_widgets.dart';
 import '../../../../shared/widgets/json_view.dart';
@@ -181,6 +182,7 @@ class _BodySearchBar extends StatelessWidget {
             child: DebugSearchField(
               hint: DebugStrings.networkSearchBody(label),
               onChanged: onChanged,
+              debounce: DebugConstants.searchDebounce,
             ),
           ),
           if (searching) ...[

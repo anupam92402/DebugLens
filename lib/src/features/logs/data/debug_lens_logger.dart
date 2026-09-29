@@ -48,11 +48,11 @@ typedef DebugLogObserver =
 /// Prefer a stable area name (`auth`, `api`, `checkout`) over a class name.
 ///
 /// Terminal output is yours to control: [printToConsole] decides whether the
-/// logger echoes each record through `debugPrint`. Set it from your own build
-/// config, and turn it off when you already have a logger printing.
+/// logger echoes each record through `debugPrint`. It is on in debug builds
+/// only; turn it off when you already have a logger printing.
 ///
 /// ```dart
-/// DebugLensLogger().printToConsole = kDebugMode; // or false
+/// DebugLensLogger().printToConsole = false;
 /// ```
 ///
 /// Size the buffer with `DebugLens.initialLimits`; the shipped default is
@@ -72,13 +72,12 @@ class DebugLensLogger extends ChangeNotifier with DeferredNotifier {
   /// Whether records are echoed to the console. They are stored and shown
   /// either way; a single call overrides this with `force: true`.
   ///
-  /// Yours to decide — wire it to your own build config rather than leaving it
-  /// at the default, so DebugLens never silently changes what your terminal
+  /// Defaults to [kDebugMode], so release builds print nothing to logcat.
   ///
   /// ```dart
-  /// DebugLensLogger().printToConsole = kDebugMode; // or a flavor flag
+  /// DebugLensLogger().printToConsole = false; // another logger already prints
   /// ```
-  bool printToConsole = true;
+  bool printToConsole = kDebugMode;
 
   /// Buffer size when the host hasn't set [maxHistory].
   static const int defaultMaxHistory = 1000;

@@ -52,6 +52,9 @@ class _DebugPanelState extends State<DebugPanel>
   GlobalKey? _roleKey = GlobalKey();
   GlobalKey? _closeKey = GlobalKey();
 
+  /// The tour while it is on screen.
+  OverlayEntry? _tour;
+
   /// Bar visibility: 1 shown, 0 slid away while scrolling down a list.
   late final AnimationController _bar = AnimationController(
     vsync: this,
@@ -81,6 +84,7 @@ class _DebugPanelState extends State<DebugPanel>
 
   @override
   void dispose() {
+    _removeTour();
     _role.removeListener(_onRoleChanged);
     TabUsageStore.instance.removeListener(_onTabOrderChanged);
     _bar.dispose();
@@ -162,23 +166,23 @@ class _DebugPanelState extends State<DebugPanel>
     navigator.pushAndRemoveUntil(DebugRouter.tabRoute(route), (_) => false);
   }
 
-  /// Shows the first-run tour once, over the panel's overlay so it can dim the
+  /// Shows the first-run tour once, over the host overlay so it can dim the
   /// app bar and the bottom bar.
   Future<void> _maybeShowTour() async {
     if (await WalkthroughStore.instance.hasSeen()) {
       _dropTourKeys();
       return;
     }
-    if (!mounted) return;
-    final overlay = Overlay.maybeOf(context);
-    if (overlay == null) return;
+    if (!mounted || Overlay.maybeOf(context) == null) return;
 
     // Marked seen on show, not on finish: someone who closes the panel midway
     // has still seen it.
     await WalkthroughStore.instance.markSeen();
+    if (!mounted) return;
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
 
-    late OverlayEntry entry;
-    entry = OverlayEntry(
+    final entry = OverlayEntry(
       builder: (_) => WalkthroughOverlay(
         steps: [
           WalkthroughStep(
@@ -198,12 +202,21 @@ class _DebugPanelState extends State<DebugPanel>
           ),
         ],
         onFinish: () {
-          entry.remove();
+          _removeTour();
           _dropTourKeys();
         },
       ),
     );
+    _tour = entry;
     overlay.insert(entry);
+  }
+
+  /// Removes and disposes the tour, if shown.
+  void _removeTour() {
+    _tour
+      ?..remove()
+      ..dispose();
+    _tour = null;
   }
 
   void _dropTourKeys() {

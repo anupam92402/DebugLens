@@ -6,29 +6,17 @@ import 'package:share_plus/share_plus.dart';
 
 /// Centralised creator + sharer of DebugLens log files.
 ///
-/// Any feature/service (navigation, bloc, services, …) contributes data under
-/// a named source — either by pushing over time with [log] / [setSection], or
-/// by passing sections inline to [shareLogFile]. Calling [shareLogFile] writes
-/// a brand-new file and opens the OS share sheet; that is the only supported
-/// way to share a log file. Sharing goes through `share_plus`, so it works on
-/// both Android and iOS.
+/// Features contribute data under a named source with [setSection], or pass
+/// sections inline to [shareLogFile], which writes a new file and opens the
+/// OS share sheet via `share_plus`.
 ///
-/// The dump is segregated per source with a `/// <source>` header so it stays
+/// The dump is segregated per source with a `/// <source>` header:
 /// ```
 /// /// navigation
 /// <navigation data>
 ///
 /// /// bloc
 /// <bloc data>
-/// ```
-///
-/// Nothing here is wired into the DebugLens screens — it is a standalone
-/// service a caller drives explicitly.
-/// ```dart
-/// DebugLogFileService.instance
-///   ..log('navigation', 'push /home')
-///   ..log('bloc', 'AuthBloc: LoggedIn');
-/// await DebugLogFileService.instance.shareLogFile(subject: 'DebugLens logs');
 /// ```
 class DebugLogFileService {
   DebugLogFileService._();
@@ -40,29 +28,10 @@ class DebugLogFileService {
   /// order sources appear in the dump.
   final Map<String, StringBuffer> _sections = <String, StringBuffer>{};
 
-  /// Appends one [message] line under [source] (created on first use).
-  void log(String source, String message) {
-    (_sections[source] ??= StringBuffer()).writeln(message);
-  }
-
-  /// Appends several [lines] under [source] in order.
-  void logLines(String source, Iterable<String> lines) {
-    final buffer = _sections[source] ??= StringBuffer();
-    for (final line in lines) {
-      buffer.writeln(line);
-    }
-  }
-
   /// Replaces [source]'s whole content in one shot.
   void setSection(String source, String content) {
     _sections[source] = StringBuffer(content);
   }
-
-  /// Drops one source's buffered data.
-  void clearSource(String source) => _sections.remove(source);
-
-  /// Drops all buffered data.
-  void clear() => _sections.clear();
 
   /// Immutable snapshot of the current buffer (`source -> content`).
   Map<String, String> snapshot() => <String, String>{

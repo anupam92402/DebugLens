@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/storage/data/debug_shared_prefs_source.dart';
 import '../shared/debug_constants.dart';
 import 'debug_screen.dart';
 
@@ -46,7 +46,6 @@ class DebugRoleController extends ChangeNotifier {
   /// down into it.
   bool _testerEnabled = initialTesterEnabled;
 
-  DebugRole get role => _role;
   bool get isDeveloper => _role == DebugRole.developer;
 
   /// Unmodifiable view — change it through [setTesterRoutes], which persists.
@@ -65,35 +64,38 @@ class DebugRoleController extends ChangeNotifier {
   }
 
   Future<void> _load() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedRole = prefs.getString(DebugConstants.rolePrefsKey);
-      // Applied in both directions: with [initial] set to developer, a saved
-      // tester choice has to demote, or switching down wouldn't survive a
-      // relaunch.
-      if (savedRole != null) {
-        _role = savedRole == DebugRole.developer.name
-            ? DebugRole.developer
-            : DebugRole.tester;
-      }
-      // Only when something is saved, so `initialTesterEnabled: false` isn't
-      // silently overridden on a device that has never touched the switch.
-      final savedEnabled = prefs.getString(
-        DebugConstants.testerEnabledPrefsKey,
-      );
-      if (savedEnabled != null) {
-        _testerEnabled = savedEnabled == DebugConstants.trueValue;
-      }
-      final raw = prefs.getString(DebugConstants.testerRoutesPrefsKey);
-      if (raw != null && raw.isNotEmpty) {
+    final savedRole = await DebugLensSharedPrefs.getString(
+      DebugConstants.rolePrefsKey,
+    );
+    // Applied in both directions: with [initial] set to developer, a saved
+    // tester choice has to demote, or switching down wouldn't survive a
+    // relaunch.
+    if (savedRole != null) {
+      _role = savedRole == DebugRole.developer.name
+          ? DebugRole.developer
+          : DebugRole.tester;
+    }
+    // Only when something is saved, so `initialTesterEnabled: false` isn't
+    // silently overridden on a device that has never touched the switch.
+    final savedEnabled = await DebugLensSharedPrefs.getString(
+      DebugConstants.testerEnabledPrefsKey,
+    );
+    if (savedEnabled != null) {
+      _testerEnabled = savedEnabled == DebugConstants.trueValue;
+    }
+    final raw = await DebugLensSharedPrefs.getString(
+      DebugConstants.testerRoutesPrefsKey,
+    );
+    if (raw != null && raw.isNotEmpty) {
+      try {
         // An empty saved set is honoured: a developer may deliberately have
         // granted a tester nothing at all.
         _testerRoutes = Set<String>.from(jsonDecode(raw) as List);
+      } catch (_) {
+        // Unreadable — keep the default grants.
       }
-      notifyListeners();
-    } catch (_) {
-      // Storage unavailable or unreadable — keep the defaults.
     }
+    notifyListeners();
   }
 
   /// Switches between tester and developer and persists the new value.
@@ -101,7 +103,10 @@ class DebugRoleController extends ChangeNotifier {
     if (!canToggle) return;
     _role = isDeveloper ? DebugRole.tester : DebugRole.developer;
     notifyListeners();
-    await _persist(DebugConstants.rolePrefsKey, _role.name);
+    await DebugLensSharedPrefs.setString(
+      DebugConstants.rolePrefsKey,
+      _role.name,
+    );
   }
 
   /// Enables or disables the tester role.
@@ -110,10 +115,13 @@ class DebugRoleController extends ChangeNotifier {
     _testerEnabled = enabled;
     if (!enabled && !isDeveloper) {
       _role = DebugRole.developer;
-      await _persist(DebugConstants.rolePrefsKey, _role.name);
+      await DebugLensSharedPrefs.setString(
+        DebugConstants.rolePrefsKey,
+        _role.name,
+      );
     }
     notifyListeners();
-    await _persist(
+    await DebugLensSharedPrefs.setString(
       DebugConstants.testerEnabledPrefsKey,
       enabled ? DebugConstants.trueValue : DebugConstants.falseValue,
     );
@@ -123,18 +131,9 @@ class DebugRoleController extends ChangeNotifier {
   Future<void> setTesterRoutes(Set<String> routes) async {
     _testerRoutes = {...routes};
     notifyListeners();
-    await _persist(
+    await DebugLensSharedPrefs.setString(
       DebugConstants.testerRoutesPrefsKey,
       jsonEncode(_testerRoutes.toList()),
     );
-  }
-
-  Future<void> _persist(String key, String value) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(key, value);
-    } catch (_) {
-      // Persistence failed — the in-memory value still applies this session.
-    }
   }
 }

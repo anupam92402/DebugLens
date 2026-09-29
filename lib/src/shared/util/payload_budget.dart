@@ -47,10 +47,6 @@ class PayloadBudget {
     return '${text.substring(0, max)}$truncationMarker';
   }
 
-  /// [clamp] over a nullable value; null stays null.
-  static String? clampOrNull(String? text, {int max = maxTextChars}) =>
-      text == null ? null : clamp(text, max: max);
-
   /// `value.toString()` clamped to [max]. The one place a foreign object is
   /// stringified for storage, so no single `toString()` can be retained whole.
   static String? describe(Object? value, {int max = maxTextChars}) =>

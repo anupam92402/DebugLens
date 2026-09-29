@@ -2,6 +2,7 @@ import 'package:debug_lens/debug_lens.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'src/app_providers.dart';
 import 'src/core/app_navigator.dart';
@@ -40,6 +41,10 @@ Future<void> _bootstrap() async {
 
   // Feed every cubit/bloc in the app into the DebugLens Bloc inspector.
   Bloc.observer = DebugLensBlocObserver();
+
+  // Real version; an override set in the panel applies from the next start.
+  final packageInfo = await PackageInfo.fromPlatform();
+  await DebugLens.instance.setAppVersion(packageInfo.version);
 
   // This demo's own DI + mock backend + storage + notifications.
   await initializeDemoBackend();

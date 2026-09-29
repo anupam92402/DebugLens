@@ -63,6 +63,9 @@ dependencies:
   # Local (on-device) notifications — no Firebase / backend needed.
   flutter_local_notifications: ^18.0.1
 
+  # Real app version, registered with DebugLens.setAppVersion.
+  package_info_plus: ">=9.0.1 <11.0.0"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
